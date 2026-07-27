@@ -1,16 +1,15 @@
-# Compiled class file
-*.class
+# === Maven / Gradle Output (Spring Boot) ===
+target/
+build/
+.gradle/
+bin/
+out/
 
-# Log file
+# === Compiled Class Files & Logs ===
+*.class
 *.log
 
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
+# === Package Files ===
 *.jar
 *.war
 *.nar
@@ -19,6 +18,29 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# === Frontend / Node.js ===
+node_modules/
+dist/
+.build/
+.npm/
+
+# === IDE & Editor Files ===
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# System / Crash logs
+.DS_Store
+Thumbs.db
 hs_err_pid*
 replay_pid*
