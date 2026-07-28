@@ -2,6 +2,8 @@ package org.example.librarymanagement.domain.entity;
 
 import java.time.LocalDateTime;
 
+import org.example.librarymanagement.domain.enums.BorrowSlip_Status;
+
 public class BorrowSlip {
 
     private Long id;
@@ -9,7 +11,7 @@ public class BorrowSlip {
     private LocalDateTime borrowDate;
     private LocalDateTime dueDate;
     private LocalDateTime returnDate;
-    private BorrowSlipStatus status;
+    private BorrowSlip_Status status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -21,7 +23,7 @@ public class BorrowSlip {
                       LocalDateTime borrowDate,
                       LocalDateTime dueDate,
                       LocalDateTime returnDate,
-                      BorrowSlipStatus status,
+                      BorrowSlip_Status status,
                       LocalDateTime createdAt,
                       LocalDateTime updatedAt) {
 
@@ -100,11 +102,11 @@ public class BorrowSlip {
         this.returnDate = returnDate;
     }
 
-    public BorrowSlipStatus getStatus() {
+    public BorrowSlip_Status getStatus() {
         return status;
     }
 
-    public void setStatus(BorrowSlipStatus status) {
+    public void setStatus(BorrowSlip_Status status) {
         if (status == null) {
             throw new IllegalArgumentException("Status cannot be null.");
         }
