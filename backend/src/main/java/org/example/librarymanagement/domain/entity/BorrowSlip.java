@@ -3,6 +3,7 @@ package org.example.librarymanagement.domain.entity;
 import java.time.LocalDateTime;
 
 import org.example.librarymanagement.domain.enums.BorrowSlip_Status;
+import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class BorrowSlip {
 
@@ -19,13 +20,13 @@ public class BorrowSlip {
     }
 
     public BorrowSlip(Long id,
-                      Long readerId,
-                      LocalDateTime borrowDate,
-                      LocalDateTime dueDate,
-                      LocalDateTime returnDate,
-                      BorrowSlip_Status status,
-                      LocalDateTime createdAt,
-                      LocalDateTime updatedAt) {
+            Long readerId,
+            LocalDateTime borrowDate,
+            LocalDateTime dueDate,
+            LocalDateTime returnDate,
+            BorrowSlip_Status status,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
 
         setId(id);
         setReaderId(readerId);
@@ -137,15 +138,15 @@ public class BorrowSlip {
 
     @Override
     public String toString() {
-        return "BorrowSlip{" +
-                "id=" + id +
-                ", readerId=" + readerId +
-                ", borrowDate=" + borrowDate +
-                ", dueDate=" + dueDate +
-                ", returnDate=" + returnDate +
-                ", status=" + status +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
+        return "BorrowSlip{"
+                + "id=" + id
+                + ", readerId=" + readerId
+                + ", borrowDate=" + borrowDate
+                + ", dueDate=" + dueDate
+                + ", returnDate=" + returnDate
+                + ", status=" + status
+                + ", createdAt=" + createdAt
+                + ", updatedAt=" + updatedAt
+                + '}';
     }
 }
