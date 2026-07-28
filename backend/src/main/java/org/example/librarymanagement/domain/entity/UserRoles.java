@@ -14,30 +14,30 @@ public class UserRoles {
         this.assigned_at = assigned_at;
     }
 
-    public UUID getUser_id() {
+    public UUID getUserId() {
         return user_id;
     }
-    public void setUser_id(UUID user_id) {
+    public void setUserId(UUID user_id) {
         if(user_id == null) {
             throw new DomainException("User ID cannot be null");
         }
         this.user_id = user_id;
     }
 
-    public UUID getRole_id() {
+    public UUID getRoleId() {
         return role_id;
     }
-    public void setRole_id(UUID role_id) {
+    public void setRoleId(UUID role_id) {
         if(role_id == null) {
             throw new DomainException("Role ID cannot be null");
         }
         this.role_id = role_id;
     }
 
-    public LocalDateTime getAssigned_at() {
+    public LocalDateTime getAssignedAt() {
         return assigned_at;
     }
-    public void setAssigned_at(LocalDateTime assigned_at) {
+    public void setAssignedAt(LocalDateTime assigned_at) {
         if(assigned_at == null) {
             throw new DomainException("Assigned at cannot be null");
         }
