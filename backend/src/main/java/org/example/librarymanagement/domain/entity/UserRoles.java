@@ -3,45 +3,45 @@ import java.util.UUID;
 import java.time.LocalDateTime;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 public class UserRoles {
-   private UUID user_id;
-    private UUID role_id;
-    private LocalDateTime assigned_at;
+   private UUID userId;
+    private UUID roleId;
+    private LocalDateTime assignedAt;
 
     public UserRoles() {}
-    public UserRoles(UUID user_id, UUID role_id, LocalDateTime assigned_at) {
-        this.user_id = user_id;
-        this.role_id = role_id;
-        this.assigned_at = assigned_at;
+    public UserRoles(UUID userId, UUID roleId, LocalDateTime assignedAt) {
+        this.userId = userId;
+        this.roleId = roleId;
+        this.assignedAt = assignedAt;
     }
 
     public UUID getUserId() {
-        return user_id;
+        return userId;
     }
-    public void setUserId(UUID user_id) {
-        if(user_id == null) {
+    public void setUserId(UUID userId) {
+        if(userId == null) {
             throw new DomainException("User ID cannot be null");
         }
-        this.user_id = user_id;
+        this.userId = userId;
     }
 
     public UUID getRoleId() {
-        return role_id;
+        return roleId;
     }
-    public void setRoleId(UUID role_id) {
-        if(role_id == null) {
+    public void setRoleId(UUID roleId) {
+        if(roleId == null) {
             throw new DomainException("Role ID cannot be null");
         }
-        this.role_id = role_id;
+        this.roleId = roleId;
     }
 
     public LocalDateTime getAssignedAt() {
-        return assigned_at;
+        return assignedAt;
     }
-    public void setAssignedAt(LocalDateTime assigned_at) {
-        if(assigned_at == null) {
+    public void setAssignedAt(LocalDateTime assignedAt) {
+        if(assignedAt == null) {
             throw new DomainException("Assigned at cannot be null");
         }
-        this.assigned_at = assigned_at;
+        this.assignedAt = assignedAt;
     }
 
 }
