@@ -1,7 +1,7 @@
 package org.example.librarymanagement.domain.entity;
 
 import java.util.UUID;
-import ỏg.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.DomainException;
 import java.time.LocalDateTime;
 class Categories {
 private UUID id;
