@@ -1,20 +1,20 @@
 package org.example.librarymanagement.domain.entity;
-import java.rmi.server.UID;
+import java.util.UUID;
 import java.time.LocalDateTime;
 import org.example.librarymanagement.domain.exceptions.DomainException;
-public class borrow_details {
-    private UID id;
-    private UID borrow_slip_id;
-    private UID book_id;
+public class Borrow_details {
+    private UUID id;
+    private UUID borrow_slip_id;
+    private UUID book_id;
     private LocalDateTime return_at;
-    private UID return_by_user_id;
+    private UUID return_by_user_id;
     private String fine_reason;
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
 
-    public borrow_details() {}
+    public Borrow_details() {}
 
-    public borrow_details(UID id, UID borrow_slip_id, UID book_id, LocalDateTime return_at, UID return_by_user_id, String fine_reason, LocalDateTime created_at, LocalDateTime updated_at) {
+    public Borrow_details(UUID id, UUID borrow_slip_id, UUID book_id, LocalDateTime return_at, UUID return_by_user_id, String fine_reason, LocalDateTime created_at, LocalDateTime updated_at) {
         this.id = id;
         this.borrow_slip_id = borrow_slip_id;
         this.book_id = book_id;
@@ -25,30 +25,30 @@ public class borrow_details {
         this.updated_at = updated_at;
     }
 
-    public UID getId() {
+    public UUID getId() {
         return id;
     }
-    public void setId(UID id) {
+    public void setId(UUID id) {
         if(id == null) {
             throw new DomainException("ID cannot be null");
         }
       this.id = id;
     }
     
-    public UID getBorrow_slip_id() {
+    public UUID getBorrow_slip_id() {
         return borrow_slip_id;
     }
-    public void setBorrow_slip_id(UID borrow_slip_id) {
+    public void setBorrow_slip_id(UUID borrow_slip_id) {
         if(borrow_slip_id == null) {
             throw new DomainException("Borrow slip ID cannot be null");
         }
         this.borrow_slip_id = borrow_slip_id;
     }
 
-    public UID getBook_id() {
+    public UUID getBook_id() {
         return book_id;
     }
-    public void setBook_id(UID book_id) {
+    public void setBook_id(UUID book_id) {
         if(book_id == null) {
             throw new DomainException("Book ID cannot be null");
         }
@@ -75,10 +75,10 @@ public class borrow_details {
         this.created_at = created_at;
     }
 
-    public UID getReturn_by_user_id() {
+    public UUID getReturn_by_user_id() {
         return return_by_user_id;
     }
-    public void setReturn_by_user_id(UID return_by_user_id) {
+    public void setReturn_by_user_id(UUID return_by_user_id) {
         if(return_at != null && return_by_user_id == null) {
             throw new DomainException("Return by user ID cannot be null when return date is set");
         }
