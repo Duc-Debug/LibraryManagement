@@ -2,7 +2,7 @@ package org.example.librarymanagement.domain.entity;
 import java.util.UUID;
 import java.time.LocalDateTime;
 import org.example.librarymanagement.domain.exceptions.DomainException;
-public class Borrow_details {
+public class BorrowDetails {
     private UUID id;
     private UUID borrow_slip_id;
     private UUID book_id;
@@ -12,9 +12,9 @@ public class Borrow_details {
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
 
-    public Borrow_details() {}
+    public BorrowDetails() {}
 
-    public Borrow_details(UUID id, UUID borrow_slip_id, UUID book_id, LocalDateTime return_at, UUID return_by_user_id, String fine_reason, LocalDateTime created_at, LocalDateTime updated_at) {
+    public BorrowDetails(UUID id, UUID borrow_slip_id, UUID book_id, LocalDateTime return_at, UUID return_by_user_id, String fine_reason, LocalDateTime created_at, LocalDateTime updated_at) {
         this.id = id;
         this.borrow_slip_id = borrow_slip_id;
         this.book_id = book_id;
