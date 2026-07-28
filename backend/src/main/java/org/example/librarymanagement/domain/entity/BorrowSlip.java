@@ -2,6 +2,8 @@ package org.example.librarymanagement.domain.entity;
 
 import java.time.LocalDateTime;
 
+import org.example.librarymanagement.domain.enums.BorrowSlip_Status;
+
 public class BorrowSlip {
 
     private Long id;
@@ -9,7 +11,7 @@ public class BorrowSlip {
     private LocalDateTime borrowDate;
     private LocalDateTime dueDate;
     private LocalDateTime returnDate;
-    private BorrowSlipStatus status;
+    private BorrowSlip_Status status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -21,7 +23,7 @@ public class BorrowSlip {
                       LocalDateTime borrowDate,
                       LocalDateTime dueDate,
                       LocalDateTime returnDate,
-                      BorrowSlipStatus status,
+                      BorrowSlip_Status status,
                       LocalDateTime createdAt,
                       LocalDateTime updatedAt) {
 
@@ -41,7 +43,7 @@ public class BorrowSlip {
 
     public void setId(Long id) {
         if (id != null && id <= 0) {
-            throw new IllegalArgumentException("Id must be greater than 0.");
+            throw new DomainException("Id must be greater than 0.");
         }
         this.id = id;
     }
@@ -52,7 +54,7 @@ public class BorrowSlip {
 
     public void setReaderId(Long readerId) {
         if (readerId == null || readerId <= 0) {
-            throw new IllegalArgumentException("Reader ID must be greater than 0.");
+            throw new DomainException("Reader ID must be greater than 0.");
         }
         this.readerId = readerId;
     }
@@ -63,7 +65,7 @@ public class BorrowSlip {
 
     public void setBorrowDate(LocalDateTime borrowDate) {
         if (borrowDate == null) {
-            throw new IllegalArgumentException("Borrow date cannot be null.");
+            throw new DomainException("Borrow date cannot be null.");
         }
         this.borrowDate = borrowDate;
     }
@@ -74,11 +76,11 @@ public class BorrowSlip {
 
     public void setDueDate(LocalDateTime dueDate) {
         if (dueDate == null) {
-            throw new IllegalArgumentException("Due date cannot be null.");
+            throw new DomainException("Due date cannot be null.");
         }
 
         if (borrowDate != null && dueDate.isBefore(borrowDate)) {
-            throw new IllegalArgumentException("Due date must be after borrow date.");
+            throw new DomainException("Due date must be after borrow date.");
         }
 
         this.dueDate = dueDate;
@@ -94,19 +96,19 @@ public class BorrowSlip {
                 && borrowDate != null
                 && returnDate.isBefore(borrowDate)) {
 
-            throw new IllegalArgumentException("Return date cannot be before borrow date.");
+            throw new DomainException("Return date cannot be before borrow date.");
         }
 
         this.returnDate = returnDate;
     }
 
-    public BorrowSlipStatus getStatus() {
+    public BorrowSlip_Status getStatus() {
         return status;
     }
 
-    public void setStatus(BorrowSlipStatus status) {
+    public void setStatus(BorrowSlip_Status status) {
         if (status == null) {
-            throw new IllegalArgumentException("Status cannot be null.");
+            throw new DomainException("Status cannot be null.");
         }
         this.status = status;
     }
@@ -117,7 +119,7 @@ public class BorrowSlip {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         if (createdAt == null) {
-            throw new IllegalArgumentException("Created time cannot be null.");
+            throw new DomainException("Created time cannot be null.");
         }
         this.createdAt = createdAt;
     }
@@ -128,7 +130,7 @@ public class BorrowSlip {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         if (updatedAt == null) {
-            throw new IllegalArgumentException("Updated time cannot be null.");
+            throw new DomainException("Updated time cannot be null.");
         }
         this.updatedAt = updatedAt;
     }
