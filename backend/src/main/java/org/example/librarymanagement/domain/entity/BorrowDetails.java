@@ -4,25 +4,25 @@ import java.time.LocalDateTime;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 public class BorrowDetails {
     private UUID id;
-    private UUID borrow_slip_id;
-    private UUID book_id;
-    private LocalDateTime return_at;
-    private UUID return_by_user_id;
-    private String fine_reason;
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
+    private UUID borrowSlipId;
+    private UUID bookId;
+    private LocalDateTime returnAt;
+    private UUID returnByUserId;
+    private String fineReason;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public BorrowDetails() {}
 
-    public BorrowDetails(UUID id, UUID borrow_slip_id, UUID book_id, LocalDateTime return_at, UUID return_by_user_id, String fine_reason, LocalDateTime created_at, LocalDateTime updated_at) {
+    public BorrowDetails(UUID id, UUID borrowSlipId, UUID bookId, LocalDateTime returnAt, UUID returnByUserId, String fineReason, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
-        this.borrow_slip_id = borrow_slip_id;
-        this.book_id = book_id;
-        this.return_at = return_at;
-        this.return_by_user_id = return_by_user_id;
-        this.fine_reason = fine_reason;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
+        this.borrowSlipId = borrowSlipId;
+        this.bookId = bookId;
+        this.returnAt = returnAt;
+        this.returnByUserId = returnByUserId;
+        this.fineReason = fineReason;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public UUID getId() {
@@ -35,83 +35,83 @@ public class BorrowDetails {
       this.id = id;
     }
     
-    public UUID getBorrow_slip_id() {
-        return borrow_slip_id;
+    public UUID getBorrowSlipId() {
+        return borrowSlipId;
     }
-    public void setBorrow_slip_id(UUID borrow_slip_id) {
-        if(borrow_slip_id == null) {
+    public void setBorrowSlipId(UUID borrowSlipId) {
+        if(borrowSlipId == null) {
             throw new DomainException("Borrow slip ID cannot be null");
         }
-        this.borrow_slip_id = borrow_slip_id;
+        this.borrowSlipId = borrowSlipId;
     }
 
-    public UUID getBook_id() {
-        return book_id;
+    public UUID getBookId() {
+        return bookId;
     }
-    public void setBook_id(UUID book_id) {
-        if(book_id == null) {
+    public void setBookId(UUID bookId) {
+        if(bookId == null) {
             throw new DomainException("Book ID cannot be null");
         }
-        this.book_id = book_id;
+        this.bookId = bookId;
     }
 
-    public LocalDateTime getReturn_at() {
-        return return_at;
+    public LocalDateTime getReturnAt() {
+        return returnAt;
     }
-    public void setReturn_at(LocalDateTime return_at) {
-        if( created_at != null && return_at != null && return_at.isBefore(created_at)) {
+    public void setReturnAt(LocalDateTime returnAt) {
+        if( createdAt != null && returnAt != null && returnAt.isBefore(createdAt)) {
             throw new DomainException("Return date cannot be before created date");
         }
-        this.return_at = return_at;
+        this.returnAt = returnAt;
     }
 
-    public LocalDateTime getCreated_at() {
-        return created_at;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
-    public void setCreated_at(LocalDateTime created_at) {
-        if(created_at == null) {
+    public void setCreatedAt(LocalDateTime createdAt) {
+        if(createdAt == null) {
             throw new DomainException("Created date cannot be null");
         }
-        this.created_at = created_at;
+        this.createdAt = createdAt;
     }
 
-    public UUID getReturn_by_user_id() {
-        return return_by_user_id;
+    public UUID getReturnByUserId() {
+        return returnByUserId;
     }
-    public void setReturn_by_user_id(UUID return_by_user_id) {
-        if(return_at != null && return_by_user_id == null) {
+    public void setReturnByUserId(UUID returnByUserId) {
+        if(returnAt != null && returnByUserId == null) {
             throw new DomainException("Return by user ID cannot be null when return date is set");
         }
-        this.return_by_user_id = return_by_user_id;
+        this.returnByUserId = returnByUserId;
     }
 
-    public String getFine_reason() {
-        return fine_reason;
+    public String getFineReason() {
+        return fineReason;
     }
-    public void setFine_reason(String fine_reason) {
-        if(fine_reason == null) {
+    public void setFineReason(String fineReason) {
+        if(fineReason == null) {
             throw new DomainException("Fine reason cannot be null");
         }
-        if(fine_reason.length() > 255) {
+        if(fineReason.length() > 255) {
             throw new DomainException("Fine reason cannot exceed 255 characters");
         }
-        if(fine_reason.trim().isEmpty()) {
+        if(fineReason.trim().isEmpty()) {
             throw new DomainException("Fine reason cannot be empty");
         }
-        this.fine_reason = fine_reason;
+        this.fineReason = fineReason;
 
 
    
     }
 
-    public LocalDateTime getUpdated_at() {
-        return updated_at;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
-    public void setUpdated_at(LocalDateTime updated_at) {
-        if(updated_at != null && created_at != null && updated_at.isBefore(created_at)) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        if(updatedAt != null && createdAt != null && updatedAt.isBefore(createdAt)) {
             throw new DomainException("Updated date cannot be before created date");
         }
-        this.updated_at = updated_at;
+        this.updatedAt = updatedAt;
     }
 
 
