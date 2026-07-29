@@ -15,13 +15,13 @@ public class readers {
     private String phoneNumber;
     private String address;
     private card_status cardStatus;
-    private LocalDate card_issued_at;
-    private LocalDate card_expiry_at;
+    private LocalDate cardIssuedAt;
+    private LocalDate cardExpiryAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean isActive;
 
-    public readers(UUID id, String name, String email, String phoneNumber, String address, card_status cardStatus, LocalDate card_issued_at, LocalDate card_expiry_at, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
+    public readers(UUID id, String name, String email, String phoneNumber, String address, card_status cardStatus, LocalDate cardIssuedAt, LocalDate cardExpiryAt, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
         if (name == null || name.isEmpty()) {
             throw new DomainException("Name cannot be null or empty");
         }
@@ -43,8 +43,8 @@ public class readers {
         this.phoneNumber = phoneNumber;
         this.address = address;
         this.cardStatus = cardStatus;
-        this.card_issued_at = card_issued_at;
-        this.card_expiry_at = card_expiry_at;
+        this.cardIssuedAt = cardIssuedAt;
+        this.cardExpiryAt = cardExpiryAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.isActive = isActive;
@@ -75,11 +75,11 @@ public class readers {
     }
 
     public LocalDate getCardIssuedAt() {
-        return card_issued_at;
+        return cardIssuedAt;
     }
 
     public LocalDate getCardExpiryAt() {
-        return card_expiry_at;
+        return cardExpiryAt;
     }
 
     public LocalDateTime getCreatedAt() {
