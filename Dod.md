@@ -7,7 +7,7 @@
 
 ---
 
-# ⚙️ Backend & Architecture (Clean Architecture / DDD)
+# ⚙️ Backend & Architecture (Hexa Architecture / DDD)
 
 - [ ] **Domain Rules:** Các quy tắc nghiệp vụ (Policies) được tuân thủ nghiêm ngặt tại Domain Layer.
 - [ ] **Data Mapping:** Đã chuyển đổi chính xác giữa Domain Entities, DTOs và Persistence Entities.
