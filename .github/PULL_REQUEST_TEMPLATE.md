@@ -16,7 +16,7 @@
 ## ✅ PR Review Checklist
 
 ### 1. Dành cho người tạo PR (Author)
-- [ ] Code tuân thủ đúng kiến trúc dự án (Clean Architecture / Structure FE).
+- [ ] Code tuân thủ đúng kiến trúc dự án (Hexa Architecture / Structure FE).
 - [ ] Đã chạy thử code ở local và không có lỗi rác console / terminal.
 - [ ] Đã xử lý type-safe (Không lạm dụng `any` trong TypeScript hay raw type trong Java).
 - [ ] Đã kiểm tra UI khớp với thiết kế trên Figma.
