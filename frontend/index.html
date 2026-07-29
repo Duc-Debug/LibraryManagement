@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Quản lý Thư viện</title>
+    <!-- CSS & Tailwind -->
+    <link rel="stylesheet" href="css/globals.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React & Lucide CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-[#f8f6f0]">
+<div id="root"></div>
+
+<!-- Nhúng dữ liệu mẫu trước -->
+<script type="text/babel" src="js/MockData.js"></script>
+
+<!-- Các component & tab dùng chung, phải nạp trước App.js -->
+<script type="text/babel" src="js/components/Sidebar.js"></script>
+<script type="text/babel" src="js/components/AddBook.js"></script>
+<script type="text/babel" src="js/components/AddMember.js"></script>
+<script type="text/babel" src="js/tabs/DashboardTab.js"></script>
+<script type="text/babel" src="js/tabs/BooksTab.js"></script>
+<script type="text/babel" src="js/tabs/MembersTab.js"></script>
+<script type="text/babel" src="js/tabs/BorrowTab.js"></script>
+<script type="text/babel" src="js/tabs/ReturnTab.js"></script>
+
+<!-- App.js nạp sau cùng, vì nó dùng tất cả component/tab ở trên -->
+<script type="text/babel" src="js/App.js"></script>
+</body>
+</html>
