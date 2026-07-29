@@ -3,9 +3,12 @@ package org.example.librarymanagement.infrastructure.web.auth;
 import jakarta.validation.constraints.NotBlank;
 
 public record LoginRequest(
-        @NotBlank
+
+        @NotBlank(message = "Username không được để trống")
         String username,
-        @NotBlank
+
+        @NotBlank(message = "Password không được để trống")
         String password
+
 ) {
 }
