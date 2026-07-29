@@ -1,5 +1,4 @@
-
-export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, setActiveTab }) {
+function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, setActiveTab }) {
     return (
         <aside
             className={`bg-[#f7f7f5] border-r border-gray-200 flex flex-col justify-between shrink-0 transition-all duration-300 font-sans ${
@@ -122,8 +121,11 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
             {/* Footer Sidebar */}
             <div className="pt-4 border-t border-gray-200">
                 <a
-                    href="index.html"
+                    href="dang-nhap.html"
                     title="Đăng xuất"
+                    onClick={() => {
+                        localStorage.removeItem('token');
+                    }}
                     className={`w-full flex items-center bg-[#0f4c28] text-white font-bold text-sm rounded-2xl hover:bg-emerald-900 transition-colors shadow-sm ${
                         isSidebarOpen ? 'justify-center gap-2.5 py-3 px-4' : 'justify-center p-3'
                     }`}

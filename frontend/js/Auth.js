@@ -1,6 +1,4 @@
-/**
- * File xử lý logic đăng nhập và tương tác với Backend API
- */
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
@@ -42,7 +40,7 @@ async function handleLogin(event) {
         const data = await response.json();
         if (response.ok) {
             localStorage.setItem('token', data.token);
-            window.location.href = '/dashboard.html';
+            window.location.href = '/index.html';
         } else {
             errorAlert.innerText = data.message || "Tên đăng nhập hoặc mật khẩu không chính xác!";
             errorAlert.classList.remove('hidden');
