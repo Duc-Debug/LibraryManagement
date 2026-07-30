@@ -25,6 +25,74 @@ Tài liệu này hướng dẫn đơn giản sử dụng các câu lệnh comman
 5. Sau khi PR được duyệt (Approve) và Merge vào develop:
    - Xóa nhánh feature trên GitHub và Local để giữ repo gọn gàng.
    - Nhánh sống ngắn: Khuyến khích hoàn thành và merge trong 1-2 ngày.
+### Xử lý khi gặp conflict 
+1. Chuyển sang branch đang muốn gộp
+```bash
+git checkout <nhanh-bi-confict>
+```
+Hoặc
+```
+git switch <nhanh-bi-confict>
+```
+2. Cập nhật lại muốn gộp vào(develop)
+```bash
+git checkout develop
+git pull origin develop
+```
+3. Quay lại nhánh của mình  
+```bash
+git checkout <nhanh-bi-confict>
+```
+4. Merge nhánh develop vào 
+```
+git merge develop
+```
+Nếu có conflict sẽ hiện kiểu:
+```
+Auto-merging frontend/JS/Auth.js
+CONFLICT (content): Merge conflict in frontend/JS/Auth.js
+Automatic merge failed.
+```
+5. Mở file bị conflict
+Sẽ thấy dạng:
+```
+<<<<<< HEAD
+
+// Code của bạn
+
+=======
+
+// Code từ develop
+
+>>>>>> develop
+```
+Bạn cần:
+
+- So sánh hai đoạn code.
+- Quyết định giữ đoạn nào hoặc kết hợp cả hai.
+- Xóa các dấu:
+```
+<<<<<<
+=======
+>>>>>>
+```
+6. Đánh giấu lại các file đã xử lý
+```
+git add <link file đang bị>
+VD: git add frontend/js/Auth.js
+```
+Đánh giấu cho đến khi hết tất cả các file confict
+7. Commit
+```
+git commit -m "resolve: merge conflict with develop"
+```
+8. Push lại
+```
+git push origin <Tên nhánh của mình>
+```
+GitHub sẽ cập nhật Pull Request.
+
+Nếu mọi conflict đã được giải quyết, nút Merge Pull Request sẽ xuất hiện.
 ### 1. Clone dự án từ github về máy
 - B1: Mở đường dẫn thư mực muốn clone
  ```bash 
