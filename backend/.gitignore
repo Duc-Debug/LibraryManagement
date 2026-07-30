@@ -44,3 +44,5 @@ dist/
 Thumbs.db
 hs_err_pid*
 replay_pid*
+
+src/main/resources/application-local.properties
