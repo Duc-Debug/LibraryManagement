@@ -5,7 +5,6 @@ function DashboardTab({ books, members, borrowList, recentActivities }) {
                 <h2 className="text-2xl font-bold text-gray-900">Bảng điều khiển</h2>
                 <p className="text-sm text-gray-600">Hệ thống quản lý thư viện</p>
             </div>
-
             {/* Thống kê tổng quan */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
@@ -22,7 +21,6 @@ function DashboardTab({ books, members, borrowList, recentActivities }) {
                         <i data-lucide="bookmark" className="w-6 h-6"></i>
                     </div>
                 </div>
-
                 <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs text-gray-500 font-medium">Thành viên</p>
@@ -35,7 +33,6 @@ function DashboardTab({ books, members, borrowList, recentActivities }) {
                         <i data-lucide="users" className="w-6 h-6"></i>
                     </div>
                 </div>
-
                 <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs text-gray-500 font-medium">Đang mượn</p>
@@ -48,7 +45,6 @@ function DashboardTab({ books, members, borrowList, recentActivities }) {
                         <i data-lucide="trending-up" className="w-6 h-6"></i>
                     </div>
                 </div>
-
                 <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs text-gray-500 font-medium">Quá hạn</p>
@@ -62,7 +58,6 @@ function DashboardTab({ books, members, borrowList, recentActivities }) {
                     </div>
                 </div>
             </div>
-
             {/* Bảng hoạt động gần đây */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                 <h3 className="font-bold text-lg text-gray-900 mb-4">Hoạt động gần đây</h3>

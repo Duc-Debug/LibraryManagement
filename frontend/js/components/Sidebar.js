@@ -117,7 +117,6 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, setActiveTab }) {
                     </button>
                 </nav>
             </div>
-
             {/* Footer Sidebar */}
             <div className="pt-4 border-t border-gray-200">
                 <a

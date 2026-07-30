@@ -1,9 +1,6 @@
-// Thêm React nếu trong component sử dụng JSX hoặc React hooks khi chạy bằng ES Modules
 const { useState } = React;
-
 function AddBook({ isOpen, onClose, newBook, setNewBook, handleAddBook }) {
     if (!isOpen) return null;
-
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">

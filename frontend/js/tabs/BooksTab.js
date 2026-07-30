@@ -3,7 +3,6 @@ function BooksTab({ books, searchQuery, setSearchQuery, setShowAddBookModal }) {
         b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         b.author.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
@@ -18,7 +17,6 @@ function BooksTab({ books, searchQuery, setSearchQuery, setShowAddBookModal }) {
                     <i data-lucide="plus" className="w-4 h-4"></i> Thêm sách mới
                 </button>
             </div>
-
             <div className="mb-4">
                 <input
                     type="text"
@@ -28,7 +26,6 @@ function BooksTab({ books, searchQuery, setSearchQuery, setShowAddBookModal }) {
                     className="w-full md:w-80 px-4 py-2 border rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4c28]"
                 />
             </div>
-
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50 text-gray-700 font-semibold border-b">

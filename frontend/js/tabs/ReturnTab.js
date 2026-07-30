@@ -5,7 +5,6 @@ function ReturnTab({ borrowList, handleReturnBook }) {
                 <h2 className="text-2xl font-bold text-gray-900">Quản lý Trả sách</h2>
                 <p className="text-sm text-gray-600">Danh sách các phiếu đang mượn cần xác nhận trả</p>
             </div>
-
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50 text-gray-700 font-semibold border-b">

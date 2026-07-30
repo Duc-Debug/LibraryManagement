@@ -13,7 +13,6 @@ function MembersTab({ members, setShowAddMemberModal }) {
                     <i data-lucide="user-plus" className="w-4 h-4"></i> Thêm thành viên
                 </button>
             </div>
-
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50 text-gray-700 font-semibold border-b">
