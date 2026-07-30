@@ -54,7 +54,6 @@ async function handleLogin(event) {
         const data = await response.json();
 
         if (response.ok) {
-            // Lưu token vào localStorage với key 'token'
             localStorage.setItem('accessToken', data.accessToken);
             localStorage.setItem('tokenType', data.tokenType || 'Bearer');
 
@@ -64,7 +63,7 @@ async function handleLogin(event) {
                 fullName: data.fullName,
                 roles: data.roles
             }));
-            window.location.href = '/index.html';
+            window.location.replace('index.html');
         } else {
             errorAlert.innerText = data.message || "Tên đăng nhập hoặc mật khẩu không chính xác!";
             errorAlert.classList.remove('hidden');
@@ -87,8 +86,8 @@ async function handleLogout(event) {
 
     // Nếu không có token, xóa dữ liệu thừa và đưa về trang đăng nhập ngay
     if (!token) {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
+        clearAuthData();
+        window.location.replace('dang-nhap.html');
         return;
     }
 
@@ -105,8 +104,8 @@ async function handleLogout(event) {
         console.error('Logout Error:', error);
     } finally {
         // Dù API có lỗi hay không, Client VẪN BẮT BUỘC xóa token và thoát
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
+        clearAuthData();
+        window.location.replace('dang-nhap.html');
     }
 }
 
@@ -115,9 +114,10 @@ async function handleLogout(event) {
  * Đặt hàm này ở đầu các trang bảo mật để chặn người dùng chưa đăng nhập.
  */
 function requireAuth() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
-        window.location.href = '/login.html';
+        clearAuthData();
+        window.location.replace('dang-nhap.html');
     }
 }
 /**
@@ -125,6 +125,7 @@ function requireAuth() {
  */
 function clearAuthData() {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
     localStorage.removeItem('tokenType');
     localStorage.removeItem('currentUser');
 }
