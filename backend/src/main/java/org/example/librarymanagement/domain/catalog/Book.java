@@ -1,10 +1,10 @@
-package org.example.librarymanagement.domain.entity;
+package org.example.librarymanagement.domain.catalog;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.shared.exceptions.DomainException;
 public class Book {
     private UUID bookId;
     private String title;

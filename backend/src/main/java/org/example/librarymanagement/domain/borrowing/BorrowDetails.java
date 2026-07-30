@@ -1,7 +1,8 @@
-package org.example.librarymanagement.domain.entity;
-import java.util.UUID;
+package org.example.librarymanagement.domain.borrowing;
 import java.time.LocalDateTime;
-import org.example.librarymanagement.domain.exceptions.DomainException;
+import java.util.UUID;
+
+import org.example.librarymanagement.domain.shared.exceptions.DomainException;
 public class BorrowDetails {
     private UUID id;
     private UUID borrowSlipId;

@@ -1,11 +1,10 @@
-package org.example.librarymanagement.domain.entity;
+package org.example.librarymanagement.domain.reader;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.example.librarymanagement.domain.enums.card_status;
-import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.shared.exceptions.DomainException;
 
 public class readers {
 

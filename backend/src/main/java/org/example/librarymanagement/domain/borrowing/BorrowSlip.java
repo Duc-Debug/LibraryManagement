@@ -1,9 +1,9 @@
-package org.example.librarymanagement.domain.entity;
+package org.example.librarymanagement.domain.borrowing;
 
 import java.time.LocalDateTime;
 
 import org.example.librarymanagement.domain.enums.BorrowSlip_Status;
-import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.shared.exceptions.DomainException;
 
 public class BorrowSlip {
 

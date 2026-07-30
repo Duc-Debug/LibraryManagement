@@ -1,6 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.user;
 
-import org.example.librarymanagement.domain.entity.User;
+import org.example.librarymanagement.domain.auth.User;
 import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
 import org.springframework.stereotype.Component;
 

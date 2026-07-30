@@ -4,8 +4,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.example.librarymanagement.domain.entity.Role;
-import org.example.librarymanagement.domain.entity.User;
+
+import org.example.librarymanagement.domain.auth.Role;
+import org.example.librarymanagement.domain.auth.User;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

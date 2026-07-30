@@ -1,8 +1,9 @@
-package org.example.librarymanagement.domain.entity;
+package org.example.librarymanagement.domain.catalog;
 
-import java.util.UUID;
-import org.example.librarymanagement.domain.exceptions.DomainException;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.example.librarymanagement.domain.shared.exceptions.DomainException;
 public class Categories {
 private UUID id;
 private String name;

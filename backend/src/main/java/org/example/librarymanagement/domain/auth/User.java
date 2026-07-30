@@ -1,12 +1,12 @@
-package org.example.librarymanagement.domain.entity;
-
-import org.example.librarymanagement.domain.exceptions.DomainException;
+package org.example.librarymanagement.domain.auth;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import org.example.librarymanagement.domain.shared.exceptions.DomainException;
 
 public class User {
 

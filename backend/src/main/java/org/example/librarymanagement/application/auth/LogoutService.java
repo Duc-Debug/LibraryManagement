@@ -4,17 +4,17 @@ import org.example.librarymanagement.port.inbound.auth.LogoutCommand;
 import org.example.librarymanagement.port.inbound.auth.LogoutResult;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
 import org.example.librarymanagement.port.outbound.auth.TokenBlacklistPort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j; // Import chuẩn của Lombok Slf4j
 
-@Slf4j // Lombok sẽ tự sinh biến 'log' chuẩn ở background
 @Service
 @RequiredArgsConstructor
 public class LogoutService implements LogoutUseCase {
 
-    // Không khai báo biến 'log' ở đây nữa!
+    private static final Logger log = LoggerFactory.getLogger(LogoutService.class);
 
     private final TokenBlacklistPort tokenBlacklistPort;
 

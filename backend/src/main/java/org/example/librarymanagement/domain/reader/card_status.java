@@ -1,4 +1,4 @@
-package org.example.librarymanagement.domain.enums;
+package org.example.librarymanagement.domain.reader;
 
 public enum card_status {
     ACTIVE("Active"), LOCKED("Locked"), EXPIRED("Expired");

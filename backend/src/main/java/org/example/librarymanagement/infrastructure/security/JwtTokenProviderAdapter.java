@@ -1,17 +1,19 @@
 package org.example.librarymanagement.infrastructure.security;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import org.example.librarymanagement.domain.entity.Role;
-import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.port.outbound.auth.TokenProviderPort;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+
+import javax.crypto.SecretKey;
+
+import org.example.librarymanagement.domain.auth.Role;
+import org.example.librarymanagement.domain.auth.User;
+import org.example.librarymanagement.port.outbound.auth.TokenProviderPort;
+import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtTokenProviderAdapter implements TokenProviderPort {

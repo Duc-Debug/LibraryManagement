@@ -1,10 +1,11 @@
 package org.example.librarymanagement.infrastructure.persistence.user;
 
-import org.example.librarymanagement.domain.entity.Role;
-import org.example.librarymanagement.domain.entity.User;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.example.librarymanagement.domain.auth.Role;
+import org.example.librarymanagement.domain.auth.User;
 
 public final class UserPersistenceMapper {
 
