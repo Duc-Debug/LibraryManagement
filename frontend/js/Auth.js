@@ -55,7 +55,15 @@ async function handleLogin(event) {
 
         if (response.ok) {
             // Lưu token vào localStorage với key 'token'
-            localStorage.setItem('token', data.token);
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('tokenType', data.tokenType || 'Bearer');
+
+            localStorage.setItem('currentUser', JSON.stringify({
+                userId: data.userId,
+                username: data.username,
+                fullName: data.fullName,
+                roles: data.roles
+            }));
             window.location.href = '/index.html';
         } else {
             errorAlert.innerText = data.message || "Tên đăng nhập hoặc mật khẩu không chính xác!";
@@ -75,7 +83,7 @@ async function handleLogin(event) {
 async function handleLogout(event) {
     if (event) event.preventDefault();
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
 
     // Nếu không có token, xóa dữ liệu thừa và đưa về trang đăng nhập ngay
     if (!token) {
@@ -111,4 +119,12 @@ function requireAuth() {
     if (!token) {
         window.location.href = '/login.html';
     }
+}
+/**
+ * Hàm hỗ trợ: Xóa sạch dữ liệu Auth trong LocalStorage
+ */
+function clearAuthData() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('tokenType');
+    localStorage.removeItem('currentUser');
 }
