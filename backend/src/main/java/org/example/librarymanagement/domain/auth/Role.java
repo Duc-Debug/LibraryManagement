@@ -36,25 +36,19 @@ public class Role {
 
     @Override
     public boolean equals(Object object) {
-        if (this == object) {
-            return true;
-        }
-
-        if (!(object instanceof Role other)) {
-            return false;
-        }
-
-        if (id != null && other.id != null) {
-            return Objects.equals(id, other.id);
-        }
-
-        return name.equalsIgnoreCase(other.name);
+    if (this == object) {
+        return true;
     }
 
-    @Override
+    if (!(object instanceof Role other)) {
+        return false;
+    }
+
+    return name.equalsIgnoreCase(other.name);
+    }
+
+   @Override
     public int hashCode() {
-        return id != null
-                ? Objects.hash(id)
-                : Objects.hash(name.toUpperCase());
-    }
+    return Objects.hash(name.toUpperCase());
+}
 }

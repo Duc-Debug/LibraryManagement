@@ -5,6 +5,7 @@ import org.example.librarymanagement.infrastructure.web.GlobalExceptionHandler;
 import org.example.librarymanagement.port.inbound.auth.LoginCommand;
 import org.example.librarymanagement.port.inbound.auth.LoginResult;
 import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
+import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -33,12 +34,13 @@ class LoginControllerTest {
     @BeforeEach
     void setUp() {
         loginUseCase = mock(LoginUseCase.class);
+        LogoutUseCase logoutUseCase = mock(LogoutUseCase.class);
 
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new LoginController(loginUseCase))
+                .standaloneSetup(new AuthController(loginUseCase, logoutUseCase))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setValidator(validator)
                 .build();

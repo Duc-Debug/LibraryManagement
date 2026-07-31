@@ -3,37 +3,42 @@ package org.example.librarymanagement.application.auth;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.example.librarymanagement.domain.auth.Role;
 import org.example.librarymanagement.domain.auth.User;
 import org.example.librarymanagement.port.inbound.auth.LoginCommand;
 import org.example.librarymanagement.port.inbound.auth.LoginResult;
 import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
+import org.example.librarymanagement.port.outbound.auth.AccessTokenIssuerPort;
 import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
 import org.example.librarymanagement.port.outbound.auth.PasswordVerifierPort;
-import org.example.librarymanagement.port.outbound.auth.TokenProviderPort;
+import org.example.librarymanagement.port.outbound.auth.token.AccessTokenPayload;
+import org.example.librarymanagement.port.outbound.auth.token.IssuedAccessToken;
 
 public class LoginService implements LoginUseCase {
 
     private final LoadUserPort loadUserPort;
     private final PasswordVerifierPort passwordVerifierPort;
-    private final TokenProviderPort tokenProviderPort;
+    private final AccessTokenIssuerPort accessTokenIssuerPort;
 
     public LoginService(
             LoadUserPort loadUserPort,
             PasswordVerifierPort passwordVerifierPort,
-            TokenProviderPort tokenProviderPort
+            AccessTokenIssuerPort accessTokenIssuerPort
     ) {
         this.loadUserPort = Objects.requireNonNull(
                 loadUserPort,
                 "Load user port must not be null"
         );
+
         this.passwordVerifierPort = Objects.requireNonNull(
                 passwordVerifierPort,
                 "Password verifier port must not be null"
         );
-        this.tokenProviderPort = Objects.requireNonNull(
-                tokenProviderPort,
-                "Token provider port must not be null"
+
+        this.accessTokenIssuerPort = Objects.requireNonNull(
+                accessTokenIssuerPort,
+                "Access token issuer port must not be null"
         );
     }
 
@@ -58,20 +63,27 @@ public class LoginService implements LoginUseCase {
             throw new InvalidCredentialsException();
         }
 
-        String accessToken =
-                tokenProviderPort.generateAccessToken(user);
-
         Set<String> roleNames = user.getRoles()
                 .stream()
                 .map(Role::getName)
                 .collect(Collectors.toUnmodifiableSet());
+
+        AccessTokenPayload tokenPayload =
+                new AccessTokenPayload(
+                        user.getId(),
+                        user.getUsername(),
+                        roleNames
+                );
+
+        IssuedAccessToken issuedAccessToken =
+                accessTokenIssuerPort.issue(tokenPayload);
 
         return new LoginResult(
                 user.getId(),
                 user.getUsername(),
                 user.getFullName(),
                 roleNames,
-                accessToken
+                issuedAccessToken.tokenValue()
         );
     }
 
