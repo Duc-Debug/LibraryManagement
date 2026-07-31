@@ -31,7 +31,7 @@ public class ChangePasswordService implements ChangePasswordUseCase {
             return new ChangePasswordResult(false, "New password not equal confirm password");
         }
         Long userId = command.userId();
-        User user = userRepositoryPort.findByUserId(userId).orElseThrow(InvalidCredentialsException::new);
+        User user = userRepositoryPort.findById(userId).orElseThrow(InvalidCredentialsException::new);
         boolean isOldPasswordVaild = passwordVerifierPort.matches(command.oldPassword(), user.getPasswordHash());
         if (!isOldPasswordVaild) {
             return new ChangePasswordResult(false, "Current password not exactly");
