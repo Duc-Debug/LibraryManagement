@@ -1,9 +1,13 @@
 package org.example.librarymanagement.domain.entity;
 
-import java.util.Objects;
-
+import lombok.Builder;
+import lombok.Getter;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
+import java.util.Objects;
+
+@Getter
+@Builder
 public class Role {
 
     private final Long id;
@@ -17,21 +21,7 @@ public class Role {
 
         this.id = id;
         this.name = name.trim().toUpperCase();
-        this.description = description == null
-                ? null
-                : description.trim();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
+        this.description = description == null ? null : description.trim();
     }
 
     @Override
