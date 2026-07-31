@@ -1,112 +1,56 @@
 package org.example.librarymanagement.domain.entity;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
+
+@Getter
+@ToString
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SystemSetting {
 
     private UUID id;
     private String settingKey;
     private String settingValue;
     private String description;
-    private UUID userId;
-    private LocalDateTime createAt;
-    private LocalDateTime updateAt;
+    private UUID updatedByUserId; 
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public SystemSetting() {
+    public SystemSetting(String settingKey, String settingValue, String description, UUID updatedByUserId) {
+        this.settingKey = requireNotBlank(settingKey, "Setting key cannot be empty.");
+        this.settingValue = requireNotBlank(settingValue, "Setting value cannot be empty.");
+        this.description = requireNotBlank(description, "Description cannot be empty.");
+        this.updatedByUserId = updatedByUserId;
+        
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
-    public SystemSetting(UUID id,
-            String key,
-            String value,
-            String description,
-            UUID userId,
-            LocalDateTime createAt,
-            LocalDateTime updateAt) {
-
-        setId(id);
-        setSettingKey(key);
-        setSettingValue(value);
-        setDescription(description);
-        setUserId(userId);
-        setCreateAt(createAt);
-        setUpdateAt(updateAt);
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        if (id != null) {
-            throw new DomainException("Id must be greater than 0.");
+    // Phương thức cập nhật giá trị cài đặt
+    public void updateValue(String newValue, String newDescription, UUID userId) {
+        this.settingValue = requireNotBlank(newValue, "Setting value cannot be empty.");
+        if (newDescription != null && !newDescription.isBlank()) {
+            this.description = newDescription.trim();
         }
-        this.id = id;
+        this.updatedByUserId = userId;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        if (description == null || description.trim().isEmpty()) {
-            throw new DomainException("Description cannot be empty.");
+    private static String requireNotBlank(String value, String errorMessage) {
+        if (value == null || value.isBlank()) {
+            throw new DomainException(errorMessage);
         }
-        this.description = description;
-    }
-
-    @Override
-    public String toString() {
-        return "SystemSetting{" +
-                "id=" + id +
-                ", key=" + settingKey +
-                ", value='" + settingValue + '\'' +
-                ", description='" + description + '\'' +
-                '}';
-    }
-
-    public String getSettingKey() {
-        return settingKey;
-    }
-
-    public void setSettingKey(String settingKey) {
-        this.settingKey = settingKey;
-    }
-
-    public String getSettingValue() {
-        return settingValue;
-    }
-
-    public void setSettingValue(String settingValue) {
-        if (settingValue == null || settingValue.trim().isEmpty()) {
-            throw new DomainException("Setting value cannot be empty.");
-        }
-        this.settingValue = settingValue;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public LocalDateTime getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(LocalDateTime createAt) {
-        this.createAt = createAt;
-    }
-
-    public LocalDateTime getUpdateAt() {
-        return updateAt;
-    }
-
-    public void setUpdateAt(LocalDateTime updateAt) {
-        this.updateAt = updateAt;
+        return value.trim();
     }
 }
