@@ -32,15 +32,50 @@ public final class UserPersistenceMapper {
                 entity.getPasswordChangedAt(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
-                roles
-        );
+                roles);
     }
 
     private static Role toDomainRole(RoleJpaEntity entity) {
         return new Role(
                 entity.getId(),
                 entity.getName(),
-                entity.getDescription()
-        );
+                entity.getDescription());
+    }
+
+    public static UserJpaEntity toJpaEntity(User domain) {
+        if (domain == null) {
+            return null;
+        }
+        Set<RoleJpaEntity> roleEntities = domain.getRoles() != null
+                ? domain.getRoles().stream()
+                        .map(UserPersistenceMapper::toJpaEntityRole)
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
+                : new LinkedHashSet<>();
+
+        UserJpaEntity entity = new UserJpaEntity();
+        entity.setId(domain.getId());
+        entity.setUsername(domain.getUsername());
+        entity.setPasswordHash(domain.getPasswordHash());
+        entity.setFullName(domain.getFullName());
+        entity.setEmail(domain.getEmail());
+        entity.setPhone(domain.getPhone());
+        entity.setEnabled(domain.isEnabled());
+        entity.setPasswordChangedAt(domain.getPasswordChangedAt());
+        entity.setCreatedAt(domain.getCreatedAt());
+        entity.setUpdatedAt(domain.getUpdatedAt());
+        entity.setRoles(roleEntities);
+ 
+        return entity;
+    }
+
+    private static RoleJpaEntity toJpaEntityRole(Role domain){
+        if(domain ==null){
+            return null;
+        }
+        RoleJpaEntity entity = new RoleJpaEntity();
+        entity.setId(domain.getId());
+        entity.setName(domain.getName());
+        entity.setDescription(domain.getDescription());
+        return entity;
     }
 }
