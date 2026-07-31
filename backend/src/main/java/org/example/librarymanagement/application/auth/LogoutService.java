@@ -1,7 +1,7 @@
 package org.example.librarymanagement.application.auth;
 
-import org.example.librarymanagement.port.inbound.auth.LogoutCommand;
-import org.example.librarymanagement.port.inbound.auth.LogoutResult;
+import org.example.librarymanagement.port.dtos.auth.LogoutCommand;
+import org.example.librarymanagement.port.dtos.auth.LogoutResult;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
 import org.example.librarymanagement.port.outbound.auth.TokenBlacklistPort;
 import org.springframework.stereotype.Service;

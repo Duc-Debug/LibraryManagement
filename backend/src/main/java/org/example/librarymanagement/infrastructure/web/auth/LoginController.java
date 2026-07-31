@@ -1,6 +1,6 @@
 package org.example.librarymanagement.infrastructure.web.auth;
-import org.example.librarymanagement.port.inbound.auth.LoginCommand;
-import org.example.librarymanagement.port.inbound.auth.LoginResult;
+import org.example.librarymanagement.port.dtos.auth.LoginCommand;
+import org.example.librarymanagement.port.dtos.auth.LoginResult;
 import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

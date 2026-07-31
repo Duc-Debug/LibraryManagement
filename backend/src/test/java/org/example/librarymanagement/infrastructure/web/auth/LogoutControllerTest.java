@@ -1,8 +1,8 @@
 package org.example.librarymanagement.infrastructure.web.auth;
 
 import org.example.librarymanagement.infrastructure.web.GlobalExceptionHandler;
-import org.example.librarymanagement.port.inbound.auth.LogoutCommand;
-import org.example.librarymanagement.port.inbound.auth.LogoutResult;
+import org.example.librarymanagement.port.dtos.auth.LogoutCommand;
+import org.example.librarymanagement.port.dtos.auth.LogoutResult;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

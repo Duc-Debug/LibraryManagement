@@ -4,8 +4,8 @@ package org.example.librarymanagement.infrastructure.web.auth;
 import lombok.RequiredArgsConstructor;
 
 import org.example.librarymanagement.infrastructure.web.ErrorResponse;
-import org.example.librarymanagement.port.inbound.auth.LogoutCommand;
-import org.example.librarymanagement.port.inbound.auth.LogoutResult;
+import org.example.librarymanagement.port.dtos.auth.LogoutCommand;
+import org.example.librarymanagement.port.dtos.auth.LogoutResult;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -2,8 +2,8 @@ package org.example.librarymanagement.application.auth;
 
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.port.inbound.auth.LoginCommand;
-import org.example.librarymanagement.port.inbound.auth.LoginResult;
+import org.example.librarymanagement.port.dtos.auth.LoginCommand;
+import org.example.librarymanagement.port.dtos.auth.LoginResult;
 import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
 import org.example.librarymanagement.port.outbound.auth.PasswordVerifierPort;
 import org.example.librarymanagement.port.outbound.auth.TokenProviderPort;
