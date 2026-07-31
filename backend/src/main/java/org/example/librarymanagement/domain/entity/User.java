@@ -1,9 +1,8 @@
 package org.example.librarymanagement.domain.entity;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
 import java.time.LocalDateTime;
@@ -12,9 +11,8 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
-@Getter 
-@Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE) // Khóa Constructor này lại, ưu tiên tạo Object qua Constructor chuẩn hoặc Builder
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // Dành riêng cho ORM/JPA / Persistence Framework
 public class User {
 
     private Long id;
@@ -28,32 +26,11 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @Getter(AccessLevel.NONE) // Không sinh getRoles() mặc định, để dùng hàm getRoles() bọc unmodifiableSet ở bên dưới
     private final Set<Role> roles = new LinkedHashSet<>();
 
-    // 1. Constructor dùng khi tạo mới User (chưa có ID)
-    public User(String username, String passwordHash, String fullName, String email, String phone) {
-        this.username = requireNotBlank(username, "Username must not be blank");
-        this.passwordHash = requireNotBlank(passwordHash, "Password hash must not be blank");
-        this.fullName = requireNotBlank(fullName, "Full name must not be blank");
-        this.email = normalizeNullable(email);
-        this.phone = normalizeNullable(phone);
-        this.enabled = true;
-
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-    }
-
-    // 2. Constructor dùng khi Re-constitute (tái tạo lại User từ DB)
-    public User(Long id, String username, String passwordHash, String fullName, String email, String phone,
-                boolean enabled, LocalDateTime passwordChangedAt, LocalDateTime createdAt, LocalDateTime updatedAt,
-                Set<Role> roles) {
-        
-        if (id == null) {
-            throw new DomainException("User id must not be null");
-        }
-
+    private User(Long id, String username, String passwordHash, String fullName, String email, String phone,
+            boolean enabled, LocalDateTime passwordChangedAt, LocalDateTime createdAt, LocalDateTime updatedAt,
+            Set<Role> roles) {
         this.id = id;
         this.username = requireNotBlank(username, "Username must not be blank");
         this.passwordHash = requireNotBlank(passwordHash, "Password hash must not be blank");
@@ -70,7 +47,63 @@ public class User {
         }
     }
 
-    // --- DOMAIN BUSINESS LOGIC & POLICIES ---
+    /**
+     * Factory Method dùng cho Use Case: Tạo/Đăng ký người dùng mới
+     */
+    public static User createNew(
+            String username,
+            String passwordHash,
+            String fullName,
+            String email,
+            String phone) {
+        LocalDateTime now = LocalDateTime.now();
+        return new User(
+                null,
+                username,
+                passwordHash,
+                fullName,
+                email,
+                phone,
+                true,
+                null,
+                now,
+                now,
+                null);
+    }
+
+    /**
+     * Factory Method dùng cho Persistence Layer: Khôi phục Entity từ Database
+     */
+    public static User restore(
+            Long id,
+            String username,
+            String passwordHash,
+            String fullName,
+            String email,
+            String phone,
+            boolean enabled,
+            LocalDateTime passwordChangedAt,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            Set<Role> roles) {
+        if (id == null) {
+            throw new DomainException("User id must not be null when restoring");
+        }
+        return new User(
+                id,
+                username,
+                passwordHash,
+                fullName,
+                email,
+                phone,
+                enabled,
+                passwordChangedAt,
+                createdAt,
+                updatedAt,
+                roles);
+    }
+
+    // --- Domain Business Methods ---
 
     public void ensureCanLogin() {
         if (!enabled) {
@@ -93,7 +126,9 @@ public class User {
     }
 
     public void changePassword(String newPasswordHash) {
-        String validatedPasswordHash = requireNotBlank(newPasswordHash, "New password hash must not be blank");
+        String validatedPasswordHash = requireNotBlank(
+                newPasswordHash,
+                "New password hash must not be blank");
 
         if (validatedPasswordHash.equals(passwordHash)) {
             throw new DomainException("New password must be different from current password");
@@ -108,6 +143,7 @@ public class User {
         if (role == null) {
             throw new DomainException("Role must not be null");
         }
+
         if (roles.add(role)) {
             touch();
         }
@@ -123,14 +159,16 @@ public class User {
         if (isBlank(roleName)) {
             return false;
         }
-        return roles.stream().anyMatch(role -> role.getName().equalsIgnoreCase(roleName.trim()));
+
+        return roles.stream()
+                .anyMatch(role -> role.getName().equalsIgnoreCase(roleName.trim()));
     }
 
     public Set<Role> getRoles() {
         return Collections.unmodifiableSet(roles);
     }
 
-    // --- PRIVATE HELPER METHODS ---
+    // --- Helper Validation Methods ---
 
     private void touch() {
         updatedAt = LocalDateTime.now();
