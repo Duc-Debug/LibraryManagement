@@ -1,4 +1,6 @@
 package org.example.librarymanagement.infrastructure.web.auth;
+import org.example.librarymanagement.infrastructure.web.auth.dtos.LoginRequest;
+import org.example.librarymanagement.infrastructure.web.auth.dtos.LoginResponse;
 import org.example.librarymanagement.port.dtos.auth.LoginCommand;
 import org.example.librarymanagement.port.dtos.auth.LoginResult;
 import org.example.librarymanagement.port.inbound.auth.LoginUseCase;

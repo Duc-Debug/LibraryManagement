@@ -1,4 +1,4 @@
-package org.example.librarymanagement.infrastructure.web.auth;
+package org.example.librarymanagement.infrastructure.web.auth.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 
