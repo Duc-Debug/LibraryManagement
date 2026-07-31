@@ -1,7 +1,7 @@
 package org.example.librarymanagement.infrastructure.web;
 
 import org.example.librarymanagement.application.auth.InvalidCredentialsException;
-import org.example.librarymanagement.domain.shared.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

@@ -1,12 +1,12 @@
 package org.example.librarymanagement.application.auth;
 
-import java.time.LocalDateTime;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
-import org.example.librarymanagement.domain.auth.Role;
-import org.example.librarymanagement.domain.auth.User;
+import org.example.librarymanagement.domain.entity.Role;
+import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.port.inbound.auth.LoginCommand;
 import org.example.librarymanagement.port.inbound.auth.LoginResult;
 import org.example.librarymanagement.port.outbound.auth.AccessTokenIssuerPort;
@@ -19,12 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 
 class LoginServiceTest {
 
