@@ -17,4 +17,8 @@ public class BCryptPasswordVerifierAdapter implements PasswordVerifierPort {
     public boolean matches(String rawPassword, String passwordHash) {
         return passwordEncoder.matches(rawPassword, passwordHash);
     }
+    @Override
+    public String encode(String rawPassword){
+        return passwordEncoder.encode(rawPassword);
+    }
 }
