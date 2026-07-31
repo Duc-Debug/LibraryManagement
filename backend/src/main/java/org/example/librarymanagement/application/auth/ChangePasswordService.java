@@ -1,7 +1,6 @@
 package org.example.librarymanagement.application.auth;
 
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.infrastructure.persistence.user.UserJpaRepository;
 import org.example.librarymanagement.port.dtos.auth.ChangePasswordCommand;
 import org.example.librarymanagement.port.dtos.auth.ChangePasswordResult;
 import org.example.librarymanagement.port.inbound.auth.ChangePasswordUseCase;
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class ChangePasswordService implements ChangePasswordUseCase {
-
     private final LoadUserPort userRepositoryPort;
     private final SaveUserPort saveUserPort;
     private final PasswordVerifierPort passwordVerifierPort;
@@ -44,5 +42,4 @@ public class ChangePasswordService implements ChangePasswordUseCase {
         saveUserPort.save(user);
         return new ChangePasswordResult(true,"Password changed successfully");
     }
-
 }
