@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <script>
+  window.location.href = 'dang-nhap.html';
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang chủ - Quản lý Thư viện</title>
@@ -15,6 +19,12 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-[#f8f6f0]">
+<script>
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        window.location.replace('dang-nhap.html');
+    }
+</script>
 <div id="root"></div>
 
 <!-- Nhúng dữ liệu mẫu trước -->
@@ -34,3 +44,21 @@
 <script type="text/babel" src="js/App.js"></script>
 </body>
 </html>
+=======
+<!doctype html>
+<html lang="<!-- figma:lang -->">
+  <head>
+    <!-- figma:head-start -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hệ Thống Quản Lý Thư Viện</title>
+    <!-- figma:head-end -->
+  </head>
+  <body>
+    <!-- figma:body-start -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- figma:body-end -->
+  </body>
+</html>
+>>>>>>> cf9a704d2f219ae7bea0c329ba6c34beb24ba2d2
