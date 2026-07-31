@@ -4,24 +4,24 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.example.librarymanagement.domain.enums.card_status;
+import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
-public class readers {
+public class Readers {
 
     private UUID id;
     private String name;
     private String email;
     private String phoneNumber;
     private String address;
-    private card_status cardStatus;
+    private CardStatus cardStatus;
     private LocalDate cardIssuedAt;
     private LocalDate cardExpiryAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean isActive;
 
-    public readers(UUID id, String name, String email, String phoneNumber, String address, card_status cardStatus, LocalDate cardIssuedAt, LocalDate cardExpiryAt, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
+    public Readers(UUID id, String name, String email, String phoneNumber, String address, CardStatus cardStatus, LocalDate cardIssuedAt, LocalDate cardExpiryAt, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
         if (name == null || name.isEmpty()) {
             throw new DomainException("Name cannot be null or empty");
         }
@@ -70,7 +70,7 @@ public class readers {
         return address;
     }
 
-    public card_status getCardStatus() {
+    public CardStatus getCardStatus() {
         return cardStatus;
     }
 
