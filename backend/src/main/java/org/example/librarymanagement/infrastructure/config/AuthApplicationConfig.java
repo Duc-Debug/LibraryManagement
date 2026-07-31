@@ -15,19 +15,18 @@ import org.springframework.context.annotation.Configuration;
 public class AuthApplicationConfig {
 
     @Bean
-    LoginUseCase loginUseCase(
-            LoadUserPort loadUserPort,
-            PasswordVerifierPort passwordVerifierPort,
-            AccessTokenIssuerPort accessTokenIssuerPort
-    ) {
-        return new LoginService(
-                loadUserPort,
-                passwordVerifierPort,
-                accessTokenIssuerPort
-        );
-    }
-
-    @Bean
+LoginUseCase loginUseCase(
+        LoadUserPort loadUserPort,
+        PasswordVerifierPort passwordVerifierPort,
+        AccessTokenIssuerPort accessTokenIssuerPort
+) {
+    return new LoginService(
+            loadUserPort,
+            passwordVerifierPort,
+            accessTokenIssuerPort
+    );
+}
+     @Bean
     public LogoutUseCase logoutUseCase(
             TokenBlacklistPort tokenBlacklistPort
     ) {

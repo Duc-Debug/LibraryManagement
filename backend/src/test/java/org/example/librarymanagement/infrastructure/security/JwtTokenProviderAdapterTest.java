@@ -1,42 +1,38 @@
 package org.example.librarymanagement.infrastructure.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-
-import org.example.librarymanagement.port.outbound.auth.token.AccessTokenPayload;
-import org.example.librarymanagement.port.outbound.auth.token.IssuedAccessToken;
-import org.junit.jupiter.api.Test;
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.example.librarymanagement.domain.auth.Role;
+import org.example.librarymanagement.domain.auth.User;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class JwtAccessTokenAdapterTest {
+import org.junit.jupiter.api.Test;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+class JwtTokenProviderAdapterTest {
 
     private static final String SECRET =
             "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=";
 
     @Test
     void generatesTokenWithExpectedClaims() {
-        JwtAccessTokenAdapter adapter = new JwtAccessTokenAdapter(
+        JwtTokenProviderAdapter adapter = new JwtTokenProviderAdapter(
                 new JwtProperties(SECRET, 3_600_000)
         );
 
-        IssuedAccessToken issuedToken = adapter.issue(payload());
-        String token = issuedToken.tokenValue();
+        String token = adapter.generateAccessToken(user());
 
         assertNotNull(token);
         assertFalse(token.isBlank());
-        assertNotNull(issuedToken.tokenId());
-        assertNotNull(issuedToken.issuedAt());
-        assertNotNull(issuedToken.expiresAt());
 
         Claims claims = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET)))
@@ -56,7 +52,7 @@ class JwtAccessTokenAdapterTest {
     void rejectsBlankSecret() {
         assertThrows(
                 IllegalStateException.class,
-                () -> new JwtAccessTokenAdapter(new JwtProperties(" ", 1000))
+                () -> new JwtTokenProviderAdapter(new JwtProperties(" ", 1000))
         );
     }
 
@@ -64,7 +60,7 @@ class JwtAccessTokenAdapterTest {
     void rejectsInvalidBase64Secret() {
         assertThrows(
                 IllegalStateException.class,
-                () -> new JwtAccessTokenAdapter(
+                () -> new JwtTokenProviderAdapter(
                         new JwtProperties("not base64", 1000)
                 )
         );
@@ -74,27 +70,36 @@ class JwtAccessTokenAdapterTest {
     void rejectsNonPositiveExpiration() {
         assertThrows(
                 IllegalStateException.class,
-                () -> new JwtAccessTokenAdapter(new JwtProperties(SECRET, 0))
+                () -> new JwtTokenProviderAdapter(new JwtProperties(SECRET, 0))
         );
     }
 
     @Test
-    void rejectsNullPayload() {
-        JwtAccessTokenAdapter adapter = new JwtAccessTokenAdapter(
+    void rejectsNullUser() {
+        JwtTokenProviderAdapter adapter = new JwtTokenProviderAdapter(
                 new JwtProperties(SECRET, 1000)
         );
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> adapter.issue(null)
+                () -> adapter.generateAccessToken(null)
         );
     }
 
-    private AccessTokenPayload payload() {
-        return new AccessTokenPayload(
+    private User user() {
+        LocalDateTime now = LocalDateTime.now();
+        return new User(
                 1L,
                 "alice",
-                Set.of("ADMIN")
+                "$2a$10$passwordHash",
+                "Alice Reader",
+                "alice@example.test",
+                "0123456789",
+                true,
+                null,
+                now,
+                now,
+                Set.of(new Role(1L, "admin", "Admin"))
         );
     }
 }
