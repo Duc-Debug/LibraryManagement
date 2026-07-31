@@ -26,7 +26,7 @@ private final UserPersistenceMapper userPersistenceMapper;
                 .map(UserPersistenceMapper::toDomain);
     }
     @Override
-    public Optional<User> findByUserId(Long id){
+    public Optional<User> findById(Long id){
         return userJpaRepository
             .findById(id)
             .map(UserPersistenceMapper::toDomain);

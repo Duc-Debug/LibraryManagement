@@ -6,5 +6,5 @@ import java.util.Optional;
 public interface LoadUserPort {
 
     Optional<User> findByUsername(String username);
-    Optional<User> findByUserId(Long id);
+    Optional<User> findById(Long id);
 }

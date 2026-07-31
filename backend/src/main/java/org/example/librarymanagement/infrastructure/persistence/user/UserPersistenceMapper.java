@@ -2,10 +2,13 @@ package org.example.librarymanagement.infrastructure.persistence.user;
 
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
+import org.springframework.stereotype.Component;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Component
 public final class UserPersistenceMapper {
 
     private UserPersistenceMapper() {
