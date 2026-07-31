@@ -1,3 +1,4 @@
+import { login } from "@/api/authApi";
 import { useState } from "react";
 
 interface LoginPageProps {
@@ -9,17 +10,37 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
-    if (!username || !password) {
-      setError("Vui lòng nhập đầy đủ thông tin.");
-      return;
-    }
-    if (username === "admin" && password === "admin") {
-      onLogin();
-    } else {
-      setError("Tên đăng nhập hoặc mật khẩu không đúng.");
-    }
-  };
+ const handleLogin = async () => {
+  if (!username || !password) {
+    setError("Vui lòng nhập đầy đủ thông tin.");
+    return;
+  }
+
+  setError("");
+
+  try {
+  const loginResponse = await login({
+    username: username.trim(),
+    password: password.trim(),
+  });
+
+  localStorage.setItem("accessToken", loginResponse.accessToken);
+  localStorage.setItem("tokenType", loginResponse.tokenType || "Bearer");
+  localStorage.setItem(
+    "currentUser",
+    JSON.stringify({
+      userId: loginResponse.userId,
+      username: loginResponse.username,
+      fullName: loginResponse.fullName,
+      roles: loginResponse.roles,
+    })
+  );
+
+  onLogin();
+} catch (error) {
+  setError("Tên đăng nhập hoặc mật khẩu không đúng.");
+}
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#f0ede6" }}>

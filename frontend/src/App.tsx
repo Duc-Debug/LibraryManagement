@@ -8,16 +8,35 @@ import BooksPage from "@/pages/BooksPage";
 import MembersPage from "@/pages/MembersPage";
 import BorrowPage from "@/pages/BorrowPage";
 import ReturnPage from "@/pages/ReturnPage";
+import { logout as logoutRequest } from "@/api/authApi";
 
 export default function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(() => {
+  return Boolean(localStorage.getItem("accessToken"));
+});
   const [page, setPage] = useState<Page>("dashboard");
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
   const [books, setBooks] = useState<Book[]>(INITIAL_BOOKS);
   const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
   const [records, setRecords] = useState<BorrowRecord[]>(INITIAL_BORROW_RECORDS);
+const handleLogout = async () => {
+  const accessToken = localStorage.getItem("accessToken");
 
+  try {
+    if (accessToken) {
+      await logoutRequest(accessToken);
+    }
+  } catch (error) {
+    console.error("Logout failed:", error);
+  } finally {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("tokenType");
+    localStorage.removeItem("currentUser");
+
+    setLoggedIn(false);
+  }
+};
   if (!loggedIn) {
     return <LoginPage onLogin={() => setLoggedIn(true)} />;
   }
@@ -56,13 +75,14 @@ export default function App() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "#f0ede6" }}>
-      <Sidebar
-        page={page}
-        setPage={setPage}
-        expanded={sidebarExpanded}
-        toggleExpanded={() => setSidebarExpanded((v) => !v)}
-        onLogout={() => setLoggedIn(false)}
-      />
+     <Sidebar
+  page={page}
+  setPage={setPage}
+  expanded={sidebarExpanded}
+  toggleExpanded={() => setSidebarExpanded((v) => !v)}
+  onLogout={handleLogout}
+/>
+      
       <main className="flex-1 overflow-y-auto">
         {renderPage()}
       </main>
