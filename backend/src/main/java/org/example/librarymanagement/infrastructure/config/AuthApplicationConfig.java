@@ -5,9 +5,10 @@ import org.example.librarymanagement.application.auth.LogoutService;
 import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
 import org.example.librarymanagement.port.outbound.auth.AccessTokenIssuerPort;
+import org.example.librarymanagement.port.outbound.auth.AccessTokenRevocationPort;
+import org.example.librarymanagement.port.outbound.auth.AccessTokenVerifierPort;
 import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
 import org.example.librarymanagement.port.outbound.auth.PasswordVerifierPort;
-import org.example.librarymanagement.port.outbound.auth.TokenBlacklistPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,10 +27,14 @@ LoginUseCase loginUseCase(
             accessTokenIssuerPort
     );
 }
-     @Bean
+    @Bean
     public LogoutUseCase logoutUseCase(
-            TokenBlacklistPort tokenBlacklistPort
-    ) {
-        return new LogoutService(tokenBlacklistPort);
-    }
+        AccessTokenVerifierPort accessTokenVerifierPort,
+        AccessTokenRevocationPort accessTokenRevocationPort
+) {
+    return new LogoutService(
+            accessTokenVerifierPort,
+            accessTokenRevocationPort
+    );
+}
 }

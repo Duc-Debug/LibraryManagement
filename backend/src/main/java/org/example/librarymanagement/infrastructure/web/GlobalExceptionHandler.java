@@ -2,6 +2,8 @@ package org.example.librarymanagement.infrastructure.web;
 
 import org.example.librarymanagement.application.auth.InvalidCredentialsException;
 import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.infrastructure.web.auth.InvalidAuthorizationHeaderException;
+import org.example.librarymanagement.port.outbound.auth.token.InvalidAccessTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -9,8 +11,21 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(InvalidAuthorizationHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAuthorizationHeader(
+            InvalidAuthorizationHeaderException exception
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(
+                        "INVALID_AUTHORIZATION_HEADER",
+                        exception.getMessage()
+                ));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException() {
@@ -33,6 +48,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.of("INVALID_CREDENTIALS", exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidAccessTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAccessToken(
+            InvalidAccessTokenException exception
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of("INVALID_TOKEN", exception.getMessage()));
     }
 
     @ExceptionHandler(DomainException.class)
@@ -59,5 +83,4 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of("INTERNAL_ERROR", "Unexpected server error"));
     }
-    
 }

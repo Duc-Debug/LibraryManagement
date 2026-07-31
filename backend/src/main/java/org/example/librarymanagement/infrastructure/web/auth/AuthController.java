@@ -1,12 +1,10 @@
 package org.example.librarymanagement.infrastructure.web.auth;
 
-import org.example.librarymanagement.infrastructure.web.ErrorResponse;
 import org.example.librarymanagement.port.inbound.auth.LoginCommand;
 import org.example.librarymanagement.port.inbound.auth.LoginResult;
 import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
 import org.example.librarymanagement.port.inbound.auth.LogoutCommand;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -54,42 +52,39 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(
-            @RequestHeader(
-                    value = "Authorization",
-                    required = false
-            ) String authorizationHeader
-    ) {
-        if (authorizationHeader == null
-                || !authorizationHeader.startsWith("Bearer ")) {
+  @PostMapping("/logout")
+public ResponseEntity<Void> logout(
+        @RequestHeader(
+                value = "Authorization",
+                required = false
+        ) String authorizationHeader
+) {
+    String token = extractBearerToken(authorizationHeader);
 
-            ErrorResponse errorResponse = ErrorResponse.of(
-                    "validation",
-                    "Invalid Authorization header. Expected format: 'Bearer <token>'"
-            );
+    LogoutCommand command = new LogoutCommand(token);
 
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(errorResponse);
-        }
+    logoutUseCase.logout(command);
 
-        String token = authorizationHeader
-                .substring(7)
-                .trim();
-
-        if (token.isBlank()) {
-            ErrorResponse errorResponse = ErrorResponse.of(
-                    "validation",
-                    "Bearer token cannot be empty."
-            );
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(errorResponse);
-        }
-        LogoutCommand command = new LogoutCommand(token);  
-        logoutUseCase.logout(command);
-        return ResponseEntity.noContent().build();
+    return ResponseEntity.noContent().build();
+}
+private String extractBearerToken(String authorizationHeader) {
+    if (authorizationHeader == null
+            || !authorizationHeader.startsWith("Bearer ")) {
+        throw new InvalidAuthorizationHeaderException(
+                "Invalid Authorization header. Expected format: 'Bearer <token>'"
+        );
     }
+
+    String token = authorizationHeader
+            .substring(7)
+            .trim();
+
+    if (token.isBlank()) {
+        throw new InvalidAuthorizationHeaderException(
+                "Bearer token cannot be empty."
+        );
+    }
+
+    return token;
+}
 }

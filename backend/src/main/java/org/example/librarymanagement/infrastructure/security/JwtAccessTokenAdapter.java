@@ -12,6 +12,7 @@ import javax.crypto.SecretKey;
 import org.example.librarymanagement.port.outbound.auth.AccessTokenIssuerPort;
 import org.example.librarymanagement.port.outbound.auth.AccessTokenVerifierPort;
 import org.example.librarymanagement.port.outbound.auth.token.AccessTokenPayload;
+import org.example.librarymanagement.port.outbound.auth.token.AccessTokenVerificationResult;
 import org.example.librarymanagement.port.outbound.auth.token.ExpiredAccessTokenException;
 import org.example.librarymanagement.port.outbound.auth.token.InvalidAccessTokenException;
 import org.example.librarymanagement.port.outbound.auth.token.IssuedAccessToken;
@@ -93,6 +94,18 @@ public class JwtAccessTokenAdapter
                 expiresAt
         );
     }
+    @Override
+    public AccessTokenVerificationResult verifyOrReject(String token) {
+    try {
+        return new AccessTokenVerificationResult.Valid(
+                verify(token)
+        );
+    } catch (InvalidAccessTokenException exception) {
+        return new AccessTokenVerificationResult.Rejected(
+                exception.getMessage()
+        );
+    }
+}
 
     @Override
     public VerifiedAccessToken verify(String token) {
