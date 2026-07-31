@@ -5,5 +5,5 @@ public interface PasswordVerifierPort {
             String rawPassword,
             String passwordHash
     );
-    
+    String encode(String rawPassword);
 }
