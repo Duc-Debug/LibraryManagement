@@ -9,6 +9,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#f8f6f0] flex items-center justify-center min-h-screen">
+<script>
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+        window.location.replace('index.html');
+    }
+</script>
 
 <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-md">
     <div class="text-center">
