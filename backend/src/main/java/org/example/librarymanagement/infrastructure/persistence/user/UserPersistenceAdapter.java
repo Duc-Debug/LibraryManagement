@@ -23,4 +23,10 @@ public class UserPersistenceAdapter implements LoadUserPort {
                 .findByUsername(username)
                 .map(UserPersistenceMapper::toDomain);
     }
+    @Override
+    public Optional<User> findByUserId(Long id){
+        return userJpaRepository
+            .findById(id)
+            .map(UserPersistenceMapper::toDomain);
+    }
 }
