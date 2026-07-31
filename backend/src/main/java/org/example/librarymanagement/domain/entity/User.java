@@ -1,5 +1,8 @@
 package org.example.librarymanagement.domain.entity;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
 import java.time.LocalDateTime;
@@ -8,6 +11,8 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // Dành riêng cho ORM/JPA / Persistence Framework
 public class User {
 
     private Long id;
@@ -22,33 +27,54 @@ public class User {
     private LocalDateTime updatedAt;
 
     private final Set<Role> roles = new LinkedHashSet<>();
-    public User(
+
+    private User(Long id, String username, String passwordHash, String fullName, String email, String phone,
+            boolean enabled, LocalDateTime passwordChangedAt, LocalDateTime createdAt, LocalDateTime updatedAt,
+            Set<Role> roles) {
+        this.id = id;
+        this.username = requireNotBlank(username, "Username must not be blank");
+        this.passwordHash = requireNotBlank(passwordHash, "Password hash must not be blank");
+        this.fullName = requireNotBlank(fullName, "Full name must not be blank");
+        this.email = normalizeNullable(email);
+        this.phone = normalizeNullable(phone);
+        this.enabled = enabled;
+        this.passwordChangedAt = passwordChangedAt;
+        this.createdAt = Objects.requireNonNull(createdAt, "Created time must not be null");
+        this.updatedAt = Objects.requireNonNull(updatedAt, "Updated time must not be null");
+
+        if (roles != null) {
+            this.roles.addAll(roles);
+        }
+    }
+
+    /**
+     * Factory Method dùng cho Use Case: Tạo/Đăng ký người dùng mới
+     */
+    public static User createNew(
             String username,
             String passwordHash,
             String fullName,
             String email,
-            String phone
-    ) {
-        this.username = requireNotBlank(username, "Username must not be blank");
-        this.passwordHash = requireNotBlank(
-                passwordHash,
-                "Password hash must not be blank"
-        );
-        this.fullName = requireNotBlank(
-                fullName,
-                "Full name must not be blank"
-        );
-
-        this.email = normalizeNullable(email);
-        this.phone = normalizeNullable(phone);
-        this.enabled = true;
-
+            String phone) {
         LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
+        return new User(
+                null,
+                username,
+                passwordHash,
+                fullName,
+                email,
+                phone,
+                true,
+                null,
+                now,
+                now,
+                null);
     }
 
-    public User(
+    /**
+     * Factory Method dùng cho Persistence Layer: Khôi phục Entity từ Database
+     */
+    public static User restore(
             Long id,
             String username,
             String passwordHash,
@@ -59,43 +85,25 @@ public class User {
             LocalDateTime passwordChangedAt,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            Set<Role> roles
-    ) {
+            Set<Role> roles) {
         if (id == null) {
-            throw new DomainException("User id must not be null");
+            throw new DomainException("User id must not be null when restoring");
         }
-
-        this.id = id;
-        this.username = requireNotBlank(
+        return new User(
+                id,
                 username,
-                "Username must not be blank"
-        );
-        this.passwordHash = requireNotBlank(
                 passwordHash,
-                "Password hash must not be blank"
-        );
-        this.fullName = requireNotBlank(
                 fullName,
-                "Full name must not be blank"
-        );
-
-        this.email = normalizeNullable(email);
-        this.phone = normalizeNullable(phone);
-        this.enabled = enabled;
-        this.passwordChangedAt = passwordChangedAt;
-        this.createdAt = Objects.requireNonNull(
+                email,
+                phone,
+                enabled,
+                passwordChangedAt,
                 createdAt,
-                "Created time must not be null"
-        );
-        this.updatedAt = Objects.requireNonNull(
                 updatedAt,
-                "Updated time must not be null"
-        );
-
-        if (roles != null) {
-            this.roles.addAll(roles);
-        }
+                roles);
     }
+
+    // --- Domain Business Methods ---
 
     public void ensureCanLogin() {
         if (!enabled) {
@@ -120,13 +128,10 @@ public class User {
     public void changePassword(String newPasswordHash) {
         String validatedPasswordHash = requireNotBlank(
                 newPasswordHash,
-                "New password hash must not be blank"
-        );
+                "New password hash must not be blank");
 
         if (validatedPasswordHash.equals(passwordHash)) {
-            throw new DomainException(
-                    "New password must be different from current password"
-            );
+            throw new DomainException("New password must be different from current password");
         }
 
         passwordHash = validatedPasswordHash;
@@ -156,23 +161,23 @@ public class User {
         }
 
         return roles.stream()
-                .anyMatch(role ->
-                        role.getName().equalsIgnoreCase(roleName.trim())
-                );
+                .anyMatch(role -> role.getName().equalsIgnoreCase(roleName.trim()));
     }
+
+    public Set<Role> getRoles() {
+        return Collections.unmodifiableSet(roles);
+    }
+
+    // --- Helper Validation Methods ---
 
     private void touch() {
         updatedAt = LocalDateTime.now();
     }
 
-    private static String requireNotBlank(
-            String value,
-            String errorMessage
-    ) {
+    private static String requireNotBlank(String value, String errorMessage) {
         if (isBlank(value)) {
             throw new DomainException(errorMessage);
         }
-
         return value.trim();
     }
 
@@ -182,49 +187,5 @@ public class User {
 
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public LocalDateTime getPasswordChangedAt() {
-        return passwordChangedAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public Set<Role> getRoles() {
-        return Collections.unmodifiableSet(roles);
     }
 }

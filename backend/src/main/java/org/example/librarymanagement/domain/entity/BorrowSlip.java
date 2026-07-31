@@ -1,10 +1,19 @@
 package org.example.librarymanagement.domain.entity;
 
-import java.time.LocalDateTime;
-
-import org.example.librarymanagement.domain.enums.BorrowSlip_Status;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+@Getter
+@ToString
+@Builder
+@NoArgsConstructor
 public class BorrowSlip {
 
     private Long id;
@@ -12,141 +21,77 @@ public class BorrowSlip {
     private LocalDateTime borrowDate;
     private LocalDateTime dueDate;
     private LocalDateTime returnDate;
-    private BorrowSlip_Status status;
+    private BorrowSlipStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public BorrowSlip() {
-    }
-
-    public BorrowSlip(Long id,
-            Long readerId,
-            LocalDateTime borrowDate,
-            LocalDateTime dueDate,
-            LocalDateTime returnDate,
-            BorrowSlip_Status status,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt) {
-
-        setId(id);
-        setReaderId(readerId);
-        setBorrowDate(borrowDate);
-        setDueDate(dueDate);
-        setReturnDate(returnDate);
-        setStatus(status);
-        setCreatedAt(createdAt);
-        setUpdatedAt(updatedAt);
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        if (id != null && id <= 0) {
-            throw new DomainException("Id must be greater than 0.");
-        }
-        this.id = id;
-    }
-
-    public Long getReaderId() {
-        return readerId;
-    }
-
-    public void setReaderId(Long readerId) {
+    // 1. Constructor dùng khi tạo phiếu mượn mới (Tạo mượn sách)
+    public BorrowSlip(Long readerId, LocalDateTime dueDate) {
         if (readerId == null || readerId <= 0) {
             throw new DomainException("Reader ID must be greater than 0.");
         }
-        this.readerId = readerId;
-    }
-
-    public LocalDateTime getBorrowDate() {
-        return borrowDate;
-    }
-
-    public void setBorrowDate(LocalDateTime borrowDate) {
-        if (borrowDate == null) {
-            throw new DomainException("Borrow date cannot be null.");
-        }
-        this.borrowDate = borrowDate;
-    }
-
-    public LocalDateTime getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(LocalDateTime dueDate) {
-        if (dueDate == null) {
-            throw new DomainException("Due date cannot be null.");
-        }
-
-        if (borrowDate != null && dueDate.isBefore(borrowDate)) {
+        
+        LocalDateTime now = LocalDateTime.now();
+        if (dueDate == null || dueDate.isBefore(now)) {
             throw new DomainException("Due date must be after borrow date.");
         }
 
+        this.readerId = readerId;
+        this.borrowDate = now;
         this.dueDate = dueDate;
+        this.status = BorrowSlipStatus.BORROWING;
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
-    public LocalDateTime getReturnDate() {
-        return returnDate;
-    }
-
-    public void setReturnDate(LocalDateTime returnDate) {
-
-        if (returnDate != null
-                && borrowDate != null
-                && returnDate.isBefore(borrowDate)) {
-
+    // 2. Constructor Re-constitute từ DB (Validation trực tiếp, không dùng Setter)
+    public BorrowSlip(Long id, Long readerId, LocalDateTime borrowDate, LocalDateTime dueDate,
+                      LocalDateTime returnDate, BorrowSlipStatus status, 
+                      LocalDateTime createdAt, LocalDateTime updatedAt) {
+        
+        if (id != null && id <= 0) {
+            throw new DomainException("Id must be greater than 0.");
+        }
+        if (readerId == null || readerId <= 0) {
+            throw new DomainException("Reader ID must be greater than 0.");
+        }
+        if (borrowDate == null) {
+            throw new DomainException("Borrow date cannot be null.");
+        }
+        if (dueDate == null || dueDate.isBefore(borrowDate)) {
+            throw new DomainException("Due date must be after borrow date.");
+        }
+        if (returnDate != null && returnDate.isBefore(borrowDate)) {
             throw new DomainException("Return date cannot be before borrow date.");
         }
 
+        this.id = id;
+        this.readerId = readerId;
+        this.borrowDate = borrowDate;
+        this.dueDate = dueDate;
         this.returnDate = returnDate;
+        this.status = Objects.requireNonNull(status, "Status cannot be null.");
+        this.createdAt = Objects.requireNonNull(createdAt, "Created time cannot be null.");
+        this.updatedAt = Objects.requireNonNull(updatedAt, "Updated time cannot be null.");
     }
 
-    public BorrowSlip_Status getStatus() {
-        return status;
-    }
+    // --- DOMAIN BUSINESS METHODS (Setter) ---
 
-    public void setStatus(BorrowSlip_Status status) {
-        if (status == null) {
-            throw new DomainException("Status cannot be null.");
+    // Hành động Trả sách
+    public void markAsReturned() {
+        if (this.status == BorrowSlipStatus.RETURNED) {
+            throw new DomainException("Book has already been returned.");
         }
-        this.status = status;
+        this.returnDate = LocalDateTime.now();
+        this.status = BorrowSlipStatus.RETURNED;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        if (createdAt == null) {
-            throw new DomainException("Created time cannot be null.");
+    // Kiểm tra xem phiếu mượn đã quá hạn chưa
+    public boolean isOverdue() {
+        if (status == BorrowSlipStatus.RETURNED) {
+            return false;
         }
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        if (updatedAt == null) {
-            throw new DomainException("Updated time cannot be null.");
-        }
-        this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "BorrowSlip{"
-                + "id=" + id
-                + ", readerId=" + readerId
-                + ", borrowDate=" + borrowDate
-                + ", dueDate=" + dueDate
-                + ", returnDate=" + returnDate
-                + ", status=" + status
-                + ", createdAt=" + createdAt
-                + ", updatedAt=" + updatedAt
-                + '}';
+        return LocalDateTime.now().isAfter(dueDate);
     }
 }

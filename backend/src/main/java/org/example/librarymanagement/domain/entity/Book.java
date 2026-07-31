@@ -1,12 +1,24 @@
 package org.example.librarymanagement.domain.entity;
 
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.example.librarymanagement.domain.exceptions.DomainException;
+
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
-import org.example.librarymanagement.domain.exceptions.DomainException;
+@Getter
+@ToString
+@Builder
+@NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Book {
-    private UUID bookId;
+
+    @EqualsAndHashCode.Include
+    private UUID id;
     private String title;
     private String author;
     private String isbn;
@@ -17,30 +29,61 @@ public class Book {
     private String shelfLocation;
     private int totalQuantity;
     private int availableQuantity;
-    public UUID categoryId;
+    private UUID categoryId;
     private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Book() {
-        this.bookId = UUID.randomUUID();
+    // 1. Constructor tạo mới sách
+    public Book(String title, String author, String isbn, int totalQuantity, UUID categoryId) {
+        this.id = UUID.randomUUID();
+        this.title = requireNotBlank(title, "Title cannot be null or empty");
+        this.author = requireNotBlank(author, "Author cannot be null or empty");
+        this.isbn = requireNotBlank(isbn, "ISBN cannot be null or empty");
+        
+        if (totalQuantity < 0) {
+            throw new DomainException("Total quantity cannot be negative");
+        }
+        if (categoryId == null) {
+            throw new DomainException("Category ID cannot be null");
+        }
+
+        this.totalQuantity = totalQuantity;
+        this.availableQuantity = totalQuantity;
+        this.categoryId = categoryId;
         this.active = true;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
     }
-    public Book(UUID id, String title, String author, String isbn, String description, 
-                String coverImageUrl, String publisher, Integer publishedYear, 
-                String shelfLocation, int totalQuantity, int availableQuantity, 
+
+    // 2. Constructor Re-constitute từ Database
+    public Book(UUID id, String title, String author, String isbn, String description,
+                String coverImageUrl, String publisher, Integer publishedYear,
+                String shelfLocation, int totalQuantity, int availableQuantity,
                 UUID categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.bookId = id != null ? id : UUID.randomUUID();
-        this.title = title;
-        this.author = author;
-        this.isbn = isbn;
+
+        this.id = id != null ? id : UUID.randomUUID();
+        this.title = requireNotBlank(title, "Title cannot be null or empty");
+        this.author = requireNotBlank(author, "Author cannot be null or empty");
+        this.isbn = requireNotBlank(isbn, "ISBN cannot be null or empty");
         this.description = description;
         this.coverImageUrl = coverImageUrl;
         this.publisher = publisher;
         this.publishedYear = publishedYear;
         this.shelfLocation = shelfLocation;
+
+        if (totalQuantity < 0) {
+            throw new DomainException("Total quantity cannot be negative");
+        }
+        if (availableQuantity < 0 || availableQuantity > totalQuantity) {
+            throw new DomainException("Available quantity must be between 0 and total quantity");
+        }
+        if (categoryId == null) {
+            throw new DomainException("Category ID cannot be null");
+        }
+
         this.totalQuantity = totalQuantity;
         this.availableQuantity = availableQuantity;
         this.categoryId = categoryId;
@@ -48,6 +91,9 @@ public class Book {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+
+    // --- DOMAIN BUSINESS METHODS ---
+
     public boolean isAvailableForBorrow() {
         return this.active && this.availableQuantity > 0;
     }
@@ -67,105 +113,23 @@ public class Book {
         this.availableQuantity++;
         this.updatedAt = LocalDateTime.now();
     }
-    public UUID getBookId() {
-        return bookId;
-    }
-    public void setBookId(UUID bookId) {
-        this.bookId = bookId;
-    }
-    public String getTitle() {
-        return title;
-    }
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    public String getAuthor() {
-        return author;
-    }
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-    public String getIsbn() {
-        return isbn;
-    }
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
-    public String getDescription() {
-        return description;
-    }
-    public void setDescription(String description) {
+
+    // Phương thức cập nhật thông tin sách nghiệp vụ
+    public void updateDetails(String title, String author, String description, 
+                              String publisher, Integer publishedYear, String shelfLocation) {
+        this.title = requireNotBlank(title, "Title cannot be null or empty");
+        this.author = requireNotBlank(author, "Author cannot be null or empty");
         this.description = description;
-    }
-    public String getCoverImageUrl() {
-        return coverImageUrl;
-    }
-    public void setCoverImageUrl(String coverImageUrl) {
-        this.coverImageUrl = coverImageUrl;
-    }
-    public String getPublisher() {
-        return publisher;
-    }
-    public void setPublisher(String publisher) {
         this.publisher = publisher;
-    }
-    public Integer getPublishedYear() {
-        return publishedYear;
-    }
-    public void setPublishedYear(Integer publishedYear) {
         this.publishedYear = publishedYear;
-    }
-    public String getShelfLocation() {
-        return shelfLocation;
-    }
-    public void setShelfLocation(String shelfLocation) {
         this.shelfLocation = shelfLocation;
+        this.updatedAt = LocalDateTime.now();
     }
-    public int getTotalQuantity() {
-        return totalQuantity;
-    }
-    public void setTotalQuantity(int totalQuantity) {
-        this.totalQuantity = totalQuantity;
-    }
-    public int getAvailableQuantity() {
-        return availableQuantity;
-    }
-    public void setAvailableQuantity(int availableQuantity) {
-        this.availableQuantity = availableQuantity;
-    }
-    public UUID getCategoryId() {
-        return categoryId;
-    }
-    public void setCategoryId(UUID categoryId) {
-        this.categoryId = categoryId;
-    }
-    public boolean isActive() {
-        return active;
-    }
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    @Override
-    public boolean equals(Object o){
-        if(this ==o) return true;
-        if(o==null || getClass() != o.getClass()) return false;
-        Book book = (Book) o;
-        return Objects.equals(bookId,book.bookId);
-    }
-    @Override
-    public int hashCode(){
-        return Objects.hash((bookId));
+
+    private static String requireNotBlank(String value, String errorMessage) {
+        if (value == null || value.isBlank()) {
+            throw new DomainException(errorMessage);
+        }
+        return value.trim();
     }
 }
