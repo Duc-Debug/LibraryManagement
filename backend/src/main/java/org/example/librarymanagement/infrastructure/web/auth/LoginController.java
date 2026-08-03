@@ -22,8 +22,8 @@ public class LoginController {
         this.loginUseCase = loginUseCase;
     }
 
-    @PostMapping("/login")
-public ResponseEntity<LoginResponse> login(
+    @PostMapping("/login") // Định nghĩa endpoint POST /api/auth/login
+public ResponseEntity<LoginResponse> login( // Định nghĩa phương thức xử lý yêu cầu đăng nhập
         @Valid @RequestBody LoginRequest request
 ) {
     LoginCommand command = new LoginCommand(
@@ -31,7 +31,7 @@ public ResponseEntity<LoginResponse> login(
             request.password()
     );
 
-    LoginResult result = loginUseCase.login(command);
+    LoginResult result = loginUseCase.login(command); // Gọi UseCase để xử lý đăng nhập và nhận kết quả
 
     LoginResponse response = new LoginResponse(
             result.userId(),

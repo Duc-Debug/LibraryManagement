@@ -9,15 +9,47 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       setError("Vui lòng nhập đầy đủ thông tin.");
       return;
     }
-    if (username === "admin" && password === "admin") {
+
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        setError("Tên đăng nhập hoặc mật khẩu không đúng.");
+        return;
+      }
+
+      const data = await response.json();
+
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("tokenType", data.tokenType || "Bearer");
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify({
+          userId: data.userId,
+          username: data.username,
+          fullName: data.fullName,
+          roles: data.roles,
+        })
+      );
+
       onLogin();
-    } else {
-      setError("Tên đăng nhập hoặc mật khẩu không đúng.");
+    } catch (error) {
+      console.error(error);
+      setError("Không thể kết nối tới máy chủ.");
     }
   };
 

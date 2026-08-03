@@ -2,6 +2,7 @@ package org.example.librarymanagement.infrastructure.persistence.user;
 
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
+
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -17,6 +18,7 @@ public class UserPersistenceAdapter implements LoadUserPort {
         this.userJpaRepository = userJpaRepository;
     }
 
+   
     @Override
     public Optional<User> findByUsername(String username) {
         return userJpaRepository

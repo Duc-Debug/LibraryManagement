@@ -4,8 +4,10 @@ import java.util.Objects;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
-public class Role {
 
+
+public class Role {
+    
     private final Long id;
     private final String name;
     private final String description;

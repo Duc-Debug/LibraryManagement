@@ -1,8 +1,4 @@
-[Environment]::SetEnvironmentVariable(
-    "SPRING_PROFILES_ACTIVE",
-    "local",
-    "User"
-)
+[Environment]::SetEnvironmentVariable("SPRING_PROFILES_ACTIVE","local","User")
 
 [Environment]::SetEnvironmentVariable(
     "DB_URL",
@@ -18,7 +14,7 @@
 
 [Environment]::SetEnvironmentVariable(
     "DB_PASSWORD",
-    "MAT_KHAU_MYSQL_CUA_BAN",
+    "123456",
     "User"
 )
 

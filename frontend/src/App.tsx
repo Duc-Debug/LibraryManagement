@@ -18,8 +18,37 @@ export default function App() {
   const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
   const [records, setRecords] = useState<BorrowRecord[]>(INITIAL_BORROW_RECORDS);
 
+  const handleLoginSuccess = () => {
+    setLoggedIn(true);
+    setPage("dashboard");
+  };
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      if (token) {
+        await fetch("http://localhost:8080/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Logout Error:", error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("tokenType");
+      localStorage.removeItem("currentUser");
+      setLoggedIn(false);
+      setPage("dashboard");
+    }
+  };
+
   if (!loggedIn) {
-    return <LoginPage onLogin={() => setLoggedIn(true)} />;
+    return <LoginPage onLogin={handleLoginSuccess} />;
   }
 
   const renderPage = () => {
@@ -61,7 +90,7 @@ export default function App() {
         setPage={setPage}
         expanded={sidebarExpanded}
         toggleExpanded={() => setSidebarExpanded((v) => !v)}
-        onLogout={() => setLoggedIn(false)}
+        onLogout={handleLogout}
       />
       <main className="flex-1 overflow-y-auto">
         {renderPage()}

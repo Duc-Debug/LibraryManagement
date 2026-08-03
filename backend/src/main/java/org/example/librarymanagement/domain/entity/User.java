@@ -2,6 +2,8 @@ package org.example.librarymanagement.domain.entity;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
+
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -9,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class User {
+    
 
     private Long id;
     private String username;

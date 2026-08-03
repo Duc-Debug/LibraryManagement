@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
  * Xử lý Đăng nhập
  */
 async function handleLogin(event) {
+    console.log("handleLogin called");
+
     event.preventDefault();
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
@@ -39,6 +41,7 @@ async function handleLogin(event) {
     if (!isValid) return;
 
     try {
+        console.log("Before fetch");
         const response = await fetch('http://localhost:8080/api/auth/login', {
             method: 'POST',
             headers: {
@@ -104,7 +107,7 @@ async function handleLogout(event) {
         console.error('Logout Error:', error);
     } finally {
         // Dù API có lỗi hay không, Client VẪN BẮT BUỘC xóa token và thoát
-        clearAuthData();
+            clearAuthData();
         window.location.replace('dang-nhap.html');
     }
 }

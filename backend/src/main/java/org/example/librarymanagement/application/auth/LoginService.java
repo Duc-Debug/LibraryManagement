@@ -44,13 +44,13 @@ public class LoginService implements LoginUseCase {
 
         String username = command.username().trim();
 
-        User user = loadUserPort
+        User user = loadUserPort // tìm người dùng theo tên đăng nhập, nếu không tìm thấy thì ném ra ngoại lệ InvalidCredentialsException
                 .findByUsername(username)
                 .orElseThrow(InvalidCredentialsException::new);
 
         user.ensureCanLogin();
 
-        boolean passwordMatches = passwordVerifierPort.matches(
+        boolean passwordMatches = passwordVerifierPort.matches(  // Kiểm tra mật khẩu
                 command.password(),
                 user.getPasswordHash()
         );
@@ -62,7 +62,7 @@ public class LoginService implements LoginUseCase {
         String accessToken =
                 tokenProviderPort.generateAccessToken(user);
 
-        Set<String> roleNames = user.getRoles()
+        Set<String> roleNames = user.getRoles() // Lấy danh sách tên vai trò của người dùng
                 .stream()
                 .map(Role::getName)
                 .collect(Collectors.toUnmodifiableSet());
