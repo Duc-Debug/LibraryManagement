@@ -8,7 +8,6 @@ import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
 import org.example.librarymanagement.port.outbound.auth.PasswordVerifierPort;
 import org.example.librarymanagement.port.outbound.auth.SaveUserPort;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 

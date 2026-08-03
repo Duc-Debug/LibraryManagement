@@ -8,21 +8,26 @@ import org.example.librarymanagement.infrastructure.persistence.user.RoleJpaRepo
 import org.example.librarymanagement.infrastructure.persistence.user.UserJpaEntity;
 import org.example.librarymanagement.infrastructure.persistence.user.UserJpaRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@Profile({"local", "dev"})
+@RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public DataSeeder(UserJpaRepository userJpaRepository, RoleJpaRepository roleJpaRepository,
-            PasswordEncoder passwordEncoder) {
-        this.userJpaRepository = userJpaRepository;
-        this.roleJpaRepository = roleJpaRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    // public DataSeeder(UserJpaRepository userJpaRepository, RoleJpaRepository roleJpaRepository,
+    //         PasswordEncoder passwordEncoder) {
+    //     this.userJpaRepository = userJpaRepository;
+    //     this.roleJpaRepository = roleJpaRepository;
+    //     this.passwordEncoder = passwordEncoder;
+    // }
 
     @Override
     public void run(String... args) throws Exception {
