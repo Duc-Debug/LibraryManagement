@@ -1,46 +1,33 @@
 import { login } from "@/api/authApi";
 import { useState } from "react";
+import type { UserAccount } from "@/types";
 
 interface LoginPageProps {
-  onLogin: () => void;
+  accounts: UserAccount[];
+  onLogin: (account: UserAccount) => void;
 }
 
-export default function LoginPage({ onLogin }: LoginPageProps) {
+export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
- const handleLogin = async () => {
-  if (!username || !password) {
-    setError("Vui lòng nhập đầy đủ thông tin.");
-    return;
-  }
-
-  setError("");
-
-  try {
-  const loginResponse = await login({
-    username: username.trim(),
-    password: password.trim(),
-  });
-
-  localStorage.setItem("accessToken", loginResponse.accessToken);
-  localStorage.setItem("tokenType", loginResponse.tokenType || "Bearer");
-  localStorage.setItem(
-    "currentUser",
-    JSON.stringify({
-      userId: loginResponse.userId,
-      username: loginResponse.username,
-      fullName: loginResponse.fullName,
-      roles: loginResponse.roles,
-    })
-  );
-
-  onLogin();
-} catch (error) {
-  setError("Tên đăng nhập hoặc mật khẩu không đúng.");
-}
-};
+  const handleLogin = () => {
+    if (!username || !password) {
+      setError("Vui lòng nhập đầy đủ thông tin.");
+      return;
+    }
+    const account = accounts.find((a) => a.username === username && a.password === password);
+    if (!account) {
+      setError("Tên đăng nhập hoặc mật khẩu không đúng.");
+      return;
+    }
+    if (!account.active) {
+      setError("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
+      return;
+    }
+    onLogin(account);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#f0ede6" }}>
@@ -84,7 +71,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             Đăng nhập
           </button>
         </div>
-        <p className="text-xs text-gray-300 text-center mt-4">Dùng tài khoản thủ thư để đăng nhập</p>
+        <p className="text-xs text-gray-300 text-center mt-4">Dùng tài khoản thủ thư hoặc người dùng để đăng nhập</p>
       </div>
     </div>
   );
