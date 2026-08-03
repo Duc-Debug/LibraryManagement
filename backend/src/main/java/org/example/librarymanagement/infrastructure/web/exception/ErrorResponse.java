@@ -1,4 +1,4 @@
-package org.example.librarymanagement.infrastructure.web;
+package org.example.librarymanagement.infrastructure.web.exception;
 
 import java.time.Instant;
 

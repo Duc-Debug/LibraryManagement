@@ -1,7 +1,7 @@
 package org.example.librarymanagement.infrastructure.web.auth;
 
 import org.example.librarymanagement.application.auth.InvalidCredentialsException;
-import org.example.librarymanagement.infrastructure.web.GlobalExceptionHandler;
+import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptionHandler;
 import org.example.librarymanagement.port.dtos.auth.LoginCommand;
 import org.example.librarymanagement.port.dtos.auth.LoginResult;
 import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
