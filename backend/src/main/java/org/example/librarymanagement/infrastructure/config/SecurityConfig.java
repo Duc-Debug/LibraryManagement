@@ -99,6 +99,7 @@ public class SecurityConfig {
                 "Authorization"
         ));
 
+
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
 
