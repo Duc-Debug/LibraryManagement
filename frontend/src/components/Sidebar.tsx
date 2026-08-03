@@ -1,4 +1,4 @@
-import type { Page } from "@/types";
+import type { Page, UserRole } from "@/types";
 import {
   IconBook,
   IconGrid,
@@ -15,17 +15,29 @@ interface SidebarProps {
   expanded: boolean;
   toggleExpanded: () => void;
   onLogout: () => void;
+  currentRole: UserRole;
 }
 
-const NAV_ITEMS: { id: Page; label: string; icon: JSX.Element }[] = [
+function IconShield({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
+const ALL_NAV_ITEMS: { id: Page; label: string; icon: JSX.Element; adminOnly?: boolean }[] = [
   { id: "dashboard", label: "Bảng điều khiển", icon: <IconGrid /> },
   { id: "books", label: "Quản lý Sách", icon: <IconBook /> },
   { id: "members", label: "Thành viên", icon: <IconUsers /> },
   { id: "borrow", label: "Mượn sách", icon: <IconArrowIn /> },
   { id: "return", label: "Trả sách", icon: <IconRefresh /> },
+  { id: "accounts", label: "Quản lý Tài khoản", icon: <IconShield />, adminOnly: true },
 ];
 
-export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLogout }: SidebarProps) {
+export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLogout, currentRole }: SidebarProps) {
+  const navItems = ALL_NAV_ITEMS.filter((item) => !item.adminOnly || currentRole === "thu_thu");
+
   return (
     <aside
       className="flex flex-col bg-white border-r border-gray-100 shrink-0 overflow-hidden"
@@ -63,7 +75,7 @@ export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLog
 
       {/* Navigation */}
       <nav className="flex-1 py-3 space-y-0.5 px-2">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = page === item.id;
           return (
             <button

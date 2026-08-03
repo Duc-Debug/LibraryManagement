@@ -1,4 +1,15 @@
-export type Page = "login" | "dashboard" | "books" | "members" | "borrow" | "return";
+export type Page = "login" | "dashboard" | "books" | "members" | "borrow" | "return" | "accounts";
+
+export type UserRole = "thu_thu" | "nguoi_dung";
+
+export interface UserAccount {
+  id: string;
+  username: string;
+  password: string;
+  fullName: string;
+  role: UserRole;
+  active: boolean;
+}
 
 export type BorrowStatus = "borrowing" | "overdue" | "returned";
 
