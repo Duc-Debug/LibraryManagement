@@ -5,6 +5,7 @@ import org.example.librarymanagement.port.dtos.auth.ChangePasswordCommand;
 import org.example.librarymanagement.port.dtos.auth.ChangePasswordResult;
 import org.example.librarymanagement.port.inbound.auth.ChangePasswordUseCase;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -23,6 +24,7 @@ public class ChangePasswordController {
         this.changePasswordUseCase = changePasswordUseCase;
     }
     @PostMapping("/change-password")
+    @Transactional
     public ResponseEntity<ChangePasswordResult> changePassword(
         @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId, 
             @Valid @RequestBody ChangePasswordRequest request

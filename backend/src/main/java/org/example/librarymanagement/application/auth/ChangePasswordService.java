@@ -7,14 +7,12 @@ import org.example.librarymanagement.port.inbound.auth.ChangePasswordUseCase;
 import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
 import org.example.librarymanagement.port.outbound.auth.PasswordVerifierPort;
 import org.example.librarymanagement.port.outbound.auth.SaveUserPort;
-import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@Service
+@Configuration
 @RequiredArgsConstructor
 public class ChangePasswordService implements ChangePasswordUseCase {
     private final LoadUserPort userRepositoryPort;
@@ -22,7 +20,6 @@ public class ChangePasswordService implements ChangePasswordUseCase {
     private final PasswordVerifierPort passwordVerifierPort;
 
     @Override
-    @Transactional
     public ChangePasswordResult changePassword(ChangePasswordCommand command) {
         if (command.newPassword() == null || command.newPassword().isBlank()) {
             return new ChangePasswordResult(false, "New password not null or blank");
@@ -35,6 +32,10 @@ public class ChangePasswordService implements ChangePasswordUseCase {
         boolean isOldPasswordVaild = passwordVerifierPort.matches(command.oldPassword(), user.getPasswordHash());
         if (!isOldPasswordVaild) {
             return new ChangePasswordResult(false, "Current password not exactly");
+        }
+        boolean isSameAsCurrentPassword = passwordVerifierPort.matches(command.newPassword(), user.getPasswordHash());
+        if(isSameAsCurrentPassword){
+            return new ChangePasswordResult(false,"New password must be different from current password");
         }
         String newPasswordHash = passwordVerifierPort.encode(command.newPassword());
         user.changePassword(newPasswordHash);

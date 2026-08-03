@@ -93,5 +93,4 @@ public class Readers {
     public boolean isActive() {
         return isActive;
     }
-
 }
