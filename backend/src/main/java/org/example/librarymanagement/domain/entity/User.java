@@ -1,14 +1,13 @@
 package org.example.librarymanagement.domain.entity;
 
-import org.example.librarymanagement.domain.exceptions.DomainException;
-
-
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class User {
     
@@ -25,6 +24,7 @@ public class User {
     private LocalDateTime updatedAt;
 
     private final Set<Role> roles = new LinkedHashSet<>();
+
     public User(
             String username,
             String passwordHash,
@@ -86,14 +86,8 @@ public class User {
         this.phone = normalizeNullable(phone);
         this.enabled = enabled;
         this.passwordChangedAt = passwordChangedAt;
-        this.createdAt = Objects.requireNonNull(
-                createdAt,
-                "Created time must not be null"
-        );
-        this.updatedAt = Objects.requireNonNull(
-                updatedAt,
-                "Updated time must not be null"
-        );
+        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
+        this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
 
         if (roles != null) {
             this.roles.addAll(roles);
@@ -147,6 +141,16 @@ public class User {
         }
     }
 
+    public void updateProfile(String fullName, String email, String phone) {
+        this.fullName = fullName;
+        this.email = email;
+        this.phone = phone;
+
+    }
+
+    /**
+     * Kích hoạt hoặc mở khóa tài khoản.
+     */
     public void removeRole(Role role) {
         if (role != null && roles.remove(role)) {
             touch();
@@ -159,8 +163,8 @@ public class User {
         }
 
         return roles.stream()
-                .anyMatch(role ->
-                        role.getName().equalsIgnoreCase(roleName.trim())
+                .anyMatch(role
+                        -> role.getName().equalsIgnoreCase(roleName.trim())
                 );
     }
 
