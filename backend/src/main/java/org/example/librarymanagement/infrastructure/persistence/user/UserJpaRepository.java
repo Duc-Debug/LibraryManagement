@@ -1,5 +1,8 @@
 package org.example.librarymanagement.infrastructure.persistence.user;
 
+import java.util.List;
+import java.util.Optional;
+
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -10,4 +13,9 @@ public interface UserJpaRepository
 
     @EntityGraph(attributePaths = "roles")
     Optional<UserJpaEntity> findByUsername(String username);
+
+    List<UserJpaEntity> findByRoles_Name(String roleName);
+
+    boolean existsByUsername(String username);
+
 }
