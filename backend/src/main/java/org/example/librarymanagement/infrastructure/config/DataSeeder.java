@@ -11,45 +11,69 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
-@Profile({"local", "dev"})
+@Profile({ "local", "dev" })
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // public DataSeeder(UserJpaRepository userJpaRepository, RoleJpaRepository roleJpaRepository,
-    //         PasswordEncoder passwordEncoder) {
-    //     this.userJpaRepository = userJpaRepository;
-    //     this.roleJpaRepository = roleJpaRepository;
-    //     this.passwordEncoder = passwordEncoder;
+    // public DataSeeder(UserJpaRepository userJpaRepository, RoleJpaRepository
+    // roleJpaRepository,
+    // PasswordEncoder passwordEncoder) {
+    // this.userJpaRepository = userJpaRepository;
+    // this.roleJpaRepository = roleJpaRepository;
+    // this.passwordEncoder = passwordEncoder;
     // }
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
-        if (userJpaRepository.count() == 0) {
-            System.out.println("===> DB null. Create data seed");
+        System.out.println("===> Kích hoạt DataSeeder...");
 
-            RoleJpaEntity adminRole = new RoleJpaEntity(null, "ADMIN", "Quản trị viên hệ thống");
-            RoleJpaEntity librarianRole = new RoleJpaEntity(null, "LIBRARIAN", "Thủ thư");
-            adminRole = roleJpaRepository.save(adminRole);
-            librarianRole = roleJpaRepository.save(librarianRole);
+        // 1. Seed hoặc tìm các Role bắt buộc
+        RoleJpaEntity adminRole = findOrCreateRole("ADMIN", "Quản trị viên hệ thống");
+        RoleJpaEntity librarianRole = findOrCreateRole("LIBRARIAN", "Thủ thư");
 
-            UserJpaEntity defaultUser = new UserJpaEntity(null, "test1", passwordEncoder.encode("123456"), "Giap Duc","duc@gmail.com", "12345678", true, LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now(),
-                    Set.of(adminRole, librarianRole));
-           
-                    defaultUser.setRoles(Set.of(adminRole, librarianRole));
+        // 2. Seed Admin User mặc định nếu chưa tồn tại
+        seedDefaultUser("test1", "123456", "Giap Duc", "duc@gmail.com", "12345678", Set.of(adminRole, librarianRole));
+    }
+
+    private RoleJpaEntity findOrCreateRole(String roleName, String description) {
+        return roleJpaRepository.findByName(roleName)
+                .orElseGet(() -> {
+                    System.out.println("===> Seed thêm Role: " + roleName);
+                    return roleJpaRepository.save(new RoleJpaEntity(null, roleName, description));
+                });
+    }
+
+    private void seedDefaultUser(String username, String rawPassword, String fullName, String email, String phone,
+            Set<RoleJpaEntity> roles) {
+        if (!userJpaRepository.existsByUsername(username)) {
+            UserJpaEntity defaultUser = new UserJpaEntity(
+                    null,
+                    username,
+                    passwordEncoder.encode(rawPassword),
+                    fullName,
+                    email,
+                    phone,
+                    true,
+                    LocalDateTime.now(),
+                    LocalDateTime.now(),
+                    LocalDateTime.now(),
+                    roles);
             userJpaRepository.save(defaultUser);
+
             System.out.println("===> Khởi tạo thành công User mẫu!");
-            System.out.println("     - ID: 1");
-            System.out.println("     - Username: testuser");
-            System.out.println("     - Password gốc: 123456");
+            System.out.println("     - Username: " + username);
+            System.out.println("     - Password gốc: " + rawPassword);
         } else {
-            System.out.println("===> DB đã có dữ liệu. Bỏ qua Seeder.");
+            System.out.println("===> User '" + username + "' đã tồn tại. Bỏ qua khởi tạo user mẫu.");
         }
     }
 }
