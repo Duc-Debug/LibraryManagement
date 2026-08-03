@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,8 +22,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
-
-    private final JwtTokenFilter jwtTokenFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -55,21 +52,18 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/api/auth/login"
-                        ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.POST,
+                                "/api/auth/login",
                                 "/api/auth/logout"
                         ).permitAll()
-                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(
+                                "/error"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
                         accessTokenAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 )
-                // Gắn bộ lọc JWT vào trước bộ lọc xác thực mặc định của Spring Security
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .build();
@@ -79,12 +73,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-      configuration.setAllowedOrigins(List.of(
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:8443",
-        "http://127.0.0.1:5500"
-));
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:5500",
+                "http://127.0.0.1:5500"
+        ));
 
         configuration.setAllowedMethods(List.of(
                 "GET",
@@ -105,15 +99,7 @@ public class SecurityConfig {
                 "Authorization"
         ));
 
-        /*
-         * JWT được gửi bằng Authorization header, không dùng session/cookie.
-         * Vì vậy không cần gửi credentials qua CORS.
-         */
         configuration.setAllowCredentials(false);
-
-        /*
-         * Trình duyệt có thể cache kết quả preflight OPTIONS trong 1 giờ.
-         */
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
