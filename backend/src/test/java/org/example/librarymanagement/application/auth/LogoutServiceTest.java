@@ -1,4 +1,4 @@
-﻿package org.example.librarymanagement.application.auth;
+package org.example.librarymanagement.application.auth;
 
 import java.time.Instant;
 import java.util.Set;

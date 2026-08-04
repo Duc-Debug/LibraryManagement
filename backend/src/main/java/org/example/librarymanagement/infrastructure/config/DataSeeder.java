@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import org.example.librarymanagement.infrastructure.persistence.user.RoleJpaEntity;
-import org.example.librarymanagement.infrastructure.persistence.user.RoleJpaRepository;
+import org.example.librarymanagement.infrastructure.persistence.manage.RoleJpaRepository;
 import org.example.librarymanagement.infrastructure.persistence.user.UserJpaEntity;
 import org.example.librarymanagement.infrastructure.persistence.user.UserJpaRepository;
 import org.springframework.boot.CommandLineRunner;
