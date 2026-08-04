@@ -1,6 +1,6 @@
 export type Page = "login" | "dashboard" | "books" | "members" | "borrow" | "return" | "accounts";
 
-export type UserRole = "admin" | "thu_thu" | "nguoi_dung";
+export type UserRole = "admin" | "thu_thu";
 
 export interface UserAccount {
   id: string;

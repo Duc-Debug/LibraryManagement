@@ -34,12 +34,17 @@ export default function Page() {
     if (token && savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
+        const roles = parsed.roles ?? [];
+        const role = roles.includes('ADMIN')
+          ? 'admin'
+          : 'thu_thu';
+
         setCurrentUser({
           id: String(parsed.userId || parsed.id || '1'),
           username: parsed.username,
           password: '',
           fullName: parsed.fullName,
-          role: (parsed.roles && parsed.roles.includes('ADMIN')) ? 'admin' : (parsed.roles && parsed.roles.includes('LIBRARIAN')) ? 'thu_thu' : 'nguoi_dung',
+          role,
           active: true
         });
       } catch (e) {
@@ -84,61 +89,6 @@ export default function Page() {
   };
 
   const renderPage = () => {
-    // Reader pages
-    if (currentUser?.role === 'nguoi_dung') {
-      if (showBookDetails && selectedBook) {
-        return (
-          <BookDetails
-            book={selectedBook}
-            onBack={() => {
-              setShowBookDetails(false);
-              setSelectedBook(null);
-            }}
-            onBorrow={(book) => {
-              alert(`Mượn "${book.title}" thành công!`);
-              setShowBookDetails(false);
-              setSelectedBook(null);
-            }}
-            onReadSample={(book) => {
-              alert(`Xem mẫu "${book.title}" - Tính năng sẽ sớm có`);
-            }}
-          />
-        );
-      }
-
-      if (currentPage === 'reader-profile') {
-        const profile = mockReaderProfiles[0];
-        const userBorrows = mockReaderBorrows;
-        return (
-          <ReaderProfilePage
-            user={currentUser}
-            profile={profile}
-            borrows={userBorrows}
-            onExtendBorrow={(borrowId) => {
-              alert(`Gia hạn sách ${borrowId} thành công!`);
-            }}
-            onUpdateUser={(updatedUser) => {
-              const updated = { ...currentUser, ...updatedUser };
-              setCurrentUser(updated);
-            }}
-          />
-        );
-      }
-
-      return (
-        <ReaderHome
-          onSelectBook={(book) => {
-            setSelectedBook(book);
-            setShowBookDetails(true);
-          }}
-          onBorrow={(book) => {
-            alert(`Mượn "${book.title}" thành công!`);
-          }}
-        />
-      );
-    }
-
-    // Admin/Librarian pages
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;

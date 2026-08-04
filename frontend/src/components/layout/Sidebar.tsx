@@ -27,56 +27,42 @@ interface SidebarProps {
 export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const navItems =
-    currentUser?.role === 'nguoi_dung'
+  const navItems = [
+    {
+      id: 'dashboard',
+      label: 'Bảng điều khiển',
+      icon: LayoutDashboard,
+    },
+    {
+      id: 'books',
+      label: 'Quản lý Sách',
+      icon: BookOpen,
+    },
+    {
+      id: 'members',
+      label: 'Thành viên',
+      icon: Users,
+    },
+    {
+      id: 'borrowing',
+      label: 'Mượn sách',
+      icon: LogIn,
+    },
+    {
+      id: 'returns',
+      label: 'Trả sách',
+      icon: Repeat2,
+    },
+    ...(currentUser?.role === 'admin'
       ? [
           {
-            id: 'dashboard',
-            label: 'Khám phá',
-            icon: Search,
-          },
-          {
-            id: 'reader-profile',
-            label: 'Hồ sơ',
-            icon: User,
+            id: 'accounts',
+            label: 'Quản lý TK',
+            icon: Settings,
           },
         ]
-      : [
-          {
-            id: 'dashboard',
-            label: 'Bảng điều khiển',
-            icon: LayoutDashboard,
-          },
-          {
-            id: 'books',
-            label: 'Quản lý Sách',
-            icon: BookOpen,
-          },
-          {
-            id: 'members',
-            label: 'Thành viên',
-            icon: Users,
-          },
-          {
-            id: 'borrowing',
-            label: 'Mượn sách',
-            icon: LogIn,
-          },
-          {
-            id: 'returns',
-            label: 'Trả sách',
-            icon: Repeat2,
-          },
-          ...(currentUser?.role === 'admin'
-            ? [
-                {
-                  id: 'accounts',
-                  label: 'Quản lý TK',
-                  icon: Settings,
-                },
-              ]
-            : []),
-        ];
+      : []),
+  ];
 
   return (
     <aside
@@ -95,9 +81,7 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
             <p className="text-xs text-sidebar-foreground/60">
               {currentUser?.role === 'admin'
                 ? 'Giao diện Quản trị viên'
-                : currentUser?.role === 'thu_thu'
-                ? 'Giao diện thủ thư'
-                : 'Giao diện người dùng'}
+                : 'Giao diện thủ thư'}
             </p>
           </div>
         </div>
@@ -148,9 +132,7 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
             <p className="text-xs text-sidebar-foreground/60 truncate">
               {currentUser.role === 'admin'
                 ? 'Quản trị viên'
-                : currentUser.role === 'thu_thu'
-                ? 'Thủ thư'
-                : 'Người dùng'}
+                : 'Thủ thư'}
             </p>
           </div>
         )}

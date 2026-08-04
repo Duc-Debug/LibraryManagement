@@ -15,7 +15,7 @@ public class AuthorizationAccessPolicy {
      * Kiểm tra xem user có quyền ADMIN để thực hiện các chức năng quản trị hay không.
      */
     public static void validateAdminAccess(User user) {
-        if (user == null || (!user.hasRole(ROLE_ADMIN) && !user.hasRole(ROLE_LIBRARIAN))) {
+        if (user == null || !user.hasRole(ROLE_ADMIN)) {
             throw new DomainException("Truy cập bị từ chối: Chức năng này yêu cầu quyền Quản trị viên (Admin).");
         }
     }

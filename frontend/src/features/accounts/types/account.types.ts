@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'thu_thu' | 'nguoi_dung';
+export type UserRole = 'admin' | 'thu_thu';
 
 export interface UserAccount {
   id: string;
