@@ -16,7 +16,7 @@ public class UserPersistenceMapper {
             return null;
         }
 
-      Set<Role> roles = entity.getRoles() != null
+        Set<Role> roles = entity.getRoles() != null
                 ? entity.getRoles().stream()
                         .map(this::toDomainRole)
                         .collect(Collectors.toCollection(LinkedHashSet::new))
@@ -37,7 +37,8 @@ public class UserPersistenceMapper {
     }
 
     private Role toDomainRole(RoleJpaEntity entity) {
-        if(entity==null ) return null;
+        if (entity == null)
+            return null;
         return new Role(
                 entity.getId(),
                 entity.getName(),
@@ -48,7 +49,7 @@ public class UserPersistenceMapper {
         if (domain == null) {
             return null;
         }
-        
+
         UserJpaEntity entity = new UserJpaEntity();
         entity.setId(domain.getId());
         entity.setUsername(domain.getUsername());
@@ -60,19 +61,19 @@ public class UserPersistenceMapper {
         entity.setPasswordChangedAt(domain.getPasswordChangedAt());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
-        
-        if(domain.getRoles() != null){
+
+        if (domain.getRoles() != null) {
             Set<RoleJpaEntity> roleEntities = domain.getRoles().stream()
                     .map(this::toJpaEntityRole)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
             entity.setRoles(roleEntities);
         }
- 
+
         return entity;
     }
 
-    private RoleJpaEntity toJpaEntityRole(Role domain){
-        if(domain ==null){
+    private RoleJpaEntity toJpaEntityRole(Role domain) {
+        if (domain == null) {
             return null;
         }
         RoleJpaEntity entity = new RoleJpaEntity();
@@ -81,6 +82,7 @@ public class UserPersistenceMapper {
         entity.setDescription(domain.getDescription());
         return entity;
     }
+
     // Cập nhật dữ liệu từ Domain vào Managed Entity hiện có (Dành cho UPDATE)
     public void updateJpaEntity(User domain, UserJpaEntity targetEntity) {
         if (domain == null || targetEntity == null) {
@@ -94,7 +96,7 @@ public class UserPersistenceMapper {
         targetEntity.setPhone(domain.getPhone());
         targetEntity.setEnabled(domain.isEnabled());
         targetEntity.setUpdatedAt(domain.getUpdatedAt());
-        
+
         // Không gán lại set targetEntity.setRoles(...) trừ khi có thay đổi role rõ ràng
     }
 }

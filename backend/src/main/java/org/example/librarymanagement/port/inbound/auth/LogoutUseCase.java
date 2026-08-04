@@ -4,5 +4,5 @@ import org.example.librarymanagement.port.dtos.auth.LogoutCommand;
 import org.example.librarymanagement.port.dtos.auth.LogoutResult;
 
 public interface LogoutUseCase {
-    LogoutResult logout(LogoutCommand command);
+    void logout(LogoutCommand command);
 }
