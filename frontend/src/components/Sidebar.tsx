@@ -26,6 +26,15 @@ function IconShield({ size = 20, className = "" }: { size?: number; className?: 
   );
 }
 
+function IconUser({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
 const ALL_NAV_ITEMS: { id: Page; label: string; icon: JSX.Element; adminOnly?: boolean }[] = [
   { id: "dashboard", label: "Bảng điều khiển", icon: <IconGrid /> },
   { id: "books", label: "Quản lý Sách", icon: <IconBook /> },
@@ -33,6 +42,7 @@ const ALL_NAV_ITEMS: { id: Page; label: string; icon: JSX.Element; adminOnly?: b
   { id: "borrow", label: "Mượn sách", icon: <IconArrowIn /> },
   { id: "return", label: "Trả sách", icon: <IconRefresh /> },
   { id: "accounts", label: "Quản lý Tài khoản", icon: <IconShield />, adminOnly: true },
+  { id: "settings", label: "Cài đặt cá nhân", icon: <IconUser /> },
 ];
 
 export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLogout, currentRole }: SidebarProps) {
