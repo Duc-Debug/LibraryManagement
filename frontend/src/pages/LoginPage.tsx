@@ -1,6 +1,7 @@
 import { login } from "@/api/authApi";
 import { useState } from "react";
 import type { UserAccount } from "@/types";
+import { AuthStorage } from "@/lib/authStorage";
 
 interface LoginPageProps {
   accounts: UserAccount[];
@@ -11,22 +12,45 @@ export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (loading) return;
+
     if (!username || !password) {
       setError("Vui lòng nhập đầy đủ thông tin.");
       return;
     }
-    const account = accounts.find((a) => a.username === username && a.password === password);
-    if (!account) {
-      setError("Tên đăng nhập hoặc mật khẩu không đúng.");
-      return;
+
+    setLoading(true);
+    try {
+      const data = await login({ username, password });
+      AuthStorage.saveLogin(data);
+
+      const account: UserAccount = {
+        id: String(data.userId),
+        username: data.username,
+        password: '',
+        fullName: data.fullName,
+        role: (data.roles && (data.roles.includes('ADMIN') || data.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
+        active: true,
+      };
+
+      onLogin(account);
+    } catch (err: any) {
+      const account = accounts.find((a) => a.username === username && a.password === password);
+      if (!account) {
+        setError(err?.message || "Tên đăng nhập hoặc mật khẩu không đúng.");
+        return;
+      }
+      if (!account.active) {
+        setError("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
+        return;
+      }
+      onLogin(account);
+    } finally {
+      setLoading(false);
     }
-    if (!account.active) {
-      setError("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
-      return;
-    }
-    onLogin(account);
   };
 
   return (
@@ -65,10 +89,11 @@ export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
           </div>
           <button
             onClick={handleLogin}
-            className="w-full py-3 rounded-xl text-sm font-bold text-white mt-1 hover:opacity-90 transition-opacity"
+            disabled={loading}
+            className="w-full py-3 rounded-xl text-sm font-bold text-white mt-1 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: "#1a4a2e" }}
           >
-            Đăng nhập
+            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
         </div>
         <p className="text-xs text-gray-300 text-center mt-4">Dùng tài khoản thủ thư hoặc người dùng để đăng nhập</p>
@@ -76,3 +101,4 @@ export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
     </div>
   );
 }
+
