@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.example.librarymanagement.infrastructure.security.AccessTokenAuthenticationFilter;
 import org.example.librarymanagement.infrastructure.security.JwtProperties;
+import org.example.librarymanagement.infrastructure.web.exception.ErrorResponse;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,10 +20,16 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.HttpServletResponse;
+
 @lombok.RequiredArgsConstructor
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
+
+    private final ObjectMapper objectMapper;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -67,14 +74,16 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json;charset=UTF-8");
-                            response.getWriter().write("{\"code\":\"UNAUTHORIZED\",\"message\":\"Truy cập trái phép bị chặn (401): Vui lòng đăng nhập để truy cập tài nguyên này.\"}");
+                            ErrorResponse error = ErrorResponse.of("UNAUTHORIZED", "Truy cập trái phép bị chặn (401): Vui lòng đăng nhập để truy cập tài nguyên này.");
+                            response.getWriter().write(objectMapper.writeValueAsString(error));
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json;charset=UTF-8");
-                            response.getWriter().write("{\"code\":\"ACCESS_DENIED\",\"message\":\"Truy cập trái phép bị chặn (403): Bạn không có quyền truy cập tài nguyên này.\"}");
+                            ErrorResponse error = ErrorResponse.of("ACCESS_DENIED", "Truy cập trái phép bị chặn (403): Bạn không có quyền truy cập tài nguyên này.");
+                            response.getWriter().write(objectMapper.writeValueAsString(error));
                         })
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
