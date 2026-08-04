@@ -11,9 +11,11 @@ import {
 } from '@/api/librarianApi';
 import type { UserAccount } from '@/types';
 
+import type { UserAccount } from '../types/account.types';
+
 interface AccountsPageProps {
   accounts?: UserAccount[];
-  setAccounts?: (updated: UserAccount[]) => void;
+  setAccounts?: (accounts: UserAccount[]) => void;
   currentUserId?: string | number;
 }
 
