@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Dashboard } from '@/features/dashboard';
 import { BooksPage } from '@/features/books';
@@ -11,6 +11,7 @@ import { ReturnsPage } from '@/features/returns';
 import { LoginPage } from '@/features/auth';
 import { AccountsPage, mockUserAccounts } from '@/features/accounts';
 import type { UserAccount } from '@/features/accounts';
+import { logout } from '@/api/authApi';
 import {
   ReaderHome,
   BookDetails,
@@ -21,10 +22,36 @@ import {
 
 export default function Page() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [accounts, setAccounts] = useState<UserAccount[]>(mockUserAccounts);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [showBookDetails, setShowBookDetails] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    const savedUser = localStorage.getItem('currentUser');
+    if (token && savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        setCurrentUser({
+          id: String(parsed.userId || parsed.id || '1'),
+          username: parsed.username,
+          password: '',
+          fullName: parsed.fullName,
+          role: (parsed.roles && (parsed.roles.includes('ADMIN') || parsed.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
+          active: true
+        });
+      } catch (e) {
+        console.error('Failed to restore user session:', e);
+      }
+    }
+    setIsInitialized(true);
+  }, []);
+
+  if (!isInitialized) {
+    return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">Đang tải...</div>;
+  }
 
   if (!currentUser) {
     return (
@@ -38,7 +65,14 @@ export default function Page() {
     );
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      await logout(token);
+    }
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('tokenType');
+    localStorage.removeItem('currentUser');
     setCurrentUser(null);
     setCurrentPage('dashboard');
   };
