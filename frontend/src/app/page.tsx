@@ -124,7 +124,17 @@ export default function Page() {
             setAccounts={handleSetAccounts}
             currentUserId={currentUser.id}
           />
-        ) : null;
+        ) : (
+          <div className="p-12 flex flex-col items-center justify-center min-h-[500px] text-center">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4 text-2xl font-bold shadow-sm border border-red-200">
+              403
+            </div>
+            <h2 className="text-xl font-bold text-foreground mb-2">Truy cập trái phép bị chặn (403)</h2>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Tài khoản hiện tại của bạn không có quyền Quản trị viên (Admin) để truy cập chức năng này.
+            </p>
+          </div>
+        );
       case 'settings':
         return (
           <SettingsPage

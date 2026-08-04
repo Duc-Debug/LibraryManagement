@@ -9,7 +9,6 @@ import org.example.librarymanagement.port.inbound.auth.ChangePasswordUseCase;
 import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,22 +21,29 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class ChangePasswordController {
+
     private final ChangePasswordUseCase changePasswordUseCase;
 
     @PostMapping("/change-password")
-    @Transactional
     public ResponseEntity<ChangePasswordResult> changePassword(
             @AuthenticationPrincipal Object principal,
             @Valid @RequestBody ChangePasswordRequest request
     ) {
+        if (principal == null) {
+            throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
+        }
+
         Long userId = extractUserId(principal);
+
         ChangePasswordCommand command = new ChangePasswordCommand(
                 userId,
                 request.oldPassword(),
                 request.newPassword(),
                 request.confirmPassword()
         );
+
         ChangePasswordResult result = changePasswordUseCase.changePassword(command);
+
         if (!result.success()) {
             return ResponseEntity.badRequest().body(result);
         }

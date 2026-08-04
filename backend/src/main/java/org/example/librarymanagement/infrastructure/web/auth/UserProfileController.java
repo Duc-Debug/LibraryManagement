@@ -9,7 +9,6 @@ import org.example.librarymanagement.port.inbound.manage.UserResult;
 import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,17 +27,22 @@ public class UserProfileController {
 
     @GetMapping("/me")
     public ResponseEntity<UserResult> getMyProfile(@AuthenticationPrincipal Object principal) {
+        if (principal == null) {
+            throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
+        }
         Long userId = extractUserId(principal);
         UserResult profile = profileUseCase.getProfile(userId);
         return ResponseEntity.ok(profile);
     }
 
     @PutMapping("/profile")
-    @Transactional
     public ResponseEntity<UserResult> updateMyProfile(
             @AuthenticationPrincipal Object principal,
             @Valid @RequestBody UpdateProfileRequest request
     ) {
+        if (principal == null) {
+            throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
+        }
         Long userId = extractUserId(principal);
         UpdateProfileCommand command = new UpdateProfileCommand(
                 request.fullName(),
