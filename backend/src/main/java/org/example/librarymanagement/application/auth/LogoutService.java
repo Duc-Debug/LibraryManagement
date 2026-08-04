@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.port.dtos.auth.LogoutCommand;
-import org.example.librarymanagement.port.dtos.auth.LogoutResult;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
 import org.example.librarymanagement.port.outbound.auth.AccessTokenRevocationPort;
 import org.example.librarymanagement.port.outbound.auth.AccessTokenVerifierPort;
