@@ -51,8 +51,35 @@ export default function Page() {
         console.error('Failed to restore user session:', e);
       }
     }
-    setIsInitialized(true);
+
+    // Đọc tham số page từ URL nếu có
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageParam = urlParams.get('page');
+      if (pageParam && ['dashboard', 'books', 'members', 'borrowing', 'returns', 'accounts'].includes(pageParam)) {
+        setCurrentPage(pageParam);
+      }
+
+      const handlePopState = () => {
+        const params = new URLSearchParams(window.location.search);
+        const p = params.get('page') || 'dashboard';
+        setCurrentPage(p);
+      };
+      window.addEventListener('popstate', handlePopState);
+      setIsInitialized(true);
+      return () => window.removeEventListener('popstate', handlePopState);
+    } else {
+      setIsInitialized(true);
+    }
   }, []);
+
+  const handlePageChange = (page: string) => {
+    setCurrentPage(page);
+    if (typeof window !== 'undefined') {
+      const newUrl = page === 'dashboard' ? '/' : `/?page=${page}`;
+      window.history.pushState({ page }, '', newUrl);
+    }
+  };
 
   if (!isInitialized) {
     return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">Đang tải...</div>;
@@ -107,7 +134,17 @@ export default function Page() {
             setAccounts={handleSetAccounts}
             currentUserId={currentUser.id}
           />
-        ) : null;
+        ) : (
+          <div className="p-12 flex flex-col items-center justify-center min-h-[500px] text-center">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4 text-2xl font-bold shadow-sm border border-red-200">
+              403
+            </div>
+            <h2 className="text-xl font-bold text-foreground mb-2">Truy cập trái phép bị chặn (403)</h2>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Tài khoản hiện tại của bạn không có quyền Quản trị viên (Admin) để truy cập chức năng này.
+            </p>
+          </div>
+        );
       default:
         return <Dashboard />;
     }
@@ -117,7 +154,7 @@ export default function Page() {
     <div className="flex h-screen bg-background">
       <Sidebar
         currentPage={currentPage}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
         currentUser={currentUser}
         onLogout={handleLogout}
       />

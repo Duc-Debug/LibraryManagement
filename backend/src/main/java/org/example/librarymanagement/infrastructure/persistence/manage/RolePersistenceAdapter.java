@@ -3,6 +3,7 @@ package org.example.librarymanagement.infrastructure.persistence.manage;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Role;
+import org.example.librarymanagement.infrastructure.persistence.user.RoleJpaRepository;
 import org.example.librarymanagement.port.outbound.manage.LoadRolePort;
 import org.springframework.stereotype.Component;
 
