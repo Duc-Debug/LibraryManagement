@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.example.librarymanagement.infrastructure.security.AccessTokenAuthenticationFilter;
 import org.example.librarymanagement.infrastructure.security.JwtProperties;
+import org.example.librarymanagement.infrastructure.security.JwtTokenFilter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+@lombok.RequiredArgsConstructor
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
