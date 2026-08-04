@@ -12,21 +12,36 @@ export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       setError("Vui lòng nhập đầy đủ thông tin.");
       return;
     }
-    const account = accounts.find((a) => a.username === username && a.password === password);
-    if (!account) {
-      setError("Tên đăng nhập hoặc mật khẩu không đúng.");
-      return;
+    try {
+      const res = await login({ username, password });
+
+      localStorage.setItem('accessToken', res.accessToken);
+      localStorage.setItem('tokenType', res.tokenType);
+      localStorage.setItem('currentUser', JSON.stringify({
+        userId: res.userId,
+        username: res.username,
+        fullName: res.fullName,
+        roles: res.roles
+      }));
+
+      const account: UserAccount = {
+        id: String(res.userId),
+        username: res.username,
+        password: '',
+        fullName: res.fullName,
+        role: (res.roles.includes('ADMIN') || res.roles.includes('LIBRARIAN')) ? 'thu_thu' : 'nguoi_dung',
+        active: true,
+      };
+
+      onLogin(account);
+    } catch (err) {
+      setError('Tên đăng nhập hoặc mật khẩu không đúng.');
     }
-    if (!account.active) {
-      setError("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
-      return;
-    }
-    onLogin(account);
   };
 
   return (

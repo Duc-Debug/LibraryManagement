@@ -8,12 +8,34 @@ import BooksPage from "@/pages/BooksPage";
 import MembersPage from "@/pages/MembersPage";
 import BorrowPage from "@/pages/BorrowPage";
 import ReturnPage from "@/pages/ReturnPage";
+import AccountsPage from "@/pages/AccountsPage";
 import { logout as logoutRequest } from "@/api/authApi";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(() => {
-  return Boolean(localStorage.getItem("accessToken"));
-});
+    return Boolean(localStorage.getItem("accessToken"));
+  });
+
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
+    const savedUser = localStorage.getItem("currentUser");
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        return {
+          id: String(parsed.userId || parsed.id),
+          username: parsed.username,
+          password: '',
+          fullName: parsed.fullName,
+          role: (parsed.roles && (parsed.roles.includes('ADMIN') || parsed.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
+          active: true
+        };
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
+
   const [page, setPage] = useState<Page>("dashboard");
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
@@ -22,31 +44,33 @@ export default function App() {
   const [books, setBooks] = useState<Book[]>(INITIAL_BOOKS);
   const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
   const [records, setRecords] = useState<BorrowRecord[]>(INITIAL_BORROW_RECORDS);
-const handleLogout = async () => {
-  const accessToken = localStorage.getItem("accessToken");
 
-  try {
-    if (accessToken) {
-      await logoutRequest(accessToken);
+  const handleLogout = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    try {
+      if (accessToken) {
+        await logoutRequest(accessToken);
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("tokenType");
+      localStorage.removeItem("currentUser");
+
+      setLoggedIn(false);
+      setCurrentUser(null);
+      setPage("dashboard");
     }
-  } catch (error) {
-    console.error("Logout failed:", error);
-  } finally {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("tokenType");
-    localStorage.removeItem("currentUser");
-
-    setLoggedIn(false);
-  }
-};
-  if (!loggedIn) {
-    return <LoginPage onLogin={() => setLoggedIn(true)} />;
-  }
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setPage("dashboard");
   };
+
+  if (!loggedIn || !currentUser) {
+    return <LoginPage accounts={accounts} onLogin={(user) => {
+      setCurrentUser(user);
+      setLoggedIn(true);
+    }} />;
+  }
 
   // Keep accounts in sync: if current user's account was edited, update currentUser
   const handleSetAccounts = (updated: UserAccount[]) => {
@@ -111,3 +135,4 @@ const handleLogout = async () => {
     </div>
   );
 }
+

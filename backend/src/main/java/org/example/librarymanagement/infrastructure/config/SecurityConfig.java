@@ -37,6 +37,7 @@ public class SecurityConfig {
             CorsConfigurationSource corsConfigurationSource
     ) throws Exception {
 
+
         return http
                 .cors(cors ->
                         cors.configurationSource(corsConfigurationSource)
@@ -67,7 +68,7 @@ public class SecurityConfig {
                         UsernamePasswordAuthenticationFilter.class
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
+.httpBasic(AbstractHttpConfigurer::disable)
                 .build();
     }
 
@@ -75,11 +76,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://localhost:5173",
-                "http://localhost:5500",
-                "http://127.0.0.1:5500"
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "http://172.31.208.1:*",
+                "http://0.0.0.0:*"
         ));
 
         configuration.setAllowedMethods(List.of(
@@ -100,8 +101,6 @@ public class SecurityConfig {
         configuration.setExposedHeaders(List.of(
                 "Authorization"
         ));
-
-
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
 
@@ -109,7 +108,7 @@ public class SecurityConfig {
                 new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", configuration);
-
-        return source;
+ 
+         return source;
     }
 }

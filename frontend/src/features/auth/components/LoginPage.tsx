@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { login } from '@/api/authApi';
 import type { UserAccount } from '@/features/accounts';
 
 interface LoginPageProps {
@@ -13,27 +14,37 @@ export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       setError('Vui lòng nhập đầy đủ thông tin.');
       return;
     }
 
-    const account = accounts.find(
-      (a) => a.username === username && a.password === password
-    );
+    try {
+      const data = await login({ username, password });
 
-    if (!account) {
-      setError('Tên đăng nhập hoặc mật khẩu không đúng.');
-      return;
+      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem('tokenType', data.tokenType || 'Bearer');
+      localStorage.setItem('currentUser', JSON.stringify({
+        userId: data.userId,
+        username: data.username,
+        fullName: data.fullName,
+        roles: data.roles
+      }));
+
+      const account: UserAccount = {
+        id: String(data.userId),
+        username: data.username,
+        password: '',
+        fullName: data.fullName,
+        role: (data.roles && (data.roles.includes('ADMIN') || data.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
+        active: true,
+      };
+
+      onLogin(account);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không thể đăng nhập lúc này.');
     }
-
-    if (!account.active) {
-      setError('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
-      return;
-    }
-
-    onLogin(account);
   };
 
   return (
