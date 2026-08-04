@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import type { UserAccount } from '@/features/accounts';
-import { login } from '@/api/authApi';
-import { AuthStorage } from '@/lib/authStorage';
 
 interface LoginPageProps {
   accounts: UserAccount[];
@@ -14,50 +12,28 @@ export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (loading) return;
-
+  const handleLogin = () => {
     if (!username || !password) {
       setError('Vui lòng nhập đầy đủ thông tin.');
       return;
     }
 
-    setLoading(true);
-    try {
-      const data = await login({ username, password });
-      AuthStorage.saveLogin(data);
+    const account = accounts.find(
+      (a) => a.username === username && a.password === password
+    );
 
-      const account: UserAccount = {
-        id: String(data.userId),
-        username: data.username,
-        password: '',
-        fullName: data.fullName,
-        role: (data.roles && (data.roles.includes('ADMIN') || data.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
-        active: true,
-      };
-
-      onLogin(account);
-    } catch (err: any) {
-      const account = accounts.find(
-        (a) => a.username === username && a.password === password
-      );
-
-      if (!account) {
-        setError(err?.message || 'Tên đăng nhập hoặc mật khẩu không đúng.');
-        return;
-      }
-
-      if (!account.active) {
-        setError('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
-        return;
-      }
-
-      onLogin(account);
-    } finally {
-      setLoading(false);
+    if (!account) {
+      setError('Tên đăng nhập hoặc mật khẩu không đúng.');
+      return;
     }
+
+    if (!account.active) {
+      setError('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.');
+      return;
+    }
+
+    onLogin(account);
   };
 
   return (
@@ -112,10 +88,9 @@ export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
 
           <button
             onClick={handleLogin}
-            disabled={loading}
-            className="w-full py-3 rounded-xl text-sm font-semibold text-primary-foreground mt-1 hover:opacity-90 transition-opacity bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl text-sm font-semibold text-primary-foreground mt-1 hover:opacity-90 transition-opacity bg-primary"
           >
-            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+            Đăng nhập
           </button>
         </div>
 
