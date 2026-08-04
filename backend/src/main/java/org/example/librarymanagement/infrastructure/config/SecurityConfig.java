@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.example.librarymanagement.infrastructure.security.AccessTokenAuthenticationFilter;
 import org.example.librarymanagement.infrastructure.security.JwtProperties;
-import org.example.librarymanagement.infrastructure.security.JwtTokenFilter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,38 +36,37 @@ public class SecurityConfig {
             CorsConfigurationSource corsConfigurationSource
     ) throws Exception {
 
-
         return http
-                .cors(cors ->
-                        cors.configurationSource(corsConfigurationSource)
+                .cors(cors
+                        -> cors.configurationSource(corsConfigurationSource)
                 )
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+                .sessionManagement(session
+                        -> session.sessionCreationPolicy(
+                        SessionCreationPolicy.STATELESS
+                )
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(
-                                HttpMethod.OPTIONS,
-                                "/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/auth/login",
-                                "/api/auth/logout"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/error"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                .requestMatchers(
+                        HttpMethod.OPTIONS,
+                        "/**"
+                ).permitAll()
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/auth/login",
+                        "/api/auth/logout"
+                ).permitAll()
+                .requestMatchers(
+                        "/error"
+                ).permitAll()
+                .anyRequest().authenticated()
                 )
                 .addFilterBefore(
                         accessTokenAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
-.httpBasic(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
                 .build();
     }
 
@@ -104,11 +102,11 @@ public class SecurityConfig {
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source
+                = new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", configuration);
- 
-         return source;
+
+        return source;
     }
 }

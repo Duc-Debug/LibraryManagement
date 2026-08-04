@@ -3,7 +3,6 @@ package org.example.librarymanagement.domain.entity;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;

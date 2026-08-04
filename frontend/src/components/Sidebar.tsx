@@ -36,7 +36,7 @@ const ALL_NAV_ITEMS: { id: Page; label: string; icon: JSX.Element; adminOnly?: b
 ];
 
 export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLogout, currentRole }: SidebarProps) {
-  const navItems = ALL_NAV_ITEMS.filter((item) => !item.adminOnly || currentRole === "thu_thu");
+  const navItems = ALL_NAV_ITEMS.filter((item) => !item.adminOnly || currentRole === "admin");
 
   return (
     <aside

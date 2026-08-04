@@ -39,7 +39,7 @@ export default function Page() {
           username: parsed.username,
           password: '',
           fullName: parsed.fullName,
-          role: (parsed.roles && (parsed.roles.includes('ADMIN') || parsed.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
+          role: (parsed.roles && parsed.roles.includes('ADMIN')) ? 'admin' : (parsed.roles && parsed.roles.includes('LIBRARIAN')) ? 'thu_thu' : 'nguoi_dung',
           active: true
         });
       } catch (e) {
@@ -151,7 +151,7 @@ export default function Page() {
       case 'returns':
         return <ReturnsPage />;
       case 'accounts':
-        return currentUser.role === 'thu_thu' ? (
+        return currentUser.role === 'admin' ? (
           <AccountsPage
             accounts={accounts}
             setAccounts={handleSetAccounts}

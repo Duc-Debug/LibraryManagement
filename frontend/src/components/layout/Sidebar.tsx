@@ -67,7 +67,7 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
             label: 'Trả sách',
             icon: Repeat2,
           },
-          ...(currentUser?.role === 'thu_thu'
+          ...(currentUser?.role === 'admin'
             ? [
                 {
                   id: 'accounts',
@@ -93,7 +93,11 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
           <div className="flex flex-col">
             <h1 className="text-sm font-bold text-sidebar-foreground">Thư viện</h1>
             <p className="text-xs text-sidebar-foreground/60">
-              {currentUser?.role === 'nguoi_dung' ? 'Giao diện người dùng' : 'Giao diện thủ thư/admin'}
+              {currentUser?.role === 'admin'
+                ? 'Giao diện Quản trị viên'
+                : currentUser?.role === 'thu_thu'
+                ? 'Giao diện thủ thư'
+                : 'Giao diện người dùng'}
             </p>
           </div>
         </div>
@@ -142,7 +146,11 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
               {currentUser.fullName}
             </p>
             <p className="text-xs text-sidebar-foreground/60 truncate">
-              {currentUser.role === 'thu_thu' ? 'Thủ thư' : 'Người dùng'}
+              {currentUser.role === 'admin'
+                ? 'Quản trị viên'
+                : currentUser.role === 'thu_thu'
+                ? 'Thủ thư'
+                : 'Người dùng'}
             </p>
           </div>
         )}

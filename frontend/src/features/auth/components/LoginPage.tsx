@@ -32,12 +32,15 @@ export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
         roles: data.roles
       }));
 
+      const isSystemAdmin = data.roles && data.roles.includes('ADMIN');
+      const isLibrarian = data.roles && data.roles.includes('LIBRARIAN');
+
       const account: UserAccount = {
         id: String(data.userId),
         username: data.username,
         password: '',
         fullName: data.fullName,
-        role: (data.roles && (data.roles.includes('ADMIN') || data.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
+        role: isSystemAdmin ? 'admin' : isLibrarian ? 'thu_thu' : 'nguoi_dung',
         active: true,
       };
 
