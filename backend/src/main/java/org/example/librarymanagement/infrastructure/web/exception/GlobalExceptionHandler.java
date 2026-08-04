@@ -1,4 +1,4 @@
-package org.example.librarymanagement.infrastructure.web;
+package org.example.librarymanagement.infrastructure.web.exception;
 
 import org.example.librarymanagement.application.auth.InvalidCredentialsException;
 import org.example.librarymanagement.domain.exceptions.DomainException;
@@ -11,27 +11,21 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(InvalidAuthorizationHeaderException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidAuthorizationHeader(
-            InvalidAuthorizationHeaderException exception
-    ) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of(
-                        "INVALID_AUTHORIZATION_HEADER",
-                        exception.getMessage()
-                ));
-    }
-
+    // 1. Trả về thông tin chi tiết các trường bị lỗi validation (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException() {
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        String detailMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of("VALIDATION_ERROR", "Invalid request"));
+                .body(ErrorResponse.of("VALIDATION_ERROR", detailMessage.isEmpty() ? "Invalid request" : detailMessage));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -42,9 +36,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidCredentials(
-            InvalidCredentialsException exception
-    ) {
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException exception) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.of("INVALID_CREDENTIALS", exception.getMessage()));
@@ -60,25 +52,23 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DomainException.class)
-    public ResponseEntity<ErrorResponse> handleDomainException(
-            DomainException exception
-    ) {
+    public ResponseEntity<ErrorResponse> handleDomainException(DomainException exception) {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(ErrorResponse.of("LOGIN_NOT_ALLOWED", exception.getMessage()));
+                .body(ErrorResponse.of("DOMAIN_ERROR", exception.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(
-            IllegalArgumentException exception
-    ) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of("BAD_REQUEST", exception.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpectedException() {
+    public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception ex) {
+        // Nên log lỗi ra console hoặc file để debug
+        ex.printStackTrace(); 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of("INTERNAL_ERROR", "Unexpected server error"));

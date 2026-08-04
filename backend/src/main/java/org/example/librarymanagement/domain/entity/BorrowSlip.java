@@ -2,7 +2,7 @@ package org.example.librarymanagement.domain.entity;
 
 import java.time.LocalDateTime;
 
-import org.example.librarymanagement.domain.enums.BorrowSlip_Status;
+import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class BorrowSlip {
@@ -12,7 +12,7 @@ public class BorrowSlip {
     private LocalDateTime borrowDate;
     private LocalDateTime dueDate;
     private LocalDateTime returnDate;
-    private BorrowSlip_Status status;
+    private BorrowSlipStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -24,7 +24,7 @@ public class BorrowSlip {
             LocalDateTime borrowDate,
             LocalDateTime dueDate,
             LocalDateTime returnDate,
-            BorrowSlip_Status status,
+            BorrowSlipStatus status,
             LocalDateTime createdAt,
             LocalDateTime updatedAt) {
 
@@ -103,11 +103,11 @@ public class BorrowSlip {
         this.returnDate = returnDate;
     }
 
-    public BorrowSlip_Status getStatus() {
+    public BorrowSlipStatus getStatus() {
         return status;
     }
 
-    public void setStatus(BorrowSlip_Status status) {
+    public void setStatus(BorrowSlipStatus status) {
         if (status == null) {
             throw new DomainException("Status cannot be null.");
         }

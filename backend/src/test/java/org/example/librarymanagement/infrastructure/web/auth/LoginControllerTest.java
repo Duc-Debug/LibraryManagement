@@ -3,11 +3,11 @@ package org.example.librarymanagement.infrastructure.web.auth;
 import java.util.Set;
 
 import org.example.librarymanagement.application.auth.InvalidCredentialsException;
-import org.example.librarymanagement.infrastructure.web.GlobalExceptionHandler;
-import org.example.librarymanagement.port.inbound.auth.LoginCommand;
-import org.example.librarymanagement.port.inbound.auth.LoginResult;
+import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptionHandler;
+import org.example.librarymanagement.port.dtos.auth.LoginCommand;
+import org.example.librarymanagement.port.dtos.auth.LoginResult;
 import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
-import org.example.librarymanagement.port.inbound.auth.LogoutCommand;
+import org.example.librarymanagement.port.dtos.auth.LogoutCommand;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;

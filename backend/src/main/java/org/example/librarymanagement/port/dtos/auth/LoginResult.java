@@ -1,4 +1,4 @@
-package org.example.librarymanagement.port.inbound.auth;
+package org.example.librarymanagement.port.dtos.auth;
 
 import java.util.Set;
 

@@ -1,5 +1,5 @@
 package org.example.librarymanagement.domain.enums;
 
-public enum BorrowSlip_Status {
+public enum BorrowSlipStatus {
     BORROWED, RETURNED, OVERDUE;
 }

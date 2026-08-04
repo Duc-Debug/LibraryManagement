@@ -1,97 +1,108 @@
-package org.example.librarymanagement.application.auth;
+﻿package org.example.librarymanagement.application.auth;
 
 import java.time.Instant;
 import java.util.Set;
 
-import org.example.librarymanagement.port.inbound.auth.LogoutCommand;
+import org.example.librarymanagement.application.shared.ValidationException;
+import org.example.librarymanagement.port.dtos.auth.LogoutCommand;
+import org.example.librarymanagement.port.dtos.auth.LogoutResult;
 import org.example.librarymanagement.port.outbound.auth.AccessTokenRevocationPort;
 import org.example.librarymanagement.port.outbound.auth.AccessTokenVerifierPort;
 import org.example.librarymanagement.port.outbound.auth.token.AccessTokenVerificationResult;
 import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class LogoutServiceTest {
 
+    @Mock
     private AccessTokenVerifierPort accessTokenVerifierPort;
+
+    @Mock
     private AccessTokenRevocationPort accessTokenRevocationPort;
+
+    @InjectMocks
     private LogoutService logoutService;
 
-    @BeforeEach
-    void setUp() {
-        accessTokenVerifierPort = mock(AccessTokenVerifierPort.class);
-        accessTokenRevocationPort = mock(AccessTokenRevocationPort.class);
-
-        logoutService = new LogoutService(
-                accessTokenVerifierPort,
-                accessTokenRevocationPort
-        );
-    }
-
     @Test
-    void rejectsNullCommand() {
-        assertThrows(
-                RuntimeException.class,
-                () -> logoutService.logout(null)
-        );
-    }
-
-    @Test
-    void rejectsBlankToken() {
-        assertThrows(
-                RuntimeException.class,
-                () -> logoutService.logout(new LogoutCommand(" "))
-        );
-    }
-
-    @Test
-    void revokesValidTokenByTokenIdUntilExpiration() {
-        Instant issuedAt = Instant.now();
-        Instant expiresAt = issuedAt.plusSeconds(3600);
-
+    @DisplayName("Thành công: token hợp lệ thì revoke và trả về success")
+    void logout_WithValidToken_ShouldReturnSuccessResult() {
+        String validToken = "valid.jwt.token.here";
+        LogoutCommand command = new LogoutCommand(validToken);
+        Instant expiresAt = Instant.now().plusSeconds(3600);
         VerifiedAccessToken verifiedToken = new VerifiedAccessToken(
-                "token-id-123",
+                "token-id",
                 1L,
                 "alice",
-                Set.of("ADMIN"),
-                issuedAt,
+                Set.of("USER"),
+                Instant.now(),
                 expiresAt
         );
 
-        when(accessTokenVerifierPort.verifyOrReject("raw-jwt"))
-                .thenReturn(new AccessTokenVerificationResult.Valid(
-                        verifiedToken
-                ));
+        when(accessTokenVerifierPort.verifyOrReject(validToken))
+                .thenReturn(new AccessTokenVerificationResult.Valid(verifiedToken));
 
-        logoutService.logout(new LogoutCommand("raw-jwt"));
+        LogoutResult result = logoutService.logout(command);
 
-        verify(accessTokenVerifierPort).verifyOrReject("raw-jwt");
-        verify(accessTokenRevocationPort).revoke(
-                "token-id-123",
-                expiresAt
-        );
+        assertTrue(result.success());
+        assertEquals("Logout successful.", result.message());
+        verify(accessTokenRevocationPort).revoke("token-id", expiresAt);
     }
 
     @Test
-    void treatsRejectedTokenAsSuccessfulLogoutNoOp() {
-        when(accessTokenVerifierPort.verifyOrReject("invalid-token"))
-                .thenReturn(new AccessTokenVerificationResult.Rejected(
-                        "Access token is invalid"
-                ));
+    @DisplayName("Thất bại: token null thì ném ValidationException")
+    void logout_WithNullToken_ShouldThrowValidationException() {
+        LogoutCommand command = new LogoutCommand(null);
 
-        assertDoesNotThrow(
-                () -> logoutService.logout(new LogoutCommand("invalid-token"))
-        );
+        assertThrows(ValidationException.class, () -> logoutService.logout(command));
 
-        verify(accessTokenVerifierPort).verifyOrReject("invalid-token");
-        verify(accessTokenRevocationPort, never()).revoke(any(), any());
+        verifyNoInteractions(accessTokenVerifierPort);
+        verifyNoInteractions(accessTokenRevocationPort);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "   ", "\t", "\n"})
+    @DisplayName("Thất bại: token rỗng hoặc chỉ chứa khoảng trắng")
+    void logout_WithEmptyOrBlankToken_ShouldThrowValidationException(String invalidToken) {
+        LogoutCommand command = new LogoutCommand(invalidToken);
+
+        assertThrows(ValidationException.class, () -> logoutService.logout(command));
+
+        verifyNoInteractions(accessTokenVerifierPort);
+        verifyNoInteractions(accessTokenRevocationPort);
+    }
+
+    @Test
+    @DisplayName("Thất bại: token không hợp lệ thì không revoke")
+    void logout_WithRejectedToken_ShouldReturnFailureResult() {
+        String token = "expired.jwt.token";
+        LogoutCommand command = new LogoutCommand(token);
+
+        when(accessTokenVerifierPort.verifyOrReject(token))
+                .thenReturn(new AccessTokenVerificationResult.Rejected("Expired"));
+
+        LogoutResult result = logoutService.logout(command);
+
+        assertFalse(result.success());
+        assertEquals("Invalid or expired token.", result.message());
+        verify(accessTokenRevocationPort, never()).revoke(anyString(), any(Instant.class));
     }
 }

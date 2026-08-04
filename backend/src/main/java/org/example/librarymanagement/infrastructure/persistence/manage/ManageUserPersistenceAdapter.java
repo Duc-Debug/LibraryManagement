@@ -19,9 +19,10 @@ import org.springframework.stereotype.Component;
 public class ManageUserPersistenceAdapter implements FindUserPort, SaveUserPort {
 
     private final UserJpaRepository userJpaRepository;
-
-    public ManageUserPersistenceAdapter(UserJpaRepository userJpaRepository) {
+    private final UserPersistenceMapper userPersistenceMapper; 
+    public ManageUserPersistenceAdapter(UserJpaRepository userJpaRepository, UserPersistenceMapper userPersistenceMapper) {
         this.userJpaRepository = userJpaRepository;
+        this.userPersistenceMapper = userPersistenceMapper;
     }
 
     // ==========================================
@@ -32,7 +33,7 @@ public class ManageUserPersistenceAdapter implements FindUserPort, SaveUserPort 
     public List<User> findByRoleName(String roleName) {
         return userJpaRepository.findByRoles_Name(roleName)
                 .stream()
-                .map(UserPersistenceMapper::toDomain)
+                .map(userPersistenceMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
@@ -44,7 +45,7 @@ public class ManageUserPersistenceAdapter implements FindUserPort, SaveUserPort 
     @Override
     public Optional<User> findById(Long id) {
         return userJpaRepository.findById(id)
-                .map(UserPersistenceMapper::toDomain);
+                .map(userPersistenceMapper::toDomain);
     }
 
     // ==========================================
@@ -60,7 +61,7 @@ public class ManageUserPersistenceAdapter implements FindUserPort, SaveUserPort 
         UserJpaEntity savedEntity = userJpaRepository.save(entityToSave);
         
         // 3. Map ngược JPA Entity trả về sang Domain Model
-        return UserPersistenceMapper.toDomain(savedEntity);
+        return userPersistenceMapper.toDomain(savedEntity);
     }
 
     // ==========================================
