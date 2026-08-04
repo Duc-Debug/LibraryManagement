@@ -24,12 +24,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-@lombok.RequiredArgsConstructor
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return objectMapper;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
