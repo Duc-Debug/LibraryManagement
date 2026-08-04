@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.example.librarymanagement.infrastructure.security.AccessTokenAuthenticationFilter;
 import org.example.librarymanagement.infrastructure.security.JwtProperties;
-
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,7 +66,7 @@ public class SecurityConfig {
                         accessTokenAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 )
-.formLogin(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
 .httpBasic(AbstractHttpConfigurer::disable)
                 .build();
     }
