@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Page, UserRole } from "@/types";
 import {
   IconBook,
@@ -35,7 +36,7 @@ function IconUser({ size = 20, className = "" }: { size?: number; className?: st
   );
 }
 
-const ALL_NAV_ITEMS: { id: Page; label: string; icon: JSX.Element; adminOnly?: boolean }[] = [
+const ALL_NAV_ITEMS: { id: Page; label: string; icon: ReactNode; adminOnly?: boolean }[] = [
   { id: "dashboard", label: "Bảng điều khiển", icon: <IconGrid /> },
   { id: "books", label: "Quản lý Sách", icon: <IconBook /> },
   { id: "members", label: "Thành viên", icon: <IconUsers /> },

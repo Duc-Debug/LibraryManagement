@@ -9,8 +9,11 @@ import {
   updateLibrarian,
   deleteLibrarian,
 } from '@/api/librarianApi';
+import type { UserAccount } from '@/types';
 
 interface AccountsPageProps {
+  accounts?: UserAccount[];
+  setAccounts?: (updated: UserAccount[]) => void;
   currentUserId?: string | number;
 }
 

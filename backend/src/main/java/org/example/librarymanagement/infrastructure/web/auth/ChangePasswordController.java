@@ -6,6 +6,7 @@ import org.example.librarymanagement.infrastructure.web.auth.dtos.ChangePassword
 import org.example.librarymanagement.port.dtos.auth.ChangePasswordCommand;
 import org.example.librarymanagement.port.dtos.auth.ChangePasswordResult;
 import org.example.librarymanagement.port.inbound.auth.ChangePasswordUseCase;
+import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -26,23 +26,31 @@ public class ChangePasswordController {
 
     @PostMapping("/change-password")
     @Transactional
-    public ResponseEntity<ChangePasswordResult> changePassword(@AuthenticationPrincipal
-        UserPrincipal principal, 
+    public ResponseEntity<ChangePasswordResult> changePassword(
+            @AuthenticationPrincipal Object principal,
             @Valid @RequestBody ChangePasswordRequest request
-    ){
-        if (principal == null) {
-        throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
-    }
+    ) {
+        Long userId = extractUserId(principal);
         ChangePasswordCommand command = new ChangePasswordCommand(
-                principal.getId(), // 👈 Dùng ID của user đã đăng nhập
+                userId,
                 request.oldPassword(),
                 request.newPassword(),
                 request.confirmPassword()
         );
         ChangePasswordResult result = changePasswordUseCase.changePassword(command);
-        if(!result.success()){
+        if (!result.success()) {
             return ResponseEntity.badRequest().body(result);
         }
         return ResponseEntity.ok(result);
+    }
+
+    private Long extractUserId(Object principal) {
+        if (principal instanceof UserPrincipal userPrincipal) {
+            return userPrincipal.getId();
+        }
+        if (principal instanceof VerifiedAccessToken verifiedToken) {
+            return verifiedToken.userId();
+        }
+        throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
     }
 }

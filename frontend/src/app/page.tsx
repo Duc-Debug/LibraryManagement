@@ -12,6 +12,7 @@ import { LoginPage } from '@/features/auth';
 import { AccountsPage, mockUserAccounts } from '@/features/accounts';
 import type { UserAccount } from '@/features/accounts';
 import { logout } from '@/api/authApi';
+import SettingsPage from '@/pages/SettingsPage';
 import {
   ReaderHome,
   BookDetails,
@@ -88,6 +89,22 @@ export default function Page() {
     if (me) setCurrentUser(me);
   };
 
+  const handleProfileUpdated = (updated: any) => {
+    setCurrentUser((prev) => (prev ? { ...prev, ...updated } : null));
+    const savedUserStr = localStorage.getItem('currentUser');
+    if (savedUserStr) {
+      try {
+        const parsed = JSON.parse(savedUserStr);
+        parsed.fullName = updated.fullName;
+        parsed.email = updated.email;
+        parsed.phone = updated.phone;
+        localStorage.setItem('currentUser', JSON.stringify(parsed));
+      } catch (e) {
+        console.error('Failed to update localStorage currentUser:', e);
+      }
+    }
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
@@ -108,6 +125,22 @@ export default function Page() {
             currentUserId={currentUser.id}
           />
         ) : null;
+      case 'settings':
+        return (
+          <SettingsPage
+            currentUser={{
+              id: currentUser.id,
+              username: currentUser.username,
+              password: '',
+              fullName: currentUser.fullName,
+              email: currentUser.email,
+              phone: currentUser.phone,
+              role: currentUser.role === 'admin' ? 'admin' : 'thu_thu',
+              active: currentUser.active ?? true,
+            }}
+            onProfileUpdated={handleProfileUpdated}
+          />
+        );
       default:
         return <Dashboard />;
     }

@@ -6,6 +6,7 @@ import org.example.librarymanagement.infrastructure.web.auth.dtos.UpdateProfileR
 import org.example.librarymanagement.port.dtos.auth.UpdateProfileCommand;
 import org.example.librarymanagement.port.inbound.auth.ProfileUseCase;
 import org.example.librarymanagement.port.inbound.manage.UserResult;
+import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,29 +27,35 @@ public class UserProfileController {
     private final ProfileUseCase profileUseCase;
 
     @GetMapping("/me")
-    public ResponseEntity<UserResult> getMyProfile(@AuthenticationPrincipal UserPrincipal principal) {
-        if (principal == null) {
-            throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
-        }
-        UserResult profile = profileUseCase.getProfile(principal.getId());
+    public ResponseEntity<UserResult> getMyProfile(@AuthenticationPrincipal Object principal) {
+        Long userId = extractUserId(principal);
+        UserResult profile = profileUseCase.getProfile(userId);
         return ResponseEntity.ok(profile);
     }
 
     @PutMapping("/profile")
     @Transactional
     public ResponseEntity<UserResult> updateMyProfile(
-            @AuthenticationPrincipal UserPrincipal principal,
+            @AuthenticationPrincipal Object principal,
             @Valid @RequestBody UpdateProfileRequest request
     ) {
-        if (principal == null) {
-            throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
-        }
+        Long userId = extractUserId(principal);
         UpdateProfileCommand command = new UpdateProfileCommand(
                 request.fullName(),
                 request.email(),
                 request.phone()
         );
-        UserResult updated = profileUseCase.updateProfile(principal.getId(), command);
+        UserResult updated = profileUseCase.updateProfile(userId, command);
         return ResponseEntity.ok(updated);
+    }
+
+    private Long extractUserId(Object principal) {
+        if (principal instanceof UserPrincipal userPrincipal) {
+            return userPrincipal.getId();
+        }
+        if (principal instanceof VerifiedAccessToken verifiedToken) {
+            return verifiedToken.userId();
+        }
+        throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
     }
 }
