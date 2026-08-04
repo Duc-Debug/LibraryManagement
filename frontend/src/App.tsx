@@ -21,12 +21,13 @@ export default function App() {
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
+        const roles = parsed.roles ?? [];
         return {
           id: String(parsed.userId || parsed.id),
           username: parsed.username,
           password: '',
           fullName: parsed.fullName,
-          role: (parsed.roles && (parsed.roles.includes('ADMIN') || parsed.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
+          role: roles.includes('ADMIN') ? 'admin' : 'thu_thu',
           active: true
         };
       } catch (e) {

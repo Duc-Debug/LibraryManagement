@@ -7,7 +7,7 @@ export const mockUserAccounts: UserAccount[] = [
     username: 'admin',
     password: 'admin',
     fullName: 'Quản trị viên',
-    role: 'thu_thu',
+    role: 'admin',
     active: true,
   },
   {
@@ -23,7 +23,7 @@ export const mockUserAccounts: UserAccount[] = [
     username: 'user1',
     password: 'user123',
     fullName: 'Trần Văn Bình',
-    role: 'nguoi_dung',
+    role: 'thu_thu',
     active: true,
   },
   {
@@ -31,7 +31,7 @@ export const mockUserAccounts: UserAccount[] = [
     username: 'user2',
     password: 'user456',
     fullName: 'Lê Thị Mai',
-    role: 'nguoi_dung',
+    role: 'thu_thu',
     active: false,
   },
 ];
