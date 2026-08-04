@@ -15,20 +15,20 @@ public class LogoutService implements LogoutUseCase {
     private final AccessTokenVerifierPort accessTokenVerifierPort;
     private final AccessTokenRevocationPort accessTokenRevocationPort;
 
-   public LogoutService(
-        AccessTokenVerifierPort accessTokenVerifierPort,
-        AccessTokenRevocationPort accessTokenRevocationPort
-) {
-    this.accessTokenVerifierPort = Objects.requireNonNull(
-            accessTokenVerifierPort,
-            "Access token verifier port must not be null"
-    );
+    public LogoutService(
+            AccessTokenVerifierPort accessTokenVerifierPort,
+            AccessTokenRevocationPort accessTokenRevocationPort
+    ) {
+        this.accessTokenVerifierPort = Objects.requireNonNull(
+                accessTokenVerifierPort,
+                "Access token verifier port must not be null"
+        );
 
-    this.accessTokenRevocationPort = Objects.requireNonNull(
-            accessTokenRevocationPort,
-            "Access token revocation port must not be null"
-    );
-}
+        this.accessTokenRevocationPort = Objects.requireNonNull(
+                accessTokenRevocationPort,
+                "Access token revocation port must not be null"
+        );
+    }
 
     @Override
     public void logout(LogoutCommand command) {
@@ -56,7 +56,6 @@ public class LogoutService implements LogoutUseCase {
                     verifiedToken.tokenId(),
                     verifiedToken.expiresAt()
             );
-           
         }
     }
 }
