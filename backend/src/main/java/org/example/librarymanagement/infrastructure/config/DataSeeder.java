@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+
 @Component
 @Profile({ "local", "dev" })
 @RequiredArgsConstructor
@@ -22,14 +23,6 @@ public class DataSeeder implements CommandLineRunner {
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
     private final PasswordEncoder passwordEncoder;
-
-    // public DataSeeder(UserJpaRepository userJpaRepository, RoleJpaRepository
-    // roleJpaRepository,
-    // PasswordEncoder passwordEncoder) {
-    // this.userJpaRepository = userJpaRepository;
-    // this.roleJpaRepository = roleJpaRepository;
-    // this.passwordEncoder = passwordEncoder;
-    // }
 
     @Override
     @Transactional

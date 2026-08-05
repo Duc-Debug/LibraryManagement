@@ -8,7 +8,7 @@ interface ReturnPageProps {
   setBooks: (b: Book[]) => void;
 }
 
-export default function ReturnPage({ records, setRecords, books, setBooks }: ReturnPageProps) {
+export default function ReturnPage({ records = [], setRecords = () => {}, books = [], setBooks = () => {} }: ReturnPageProps) {
   const pending = records.filter((r) => r.status !== "returned");
 
   const handleReturn = (id: string) => {

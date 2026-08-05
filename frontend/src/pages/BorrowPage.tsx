@@ -9,7 +9,7 @@ interface BorrowPageProps {
   setBooks: (b: Book[]) => void;
 }
 
-export default function BorrowPage({ books, members, records, setRecords, setBooks }: BorrowPageProps) {
+export default function BorrowPage({ books = [], members = [], records = [], setRecords = () => {}, setBooks = () => {} }: BorrowPageProps) {
   const [memberId, setMemberId] = useState("");
   const [bookId, setBookId] = useState("");
   const [dueDate, setDueDate] = useState("");

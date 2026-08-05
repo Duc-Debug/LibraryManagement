@@ -14,11 +14,11 @@ import { logout as logoutRequest } from "@/api/authApi";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(() => {
-    return Boolean(localStorage.getItem("accessToken"));
+    return Boolean(typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
   });
 
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
-    const savedUser = localStorage.getItem("currentUser");
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("currentUser") : null;
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
@@ -106,7 +106,7 @@ export default function App() {
       case "books":
         return <BooksPage books={books} setBooks={setBooks} />;
       case "members":
-        return <MembersPage members={members} setMembers={setMembers} />;
+        return <MembersPage />;
       case "borrow":
         return (
           <BorrowPage
