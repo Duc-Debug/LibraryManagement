@@ -9,7 +9,8 @@ import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class Readers {
 
-    private UUID id;
+    private Long id;
+    private String cardNumber;
     private String name;
     private String email;
     private String phoneNumber;
@@ -20,8 +21,13 @@ public class Readers {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean isActive;
+    private Long createdByUserId;
 
-    public Readers(UUID id, String name, String email, String phoneNumber, String address, CardStatus cardStatus, LocalDate cardIssuedAt, LocalDate cardExpiryAt, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
+    public Readers(Long id, String cardNumber, String name, String email, String phoneNumber, String address, CardStatus cardStatus, LocalDate cardIssuedAt, LocalDate cardExpiryAt, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
+        this(id, cardNumber, name, email, phoneNumber, address, cardStatus, cardIssuedAt, cardExpiryAt, createdAt, updatedAt, isActive, null);
+    }
+
+    public Readers(Long id, String cardNumber, String name, String email, String phoneNumber, String address, CardStatus cardStatus, LocalDate cardIssuedAt, LocalDate cardExpiryAt, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive, Long createdByUserId) {
         if (name == null || name.isEmpty()) {
             throw new DomainException("Name cannot be null or empty");
         }
@@ -37,7 +43,12 @@ public class Readers {
         if (cardStatus == null) {
             throw new DomainException("Card status cannot be null");
         }
+        if (cardNumber == null) {
+            throw new DomainException("Card number cannot be null");
+        }
+
         this.id = id;
+        this.cardNumber = cardNumber;
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
@@ -48,9 +59,18 @@ public class Readers {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.isActive = isActive;
+        this.createdByUserId = createdByUserId;
     }
 
-    public UUID getId() {
+    public Long getCreatedByUserId() {
+        return createdByUserId;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public Long getId() {
         return id;
     }
 

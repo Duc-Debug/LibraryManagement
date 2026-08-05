@@ -87,7 +87,7 @@ export default function App() {
       case "books":
         return <BooksPage books={books} setBooks={setBooks} />;
       case "members":
-        return <MembersPage members={members} setMembers={setMembers} />;
+        return <MembersPage />;
       case "borrow":
         return (
           <BorrowPage

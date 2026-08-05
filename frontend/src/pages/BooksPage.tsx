@@ -7,7 +7,7 @@ interface BooksPageProps {
   setBooks: (b: Book[]) => void;
 }
 
-export default function BooksPage({ books, setBooks }: BooksPageProps) {
+export default function BooksPage({ books = [], setBooks = () => {} }: BooksPageProps) {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ title: "", author: "", genre: "", total: "" });

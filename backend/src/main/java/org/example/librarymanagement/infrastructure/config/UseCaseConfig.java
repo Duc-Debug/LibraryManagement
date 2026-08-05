@@ -1,12 +1,15 @@
 package org.example.librarymanagement.infrastructure.config;
 
 import org.example.librarymanagement.application.manage.UserManagementService;
+import org.example.librarymanagement.application.reader.ReaderManagementService;
 import org.example.librarymanagement.port.inbound.manage.ManageUserUseCase;
+import org.example.librarymanagement.port.inbound.reader.CreateReaderUseCase;
 import org.example.librarymanagement.port.outbound.admin.EncodePasswordPort;
 import org.example.librarymanagement.port.outbound.manage.FindUserPort;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.manage.LoadRolePort;
 import org.example.librarymanagement.port.outbound.manage.SaveUserPort;
+import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -32,5 +35,13 @@ public class UseCaseConfig {
                 encodePasswordPort,
                 getAuthenticatedUserPort
         );
+    }
+
+    @Bean
+    @Transactional
+    public CreateReaderUseCase createReaderUseCase(
+            ReaderRepositoryPort readerRepositoryPort,
+            GetAuthenticatedUserPort getAuthenticatedUserPort) {
+        return new ReaderManagementService(readerRepositoryPort, getAuthenticatedUserPort);
     }
 }

@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+
 @Component
 @Profile({ "local", "dev" })
 @RequiredArgsConstructor
@@ -22,19 +24,25 @@ public class DataSeeder implements CommandLineRunner {
     private final UserJpaRepository userJpaRepository;
     private final RoleJpaRepository roleJpaRepository;
     private final PasswordEncoder passwordEncoder;
-
-    // public DataSeeder(UserJpaRepository userJpaRepository, RoleJpaRepository
-    // roleJpaRepository,
-    // PasswordEncoder passwordEncoder) {
-    // this.userJpaRepository = userJpaRepository;
-    // this.roleJpaRepository = roleJpaRepository;
-    // this.passwordEncoder = passwordEncoder;
-    // }
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
         System.out.println("===> Kích hoạt DataSeeder...");
+
+        // Xử lý nới lỏng/dọn dẹp các cột thừa do ddl-auto=update từng sinh ra trong bảng readers
+        try {
+            jdbcTemplate.execute("ALTER TABLE readers MODIFY COLUMN card_number VARCHAR(50) NULL");
+        } catch (Exception ignored) {}
+
+        try {
+            jdbcTemplate.execute("ALTER TABLE readers MODIFY COLUMN name VARCHAR(100) NULL");
+        } catch (Exception ignored) {}
+
+        try {
+            jdbcTemplate.execute("ALTER TABLE readers ADD COLUMN created_by_user_id BIGINT NULL");
+        } catch (Exception ignored) {}
 
         // 1. Seed hoặc tìm các Role bắt buộc
         RoleJpaEntity adminRole = findOrCreateRole("ADMIN", "Quản trị viên hệ thống");
