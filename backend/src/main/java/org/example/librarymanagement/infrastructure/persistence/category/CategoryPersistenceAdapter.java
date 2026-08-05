@@ -93,7 +93,8 @@ public class CategoryPersistenceAdapter
                 .map(mapper::toDomain)
                 .toList();
     }
-     @Override
+
+    @Override
     public boolean existsByName(
             String name
     ) {

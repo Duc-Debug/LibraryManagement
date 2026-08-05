@@ -40,7 +40,6 @@ public class CategoryJpaEntity {
             name = "description",
             length = 500
     )
-
     private String description;
 
     @Column(

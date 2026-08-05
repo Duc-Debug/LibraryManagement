@@ -2,10 +2,12 @@ package org.example.librarymanagement.infrastructure.persistence.category;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 
+import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
 import org.example.librarymanagement.LibraryManagementApplication;
 import org.example.librarymanagement.domain.entity.Category;
 import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;
@@ -71,6 +73,20 @@ class CategoryPersistenceIntegrationTest {
         assertEquals(
                 "Science",
                 categories.get(1).getName()
+        );
+    }
+
+    @Test
+    void mapsDatabaseUniqueNameViolationToDuplicateCategoryNameException() {
+        categoryRepositoryPort.save(
+                Category.create("Science", null)
+        );
+
+        assertThrows(
+                DuplicateCategoryNameException.class,
+                () -> categoryRepositoryPort.save(
+                        Category.create("Science", null)
+                )
         );
     }
 }
