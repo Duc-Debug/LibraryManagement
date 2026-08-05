@@ -148,6 +148,7 @@ export function MembersPage() {
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Email</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Số điện thoại</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Địa chỉ</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Người tạo</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Trạng thái</th>
                 </tr>
               </thead>
@@ -159,6 +160,11 @@ export function MembersPage() {
                     <td className="px-6 py-4 text-sm text-foreground">{reader.email}</td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">{reader.phoneNumber}</td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">{reader.address}</td>
+                    <td className="px-6 py-4 text-sm text-foreground">
+                      <span className="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 font-medium text-xs border border-blue-100">
+                        {reader.createdByName || "Hệ thống"}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 text-sm">
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${

@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
+
 @Configuration
 @EnableTransactionManagement
 public class UseCaseConfig {
@@ -41,7 +43,9 @@ public class UseCaseConfig {
     @Transactional
     public CreateReaderUseCase createReaderUseCase(
             ReaderRepositoryPort readerRepositoryPort,
-            GetAuthenticatedUserPort getAuthenticatedUserPort) {
-        return new ReaderManagementService(readerRepositoryPort, getAuthenticatedUserPort);
+            GetAuthenticatedUserPort getAuthenticatedUserPort,
+            CardNumberGeneratorPort cardNumberGeneratorPort,
+            FindUserPort findUserPort) {
+        return new ReaderManagementService(readerRepositoryPort, getAuthenticatedUserPort, cardNumberGeneratorPort, findUserPort);
     }
 }

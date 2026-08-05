@@ -14,7 +14,8 @@ public record CreateReaderResult(
         String address,
         CardStatus cardStatus,
         LocalDate cardIssuedAt,
-        LocalDate cardExpiryAt
+        LocalDate cardExpiryAt,
+        String createdByName
         ) {
 
 }

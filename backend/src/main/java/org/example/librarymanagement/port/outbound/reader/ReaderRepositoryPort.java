@@ -22,4 +22,8 @@ public interface ReaderRepositoryPort {
     java.util.List<Readers> findAll();
 
     java.util.List<Readers> findByCreatedByUserId(Long createdByUserId);
+
+    org.example.librarymanagement.port.dtos.common.PageResult<Readers> findAll(int page, int size);
+
+    org.example.librarymanagement.port.dtos.common.PageResult<Readers> findByCreatedByUserId(Long createdByUserId, int page, int size);
 }

@@ -11,21 +11,21 @@ public class ReaderPersistenceMapper {
             return null;
         }
 
-        return new Readers(
-                entity.getId(),
-                entity.getCardNumber(),
-                entity.getName(),
-                entity.getEmail(),
-                entity.getPhoneNumber(),
-                entity.getAddress(),
-                entity.getCardStatus(),
-                entity.getCardIssuedAt(),
-                entity.getCardExpiryAt(),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt(),
-                entity.isActive(),
-                entity.getCreatedByUserId()
-        );
+        return Readers.builder()
+                .id(entity.getId())
+                .cardNumber(entity.getCardNumber())
+                .name(entity.getName())
+                .email(entity.getEmail())
+                .phoneNumber(entity.getPhoneNumber())
+                .address(entity.getAddress())
+                .cardStatus(entity.getCardStatus())
+                .cardIssuedAt(entity.getCardIssuedAt())
+                .cardExpiryAt(entity.getCardExpiryAt())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .isActive(entity.isActive())
+                .createdByUserId(entity.getCreatedByUserId())
+                .build();
     }
 
     /**

@@ -34,7 +34,28 @@ public class ReaderManagementController {
     }
 
     @org.springframework.web.bind.annotation.GetMapping
-    public ResponseEntity<java.util.List<ReaderResponse>> getAllReaders() {
+    public ResponseEntity<Object> getAllReaders(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer page,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer size
+    ) {
+        if (page != null && size != null) {
+            org.example.librarymanagement.port.dtos.common.PageResult<CreateReaderResult> pageResult =
+                    createReaderUseCase.getAllReaders(page, size);
+
+            java.util.List<ReaderResponse> content = pageResult.content().stream()
+                    .map(ReaderResponse::fromResult)
+                    .collect(java.util.stream.Collectors.toList());
+
+            org.example.librarymanagement.port.dtos.common.PageResult<ReaderResponse> responsePage =
+                    org.example.librarymanagement.port.dtos.common.PageResult.of(
+                            content,
+                            pageResult.page(),
+                            pageResult.size(),
+                            pageResult.totalElements()
+                    );
+            return ResponseEntity.ok(responsePage);
+        }
+
         java.util.List<ReaderResponse> list = createReaderUseCase.getAllReaders().stream()
                 .map(ReaderResponse::fromResult)
                 .collect(java.util.stream.Collectors.toList());

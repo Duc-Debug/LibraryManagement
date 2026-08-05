@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import { IconUsers } from "@/components/icons";
@@ -16,7 +18,7 @@ export default function MembersPage() {
   const loadReaders = async () => {
     setLoading(true);
     setError("");
-    const token = localStorage.getItem("accessToken") || "";
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") || "" : "";
     try {
       const data = await fetchAllReaders(token);
       setReaders(data);
@@ -39,7 +41,7 @@ export default function MembersPage() {
 
     setSaving(true);
     setFormError("");
-    const token = localStorage.getItem("accessToken") || "";
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") || "" : "";
 
     try {
       await createReader(
@@ -108,7 +110,7 @@ export default function MembersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
-                {["Mã Thẻ", "Họ và Tên", "Email", "Số điện thoại", "Địa chỉ", "Trạng thái"].map((h) => (
+                {["Mã Thẻ", "Họ và Tên", "Email", "Số điện thoại", "Địa chỉ", "Người tạo", "Trạng thái"].map((h) => (
                   <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-700">
                     {h}
                   </th>
@@ -123,6 +125,11 @@ export default function MembersPage() {
                   <td className="px-6 py-4 text-gray-500 text-xs">{r.email}</td>
                   <td className="px-6 py-4 text-gray-600 text-xs">{r.phoneNumber}</td>
                   <td className="px-6 py-4 text-gray-500 text-xs">{r.address}</td>
+                  <td className="px-6 py-4 text-xs font-medium text-blue-700">
+                    <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-100">
+                      {r.createdByName || "Hệ thống"}
+                    </span>
+                  </td>
                   <td className="px-6 py-4">
                     <StatusBadge status={r.cardStatus === "ACTIVE" ? "active" : "inactive"} />
                   </td>

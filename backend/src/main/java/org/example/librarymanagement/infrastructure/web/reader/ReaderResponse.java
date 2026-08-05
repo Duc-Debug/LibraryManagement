@@ -15,7 +15,8 @@ public record ReaderResponse(
         String address,
         CardStatus cardStatus,
         LocalDate cardIssuedAt,
-        LocalDate cardExpiryAt
+        LocalDate cardExpiryAt,
+        String createdByName
 ) {
     public static ReaderResponse fromResult(CreateReaderResult result) {
         return new ReaderResponse(
@@ -27,7 +28,8 @@ public record ReaderResponse(
                 result.address(),
                 result.cardStatus(),
                 result.cardIssuedAt(),
-                result.cardExpiryAt()
+                result.cardExpiryAt(),
+                result.createdByName()
         );
     }
 }
