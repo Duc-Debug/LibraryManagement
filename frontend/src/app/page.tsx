@@ -12,6 +12,7 @@ import { LoginPage } from '@/features/auth';
 import { AccountsPage, mockUserAccounts } from '@/features/accounts';
 import type { UserAccount } from '@/features/accounts';
 import { logout } from '@/api/authApi';
+import SettingsPage from '@/pages/SettingsPage';
 import {
   ReaderHome,
   BookDetails,
@@ -34,20 +35,51 @@ export default function Page() {
     if (token && savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
+        const roles = parsed.roles ?? [];
+        const role = roles.includes('ADMIN')
+          ? 'admin'
+          : 'thu_thu';
+
         setCurrentUser({
           id: String(parsed.userId || parsed.id || '1'),
           username: parsed.username,
           password: '',
           fullName: parsed.fullName,
-          role: (parsed.roles && (parsed.roles.includes('ADMIN') || parsed.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
+          role,
           active: true
         });
       } catch (e) {
         console.error('Failed to restore user session:', e);
       }
     }
-    setIsInitialized(true);
+
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageParam = urlParams.get('page');
+      if (pageParam && ['dashboard', 'books', 'members', 'borrowing', 'returns', 'accounts', 'settings'].includes(pageParam)) {
+        setCurrentPage(pageParam);
+      }
+
+      const handlePopState = () => {
+        const params = new URLSearchParams(window.location.search);
+        const p = params.get('page') || 'dashboard';
+        setCurrentPage(p);
+      };
+      window.addEventListener('popstate', handlePopState);
+      setIsInitialized(true);
+      return () => window.removeEventListener('popstate', handlePopState);
+    } else {
+      setIsInitialized(true);
+    }
   }, []);
+
+  const handlePageChange = (page: string) => {
+    setCurrentPage(page);
+    if (typeof window !== 'undefined') {
+      const newUrl = page === 'dashboard' ? '/' : `/?page=${page}`;
+      window.history.pushState({ page }, '', newUrl);
+    }
+  };
 
   if (!isInitialized) {
     return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">Đang tải...</div>;
@@ -83,62 +115,23 @@ export default function Page() {
     if (me) setCurrentUser(me);
   };
 
-  const renderPage = () => {
-    // Reader pages
-    if (currentUser?.role === 'nguoi_dung') {
-      if (showBookDetails && selectedBook) {
-        return (
-          <BookDetails
-            book={selectedBook}
-            onBack={() => {
-              setShowBookDetails(false);
-              setSelectedBook(null);
-            }}
-            onBorrow={(book) => {
-              alert(`Mượn "${book.title}" thành công!`);
-              setShowBookDetails(false);
-              setSelectedBook(null);
-            }}
-            onReadSample={(book) => {
-              alert(`Xem mẫu "${book.title}" - Tính năng sẽ sớm có`);
-            }}
-          />
-        );
+  const handleProfileUpdated = (updated: any) => {
+    setCurrentUser((prev) => (prev ? { ...prev, ...updated } : null));
+    const savedUserStr = localStorage.getItem('currentUser');
+    if (savedUserStr) {
+      try {
+        const parsed = JSON.parse(savedUserStr);
+        parsed.fullName = updated.fullName;
+        parsed.email = updated.email;
+        parsed.phone = updated.phone;
+        localStorage.setItem('currentUser', JSON.stringify(parsed));
+      } catch (e) {
+        console.error('Failed to update localStorage currentUser:', e);
       }
-
-      if (currentPage === 'reader-profile') {
-        const profile = mockReaderProfiles[0];
-        const userBorrows = mockReaderBorrows;
-        return (
-          <ReaderProfilePage
-            user={currentUser}
-            profile={profile}
-            borrows={userBorrows}
-            onExtendBorrow={(borrowId) => {
-              alert(`Gia hạn sách ${borrowId} thành công!`);
-            }}
-            onUpdateUser={(updatedUser) => {
-              const updated = { ...currentUser, ...updatedUser };
-              setCurrentUser(updated);
-            }}
-          />
-        );
-      }
-
-      return (
-        <ReaderHome
-          onSelectBook={(book) => {
-            setSelectedBook(book);
-            setShowBookDetails(true);
-          }}
-          onBorrow={(book) => {
-            alert(`Mượn "${book.title}" thành công!`);
-          }}
-        />
-      );
     }
+  };
 
-    // Admin/Librarian pages
+  const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;
@@ -151,13 +144,39 @@ export default function Page() {
       case 'returns':
         return <ReturnsPage />;
       case 'accounts':
-        return currentUser.role === 'thu_thu' ? (
+        return currentUser.role === 'admin' ? (
           <AccountsPage
             accounts={accounts}
             setAccounts={handleSetAccounts}
             currentUserId={currentUser.id}
           />
-        ) : null;
+        ) : (
+          <div className="p-12 flex flex-col items-center justify-center min-h-[500px] text-center">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4 text-2xl font-bold shadow-sm border border-red-200">
+              403
+            </div>
+            <h2 className="text-xl font-bold text-foreground mb-2">Truy cập trái phép bị chặn (403)</h2>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Tài khoản hiện tại của bạn không có quyền Quản trị viên (Admin) để truy cập chức năng này.
+            </p>
+          </div>
+        );
+      case 'settings':
+        return (
+          <SettingsPage
+            currentUser={{
+              id: currentUser.id,
+              username: currentUser.username,
+              password: '',
+              fullName: currentUser.fullName,
+              email: currentUser.email,
+              phone: currentUser.phone,
+              role: currentUser.role === 'admin' ? 'admin' : 'thu_thu',
+              active: currentUser.active ?? true,
+            }}
+            onProfileUpdated={handleProfileUpdated}
+          />
+        );
       default:
         return <Dashboard />;
     }
@@ -167,7 +186,7 @@ export default function Page() {
     <div className="flex h-screen bg-background">
       <Sidebar
         currentPage={currentPage}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
         currentUser={currentUser}
         onLogout={handleLogout}
       />

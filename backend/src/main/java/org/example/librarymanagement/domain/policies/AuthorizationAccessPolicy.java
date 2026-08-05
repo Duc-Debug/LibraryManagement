@@ -16,7 +16,7 @@ public class AuthorizationAccessPolicy {
      */
     public static void validateAdminAccess(User user) {
         if (user == null || !user.hasRole(ROLE_ADMIN)) {
-            throw new DomainException("Truy cập bị từ chối: Chức năng này yêu cầu quyền Quản trị viên (Admin).");
+            throw new DomainException("Truy cập trái phép bị chặn (403): Chức năng này yêu cầu quyền Quản trị viên (Admin).");
         }
     }
 

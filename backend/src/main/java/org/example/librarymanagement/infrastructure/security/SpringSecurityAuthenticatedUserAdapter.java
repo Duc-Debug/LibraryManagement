@@ -2,6 +2,7 @@ package org.example.librarymanagement.infrastructure.security;
 
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
+import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +31,14 @@ public class SpringSecurityAuthenticatedUserAdapter implements GetAuthenticatedU
             return (User) principal;
         }
 
+        if (principal instanceof UserPrincipal userPrincipal) {
+            return loadUserPort.findByUsername(userPrincipal.getUsername()).orElse(null);
+        }
+
+        if (principal instanceof VerifiedAccessToken verifiedAccessToken) {
+            return loadUserPort.findByUsername(verifiedAccessToken.username()).orElse(null);
+        }
+
         if (principal instanceof String username) {
             return loadUserPort.findByUsername(username).orElse(null);
         }
@@ -37,4 +46,5 @@ public class SpringSecurityAuthenticatedUserAdapter implements GetAuthenticatedU
         return null;
     }
 }
+
 

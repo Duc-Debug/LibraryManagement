@@ -1,12 +1,14 @@
-export type Page = "login" | "dashboard" | "books" | "members" | "borrow" | "return" | "accounts";
+export type Page = "login" | "dashboard" | "books" | "members" | "borrow" | "return" | "accounts" | "settings";
 
-export type UserRole = "thu_thu" | "nguoi_dung";
+export type UserRole = "admin" | "thu_thu";
 
 export interface UserAccount {
   id: string;
   username: string;
   password: string;
   fullName: string;
+  email?: string;
+  phone?: string;
   role: UserRole;
   active: boolean;
 }

@@ -9,6 +9,7 @@ import MembersPage from "@/pages/MembersPage";
 import BorrowPage from "@/pages/BorrowPage";
 import ReturnPage from "@/pages/ReturnPage";
 import AccountsPage from "@/pages/AccountsPage";
+import SettingsPage from "@/pages/SettingsPage";
 import { logout as logoutRequest } from "@/api/authApi";
 
 export default function App() {
@@ -21,12 +22,15 @@ export default function App() {
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
+        const roles = parsed.roles ?? [];
         return {
           id: String(parsed.userId || parsed.id),
           username: parsed.username,
           password: '',
           fullName: parsed.fullName,
-          role: (parsed.roles && (parsed.roles.includes('ADMIN') || parsed.roles.includes('LIBRARIAN'))) ? 'thu_thu' : 'nguoi_dung',
+          email: parsed.email,
+          phone: parsed.phone,
+          role: roles.includes('ADMIN') ? 'admin' : 'thu_thu',
           active: true
         };
       } catch (e) {
@@ -62,6 +66,22 @@ export default function App() {
       setLoggedIn(false);
       setCurrentUser(null);
       setPage("dashboard");
+    }
+  };
+
+  const handleProfileUpdated = (updated: UserAccount) => {
+    setCurrentUser(updated);
+    const savedUserStr = localStorage.getItem("currentUser");
+    if (savedUserStr) {
+      try {
+        const parsed = JSON.parse(savedUserStr);
+        parsed.fullName = updated.fullName;
+        parsed.email = updated.email;
+        parsed.phone = updated.phone;
+        localStorage.setItem("currentUser", JSON.stringify(parsed));
+      } catch (e) {
+        console.error("Failed to update localStorage currentUser:", e);
+      }
     }
   };
 
@@ -107,13 +127,20 @@ export default function App() {
           />
         );
       case "accounts":
-        return currentUser.role === "thu_thu" ? (
+        return currentUser.role === "admin" ? (
           <AccountsPage
             accounts={accounts}
             setAccounts={handleSetAccounts}
             currentUserId={currentUser.id}
           />
         ) : null;
+      case "settings":
+        return (
+          <SettingsPage
+            currentUser={currentUser}
+            onProfileUpdated={handleProfileUpdated}
+          />
+        );
       default:
         return null;
     }

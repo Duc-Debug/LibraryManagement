@@ -29,12 +29,15 @@ export default function LoginPage({ accounts, onLogin }: LoginPageProps) {
         roles: res.roles
       }));
 
+      const roles = res.roles ?? [];
+      const role = roles.includes('ADMIN') ? 'admin' : 'thu_thu';
+
       const account: UserAccount = {
         id: String(res.userId),
         username: res.username,
         password: '',
         fullName: res.fullName,
-        role: (res.roles.includes('ADMIN') || res.roles.includes('LIBRARIAN')) ? 'thu_thu' : 'nguoi_dung',
+        role,
         active: true,
       };
 
