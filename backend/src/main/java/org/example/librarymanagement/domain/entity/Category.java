@@ -1,9 +1,10 @@
 package org.example.librarymanagement.domain.entity;
 
-import java.util.UUID;
-import org.example.librarymanagement.domain.exceptions.DomainException;
 import java.time.LocalDateTime;
-public class Categories {
+import java.util.UUID;
+
+import org.example.librarymanagement.domain.exceptions.DomainException;
+public class Category {
 private UUID id;
 private String name;
 private String description;
@@ -11,7 +12,7 @@ private boolean isActive;
 private LocalDateTime createdAt;
 private LocalDateTime updatedAt;
 
-public Categories(UUID id, String name, String description, boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
+public Category(UUID id, String name, String description, boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
     if(name == null || name.isEmpty()) {
         throw new DomainException("Name cannot be null or empty");
     }
