@@ -67,6 +67,22 @@ public class Book {
         this.availableQuantity++;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void deactivate(){
+        if(this.active){
+            this.active = false;
+            touch();
+        }
+    }
+    public void active(){
+        if(!this.active){
+            this.active=true;
+            touch();
+        }
+    }
+    private void touch(){
+        this.updatedAt = LocalDateTime.now();
+    }
     public UUID getBookId() {
         return bookId;
     }
@@ -141,9 +157,6 @@ public class Book {
     }
     public boolean isActive() {
         return active;
-    }
-    public void setActive(boolean active) {
-        this.active = active;
     }
     public LocalDateTime getCreatedAt() {
         return createdAt;
