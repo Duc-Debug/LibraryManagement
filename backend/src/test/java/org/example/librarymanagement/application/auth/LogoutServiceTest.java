@@ -1,4 +1,4 @@
-﻿package org.example.librarymanagement.application.auth;
+package org.example.librarymanagement.application.auth;
 
 import java.time.Instant;
 import java.util.Set;
@@ -59,7 +59,7 @@ class LogoutServiceTest {
         when(accessTokenVerifierPort.verifyOrReject(validToken))
                 .thenReturn(new AccessTokenVerificationResult.Valid(verifiedToken));
 
-     logoutService.logout(command);
+        logoutService.logout(command);
 
         verify(accessTokenRevocationPort).revoke(
                 verifiedToken.tokenId(),
