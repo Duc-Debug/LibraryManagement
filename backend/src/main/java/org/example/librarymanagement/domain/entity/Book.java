@@ -13,7 +13,7 @@ public class Book {
     private String description;
     private String coverImageUrl;
     private String publisher;
-    private Integer publishedYear;
+    private Short publishedYear;
     private String shelfLocation;
     private int totalQuantity;
     private int availableQuantity;
@@ -29,7 +29,7 @@ public class Book {
     }
 
     public Book(Long id, String title, String author, String isbn, String description, 
-                String coverImageUrl, String publisher, Integer publishedYear, 
+                String coverImageUrl, String publisher, Short publishedYear, 
                 String shelfLocation, int totalQuantity, int availableQuantity, 
                 Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.bookId = id;
@@ -143,11 +143,11 @@ public class Book {
         this.publisher = publisher;
     }
 
-    public Integer getPublishedYear() {
+    public Short getPublishedYear() {
         return publishedYear;
     }
 
-    public void setPublishedYear(Integer publishedYear) {
+    public void setPublishedYear(Short publishedYear) {
         this.publishedYear = publishedYear;
     }
 

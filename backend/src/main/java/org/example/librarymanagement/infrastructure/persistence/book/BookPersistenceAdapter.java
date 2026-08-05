@@ -20,7 +20,7 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
 
     @Override
     public boolean hasActiveBorrowSlips(Long bookId) {
-       return borrowDetailsJpaRepository.existsActiveBorrowByBookId(bookId);
+       return borrowDetailsJpaRepository.countActiveBorrowByBookId(bookId) > 0;
     }
 
     @Override

@@ -37,7 +37,7 @@ public class BookJpaEntity {
     private String publisher;
 
     @Column(name = "published_year")
-    private Integer publishedYear;
+    private Short publishedYear;
 
     @Column(name = "shelf_location", length = 50)
     private String shelfLocation;
@@ -61,7 +61,7 @@ public class BookJpaEntity {
     private LocalDateTime updatedAt;
     protected BookJpaEntity(){}
 
-    public BookJpaEntity(Long id,String title, String author, String isbn, String description, String coverImageUrl, String publisher, Integer publishedYear, String shelfLocation, int totalQuantity, int availableQuantity, Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public BookJpaEntity(Long id,String title, String author, String isbn, String description, String coverImageUrl, String publisher, Short publishedYear, String shelfLocation, int totalQuantity, int availableQuantity, Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.title = title;
         this.author = author;
@@ -104,8 +104,8 @@ public class BookJpaEntity {
     public void setCoverImageUrl(String coverImageUrl) { this.coverImageUrl = coverImageUrl; }
     public String getPublisher() { return publisher; }
     public void setPublisher(String publisher) { this.publisher = publisher; }
-    public Integer getPublishedYear() { return publishedYear; }
-    public void setPublishedYear(Integer publishedYear) { this.publishedYear = publishedYear; }
+    public Short getPublishedYear() { return publishedYear; }
+    public void setPublishedYear(Short publishedYear) { this.publishedYear = publishedYear; }
     public String getShelfLocation() { return shelfLocation; }
     public void setShelfLocation(String shelfLocation) { this.shelfLocation = shelfLocation; }
     public int getTotalQuantity() { return totalQuantity; }
