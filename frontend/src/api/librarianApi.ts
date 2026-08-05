@@ -1,6 +1,13 @@
 import { AuthStorage } from "@/lib/authStorage";
 
-const API_BASE_URL = "http://localhost:8080";
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  return "http://localhost:8080";
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface Librarian {
   id: number;

@@ -31,6 +31,10 @@ public class SpringSecurityAuthenticatedUserAdapter implements GetAuthenticatedU
             return (User) principal;
         }
 
+        if (principal instanceof UserPrincipal userPrincipal) {
+            return loadUserPort.findByUsername(userPrincipal.getUsername()).orElse(null);
+        }
+
         if (principal instanceof VerifiedAccessToken verifiedAccessToken) {
             return loadUserPort.findByUsername(verifiedAccessToken.username()).orElse(null);
         }
