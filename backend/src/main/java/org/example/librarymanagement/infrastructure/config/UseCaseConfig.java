@@ -1,7 +1,9 @@
 package org.example.librarymanagement.infrastructure.config;
 
+import org.example.librarymanagement.application.auth.ProfileService;
 import org.example.librarymanagement.application.manage.UserManagementService;
 import org.example.librarymanagement.application.reader.ReaderManagementService;
+import org.example.librarymanagement.port.inbound.auth.ProfileUseCase;
 import org.example.librarymanagement.port.inbound.manage.ManageUserUseCase;
 import org.example.librarymanagement.port.inbound.reader.CreateReaderUseCase;
 import org.example.librarymanagement.port.outbound.admin.EncodePasswordPort;
@@ -18,6 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Configuration
 @EnableTransactionManagement
 public class UseCaseConfig {
+
+    @Bean
+    @Transactional
+    public ProfileUseCase profileUseCase(
+            FindUserPort findUserPort,
+            SaveUserPort saveUserPort) {
+        return new ProfileService(findUserPort, saveUserPort);
+    }
 
     @Bean
     @Transactional // Quản lý Transaction được dời ra ngoài Infrastructure
@@ -45,3 +55,4 @@ public class UseCaseConfig {
         return new ReaderManagementService(readerRepositoryPort, getAuthenticatedUserPort);
     }
 }
+

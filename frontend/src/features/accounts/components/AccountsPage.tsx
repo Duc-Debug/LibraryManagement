@@ -9,12 +9,11 @@ import {
   updateLibrarian,
   deleteLibrarian,
 } from '@/api/librarianApi';
-
-import type { UserAccount } from '../types/account.types';
+import type { UserAccount } from '@/types';
 
 interface AccountsPageProps {
   accounts?: UserAccount[];
-  setAccounts?: (accounts: UserAccount[]) => void;
+  setAccounts?: (updated: UserAccount[]) => void;
   currentUserId?: string | number;
 }
 
@@ -258,11 +257,10 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-block px-3 py-0.5 rounded-full text-xs font-medium ${
-                          item.enabled
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-600'
-                        }`}
+                        className={`inline-block px-3 py-0.5 rounded-full text-xs font-medium ${item.enabled
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-600'
+                          }`}
                       >
                         {item.enabled ? 'Hoạt động' : 'Đã khóa'}
                       </span>
@@ -279,13 +277,12 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
                         <button
                           onClick={() => toggleLock(item)}
                           disabled={isSelf || isToggling}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 ${
-                            isSelf
-                              ? 'opacity-30 cursor-not-allowed border border-border text-muted-foreground'
-                              : item.enabled
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 ${isSelf
+                            ? 'opacity-30 cursor-not-allowed border border-border text-muted-foreground'
+                            : item.enabled
                               ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
                               : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
-                          }`}
+                            }`}
                         >
                           {isToggling ? (
                             <RefreshCw size={14} className="animate-spin" />
