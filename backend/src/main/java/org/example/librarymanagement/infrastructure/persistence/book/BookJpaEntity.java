@@ -3,7 +3,7 @@ package org.example.librarymanagement.infrastructure.persistence.book;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+
 
 
 @Entity
@@ -19,9 +19,10 @@ import java.util.UUID;
 public class BookJpaEntity {
 
 
-    @Id
-    @Column(columnDefinition = "BINARY(16)")
-    private UUID bookId;
+   @Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name = "id")
+private Long id;
 
 
     @Column(nullable = false)
@@ -59,8 +60,8 @@ public class BookJpaEntity {
     private int availableQuantity;
 
 
-    @Column(nullable = false)
-    private UUID categoryId;
+   @Column(name = "category_id", nullable = false)
+private Long categoryId;
 
 
     @Column(nullable = false)
@@ -80,7 +81,7 @@ public class BookJpaEntity {
 
 
     public BookJpaEntity(
-            UUID bookId,
+            Long id,
             String title,
             String author,
             String isbn,
@@ -91,13 +92,13 @@ public class BookJpaEntity {
             String shelfLocation,
             int totalQuantity,
             int availableQuantity,
-            UUID categoryId,
+            Long categoryId,
             boolean active,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
 
-        this.bookId = bookId;
+        this.id = id;
         this.title = title;
         this.author = author;
         this.isbn = isbn;
@@ -116,12 +117,13 @@ public class BookJpaEntity {
 
 
 
-    public UUID getBookId() {
-        return bookId;
-    }
+    public Long getId() {
+    return id;
+     }
 
-    public void setBookId(UUID bookId) {
-        this.bookId = bookId;
+
+    public void setId(Long id) {
+    this.id = id;
     }
 
 
@@ -226,13 +228,14 @@ public class BookJpaEntity {
 
 
 
-    public UUID getCategoryId() {
-        return categoryId;
+    public Long getCategoryId() {
+    return categoryId;
     }
 
-    public void setCategoryId(UUID categoryId) {
-        this.categoryId = categoryId;
-    }
+
+    public void setCategoryId(Long categoryId) {
+    this.categoryId = categoryId;
+     }
 
 
 

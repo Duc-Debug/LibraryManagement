@@ -1,6 +1,6 @@
 package org.example.librarymanagement.port.inbound.managebook;
 
-import java.util.UUID;
+
 
 public record CreateBookCommand(
         String title,
@@ -12,6 +12,6 @@ public record CreateBookCommand(
         Integer publishedYear,
         String shelfLocation,
         int totalQuantity,
-        UUID categoryId
+        Long categoryId
 ) {
 }

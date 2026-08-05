@@ -4,8 +4,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
-import java.util.UUID;
-
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.infrastructure.file.FileStorageService;
 import org.example.librarymanagement.port.inbound.managebook.ManageBookUseCase;
@@ -111,7 +109,7 @@ class BookControllerTest {
 
                         .param(
                                 "categoryId",
-                                UUID.randomUUID().toString()
+                                "1"
                         )
 
                         .param(
@@ -134,6 +132,7 @@ class BookControllerTest {
                 command.title().equals("Clean Code")
                 && command.author().equals("Robert Martin")
                 && command.isbn().equals("9780132350884")
+                && command.categoryId().equals(1L)
                 && command.totalQuantity() == 10
         ));
     }

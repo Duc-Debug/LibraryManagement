@@ -19,7 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,11 +28,12 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
+    // Khai báo chuẩn một Bean ObjectMapper duy nhất tích hợp JavaTimeModule cho toàn ứng dụng
     @Bean
     public ObjectMapper objectMapper() {
-        return objectMapper;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
     }
 
     @Bean
@@ -44,33 +45,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             AccessTokenAuthenticationFilter accessTokenAuthenticationFilter,
-            CorsConfigurationSource corsConfigurationSource
+            CorsConfigurationSource corsConfigurationSource,
+            ObjectMapper objectMapper // Inject ObjectMapper vào đây để dùng cho Exception Handling
     ) throws Exception {
 
         return http
-                .cors(cors
-                        -> cors.configurationSource(corsConfigurationSource)
-                )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session
-                        -> session.sessionCreationPolicy(
-                        SessionCreationPolicy.STATELESS
-                )
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(
-                        HttpMethod.OPTIONS,
-                        "/**"
-                ).permitAll()
-                .requestMatchers(
-                        HttpMethod.POST,
-                        "/api/auth/login",
-                        "/api/auth/logout"
-                ).permitAll()
-                .requestMatchers(
-                        "/error"
-                ).permitAll()
-                .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/logout").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(
                         accessTokenAuthenticationFilter,
@@ -107,18 +95,11 @@ public class SecurityConfig {
         ));
 
         configuration.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH",
-                "DELETE",
-                "OPTIONS"
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
 
         configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "Accept"
+                "Authorization", "Content-Type", "Accept"
         ));
 
         configuration.setExposedHeaders(List.of(
@@ -127,9 +108,7 @@ public class SecurityConfig {
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source
-                = new UrlBasedCorsConfigurationSource();
-
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
         return source;

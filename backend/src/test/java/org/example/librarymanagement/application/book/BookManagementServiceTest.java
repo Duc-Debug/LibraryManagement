@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import java.util.UUID;
-
 import org.example.librarymanagement.application.managebook.BookManagementService;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.DomainException;
@@ -55,7 +53,7 @@ class BookManagementServiceTest {
                 2008,
                 "A1-01",
                 10,
-                UUID.randomUUID()
+                1L
         );
     }
 
@@ -82,8 +80,10 @@ class BookManagementServiceTest {
         assertNotNull(result);
 
 
+
         verify(findBookPort)
                 .existsByIsbn(command.isbn());
+
 
 
         verify(saveBookPort)
@@ -131,6 +131,7 @@ class BookManagementServiceTest {
 
         when(findBookPort.existsByIsbn(command.isbn()))
                 .thenReturn(false);
+
 
 
         ArgumentCaptor<Book> captor =
@@ -207,7 +208,7 @@ class BookManagementServiceTest {
                         2008,
                         "A1",
                         10,
-                        UUID.randomUUID()
+                        1L
                 );
 
 
@@ -250,7 +251,7 @@ class BookManagementServiceTest {
                         2008,
                         "A1",
                         10,
-                        UUID.randomUUID()
+                        1L
                 );
 
 
@@ -293,7 +294,7 @@ class BookManagementServiceTest {
                         2008,
                         "A1",
                         10,
-                        UUID.randomUUID()
+                        1L
                 );
 
 
@@ -336,7 +337,7 @@ class BookManagementServiceTest {
                         2008,
                         "A1",
                         0,
-                        UUID.randomUUID()
+                        1L
                 );
 
 
@@ -422,7 +423,7 @@ class BookManagementServiceTest {
                         2008,
                         "A1",
                         10,
-                        UUID.randomUUID()
+                        1L
                 );
 
 

@@ -15,7 +15,7 @@ public class BookPersistenceMapper {
 
         return new BookJpaEntity(
 
-                book.getBookId(),
+                book.getId(),
 
                 book.getTitle(),
 
@@ -54,7 +54,7 @@ public class BookPersistenceMapper {
 
         return new Book(
 
-                entity.getBookId(),
+                entity.getId(),
 
                 entity.getTitle(),
 

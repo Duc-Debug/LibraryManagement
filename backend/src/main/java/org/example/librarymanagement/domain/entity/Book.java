@@ -2,11 +2,13 @@ package org.example.librarymanagement.domain.entity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.UUID;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;
+
 public class Book {
-    private UUID bookId;
+
+    private Long bookId;
+
     private String title;
     private String author;
     private String isbn;
@@ -15,24 +17,44 @@ public class Book {
     private String publisher;
     private Integer publishedYear;
     private String shelfLocation;
+
     private int totalQuantity;
     private int availableQuantity;
-    public UUID categoryId;
+
+    private Long categoryId;
+
     private boolean active;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+
     public Book() {
-        this.bookId = UUID.randomUUID();
         this.active = true;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
-    public Book(UUID id, String title, String author, String isbn, String description, 
-                String coverImageUrl, String publisher, Integer publishedYear, 
-                String shelfLocation, int totalQuantity, int availableQuantity, 
-                UUID categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.bookId = id != null ? id : UUID.randomUUID();
+
+
+    public Book(
+            Long id,
+            String title,
+            String author,
+            String isbn,
+            String description,
+            String coverImageUrl,
+            String publisher,
+            Integer publishedYear,
+            String shelfLocation,
+            int totalQuantity,
+            int availableQuantity,
+            Long categoryId,
+            boolean active,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {
+
+        this.bookId = id;
         this.title = title;
         this.author = author;
         this.isbn = isbn;
@@ -48,151 +70,255 @@ public class Book {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+
+
     public boolean isAvailableForBorrow() {
-        return this.active && this.availableQuantity > 0;
+        return active && availableQuantity > 0;
     }
 
+
     public void decreaseAvailableQuantity() {
+
         if (!isAvailableForBorrow()) {
             throw new DomainException("Sách hiện không còn sẵn để mượn.");
         }
-        this.availableQuantity--;
-        this.updatedAt = LocalDateTime.now();
+
+        availableQuantity--;
+        updatedAt = LocalDateTime.now();
     }
 
+
     public void increaseAvailableQuantity() {
-        if (this.availableQuantity >= this.totalQuantity) {
-            throw new DomainException("Số lượng có sẵn không thể vượt quá tổng số lượng.");
+
+        if (availableQuantity >= totalQuantity) {
+            throw new DomainException(
+                "Số lượng có sẵn không thể vượt quá tổng số lượng."
+            );
         }
-        this.availableQuantity++;
-        this.updatedAt = LocalDateTime.now();
+
+        availableQuantity++;
+        updatedAt = LocalDateTime.now();
     }
-    public UUID getBookId() {
+
+
+
+    public Long getId() {
         return bookId;
     }
-    public void setBookId(UUID bookId) {
-        this.bookId = bookId;
+
+
+    public void setId(Long id) {
+        this.bookId = id;
     }
+
+
+
     public String getTitle() {
         return title;
     }
+
+
     public void setTitle(String title) {
-    if (title == null || title.isBlank()) {
-        throw new DomainException("Tên sách không được để trống");
+
+        if(title == null || title.isBlank()) {
+            throw new DomainException("Tên sách không được để trống");
+        }
+
+        this.title = title.trim();
     }
-    this.title = title.trim();
-    }
+
+
 
     public String getAuthor() {
         return author;
     }
+
+
     public void setAuthor(String author) {
-    if (author == null || author.isBlank()) {
-        throw new DomainException("Tác giả không được để trống");
+
+        if(author == null || author.isBlank()) {
+            throw new DomainException("Tác giả không được để trống");
+        }
+
+        this.author = author.trim();
     }
-    this.author = author.trim();
-    }
+
+
+
     public String getIsbn() {
         return isbn;
     }
+
+
     public void setIsbn(String isbn) {
-    if (isbn == null || isbn.isBlank()) {
-        throw new DomainException("ISBN không được để trống");
+
+        if(isbn == null || isbn.isBlank()) {
+            throw new DomainException("ISBN không được để trống");
+        }
+
+        this.isbn = isbn.trim();
     }
-    this.isbn = isbn.trim();
-    }   
-     public String getDescription() {
+
+
+
+    public String getDescription() {
         return description;
     }
+
+
     public void setDescription(String description) {
         this.description = description;
     }
+
+
+
     public String getCoverImageUrl() {
         return coverImageUrl;
     }
+
+
     public void setCoverImageUrl(String coverImageUrl) {
         this.coverImageUrl = coverImageUrl;
     }
+
+
+
     public String getPublisher() {
         return publisher;
     }
+
+
     public void setPublisher(String publisher) {
         this.publisher = publisher;
     }
+
+
+
     public Integer getPublishedYear() {
         return publishedYear;
     }
+
+
     public void setPublishedYear(Integer publishedYear) {
         this.publishedYear = publishedYear;
     }
+
+
+
     public String getShelfLocation() {
         return shelfLocation;
     }
+
+
     public void setShelfLocation(String shelfLocation) {
         this.shelfLocation = shelfLocation;
     }
+
+
+
     public int getTotalQuantity() {
         return totalQuantity;
     }
+
+
     public void setTotalQuantity(int totalQuantity) {
-    if (totalQuantity <= 0) {
-        throw new DomainException("Số lượng phải lớn hơn 0");
+
+        if(totalQuantity <= 0) {
+            throw new DomainException("Số lượng phải lớn hơn 0");
+        }
+
+        this.totalQuantity = totalQuantity;
     }
-    this.totalQuantity = totalQuantity;
-    }
+
+
 
     public int getAvailableQuantity() {
         return availableQuantity;
     }
+
+
     public void setAvailableQuantity(int availableQuantity) {
-    if (availableQuantity < 0) {
-        throw new DomainException("Số lượng có sẵn không được âm");
+
+        if(availableQuantity < 0) {
+            throw new DomainException(
+                "Số lượng có sẵn không được âm"
+            );
+        }
+
+
+        if(availableQuantity > totalQuantity) {
+            throw new DomainException(
+                "Số lượng có sẵn không được lớn hơn tổng số lượng"
+            );
+        }
+
+        this.availableQuantity = availableQuantity;
     }
 
-    if (availableQuantity > totalQuantity) {
-        throw new DomainException("Số lượng có sẵn không được lớn hơn tổng số lượng");
-    }
 
-    this.availableQuantity = availableQuantity;
-    }
-    
-    public UUID getCategoryId() {
+
+    public Long getCategoryId() {
         return categoryId;
     }
-    public void setCategoryId(UUID categoryId) {
-    if (categoryId == null) {
-        throw new DomainException("Thể loại không được để trống");
+
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
-    this.categoryId = categoryId;
-    }
+
+
 
     public boolean isActive() {
         return active;
     }
+
+
     public void setActive(boolean active) {
         this.active = active;
     }
+
+
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+
+
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+
+
     @Override
     public boolean equals(Object o){
-        if(this ==o) return true;
-        if(o==null || getClass() != o.getClass()) return false;
-        Book book = (Book) o;
-        return Objects.equals(bookId,book.bookId);
+
+        if(this == o)
+            return true;
+
+        if(o == null || getClass() != o.getClass())
+            return false;
+
+        Book book = (Book)o;
+
+        return Objects.equals(bookId, book.bookId);
     }
+
+
     @Override
     public int hashCode(){
-        return Objects.hash((bookId));
+
+        return Objects.hash(bookId);
     }
 }

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.UUID;
+
 
 
 @RestController
@@ -52,11 +52,16 @@ public class BookController {
 
             @RequestParam String isbn,
 
-            @RequestParam UUID categoryId,
+            @RequestParam Long categoryId,
 
             @RequestParam int totalQuantity,
 
-            @RequestParam MultipartFile coverImage
+            @RequestParam MultipartFile coverImage,
+            // Bổ sung thêm các trường này (cho phép không bắt buộc nhập bằng required = false)
+        @RequestParam(required = false) String description,
+        @RequestParam(required = false) String publisher,
+        @RequestParam(required = false) Integer publishedYear,
+        @RequestParam(required = false) String shelfLocation
 
     ) {
 
@@ -79,15 +84,15 @@ public class BookController {
 
                         isbn,
 
-                        null,
+                        description,
 
                         imageUrl,
 
-                        null,
+                        publisher,
 
-                        null,
+                        publishedYear,
 
-                        null,
+                        shelfLocation,
 
                         totalQuantity,
 

@@ -8,7 +8,7 @@ interface DashboardProps {
   records: BorrowRecord[];
 }
 
-export default function Dashboard({ books, members, records }: DashboardProps) {
+export default function Dashboard({ books = [], members = [], records = [] }: DashboardProps) {
   const totalBooks = books.reduce((s, b) => s + b.total, 0);
   const totalAvailable = books.reduce((s, b) => s + b.available, 0);
   const activeMembers = members.filter((m) => m.active).length;

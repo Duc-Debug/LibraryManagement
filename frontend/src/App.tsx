@@ -9,15 +9,16 @@ import MembersPage from "@/pages/MembersPage";
 import BorrowPage from "@/pages/BorrowPage";
 import ReturnPage from "@/pages/ReturnPage";
 import AccountsPage from "@/pages/AccountsPage";
+import SettingsPage from "@/pages/SettingsPage";
 import { logout as logoutRequest } from "@/api/authApi";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(() => {
-    return Boolean(localStorage.getItem("accessToken"));
+    return Boolean(typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
   });
 
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
-    const savedUser = localStorage.getItem("currentUser");
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("currentUser") : null;
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
@@ -27,6 +28,8 @@ export default function App() {
           username: parsed.username,
           password: '',
           fullName: parsed.fullName,
+          email: parsed.email,
+          phone: parsed.phone,
           role: roles.includes('ADMIN') ? 'admin' : 'thu_thu',
           active: true
         };
@@ -66,6 +69,22 @@ export default function App() {
     }
   };
 
+  const handleProfileUpdated = (updated: UserAccount) => {
+    setCurrentUser(updated);
+    const savedUserStr = localStorage.getItem("currentUser");
+    if (savedUserStr) {
+      try {
+        const parsed = JSON.parse(savedUserStr);
+        parsed.fullName = updated.fullName;
+        parsed.email = updated.email;
+        parsed.phone = updated.phone;
+        localStorage.setItem("currentUser", JSON.stringify(parsed));
+      } catch (e) {
+        console.error("Failed to update localStorage currentUser:", e);
+      }
+    }
+  };
+
   if (!loggedIn || !currentUser) {
     return <LoginPage accounts={accounts} onLogin={(user) => {
       setCurrentUser(user);
@@ -87,7 +106,7 @@ export default function App() {
       case "books":
         return <BooksPage books={books} setBooks={setBooks} />;
       case "members":
-        return <MembersPage members={members} setMembers={setMembers} />;
+        return <MembersPage />;
       case "borrow":
         return (
           <BorrowPage
@@ -108,13 +127,20 @@ export default function App() {
           />
         );
       case "accounts":
-        return currentUser.role === "thu_thu" ? (
+        return currentUser.role === "admin" ? (
           <AccountsPage
             accounts={accounts}
             setAccounts={handleSetAccounts}
             currentUserId={currentUser.id}
           />
         ) : null;
+      case "settings":
+        return (
+          <SettingsPage
+            currentUser={currentUser}
+            onProfileUpdated={handleProfileUpdated}
+          />
+        );
       default:
         return null;
     }

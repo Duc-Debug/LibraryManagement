@@ -74,9 +74,16 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
                     .map(SimpleGrantedAuthority::new)
                     .toList();
 
+            UserPrincipal principal = new UserPrincipal(
+                    verifiedToken.userId(),
+                    verifiedToken.username(),
+                    "",
+                    authorities
+            );
+
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            verifiedToken,
+                            principal,
                             null,
                             authorities
                     );
