@@ -127,7 +127,7 @@ export default function App() {
           />
         );
       case "accounts":
-        return currentUser.role === "admin" || currentUser.role === "thu_thu" ? (
+        return currentUser.role === "admin" ? (
           <AccountsPage
             accounts={accounts}
             setAccounts={handleSetAccounts}

@@ -33,30 +33,28 @@ export default function SettingsPage({ currentUser, onProfileUpdated }: Settings
 
   // Fetch latest user data from MySQL backend on component mount
   useEffect(() => {
+    let isMounted = true;
     const token = localStorage.getItem("accessToken");
     if (!token) return;
 
     setLoadingProfile(true);
     getProfileApi(token)
       .then((data) => {
+        if (!isMounted) return;
         setFullName(data.fullName || "");
         setEmail(data.email || "");
         setPhone(data.phone || "");
-
-        // Sync with parent state
-        onProfileUpdated({
-          ...currentUser,
-          fullName: data.fullName || currentUser.fullName,
-          email: data.email || undefined,
-          phone: data.phone || undefined,
-        });
       })
       .catch((err) => {
-        console.error("Failed to load profile:", err);
+        if (isMounted) console.error("Failed to load profile:", err);
       })
       .finally(() => {
-        setLoadingProfile(false);
+        if (isMounted) setLoadingProfile(false);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {

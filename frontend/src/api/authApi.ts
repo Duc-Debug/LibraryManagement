@@ -1,13 +1,8 @@
 const getApiBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      return "http://localhost:8080";
-    }
-
-    return `http://${window.location.hostname}:8080`;
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
   }
-
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  return "http://localhost:8080";
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -133,9 +128,14 @@ export async function changePasswordApi(
     body: JSON.stringify(data),
   });
 
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Đổi mật khẩu thất bại.");
+  }
+
   const result = await response.json();
 
-  if (!response.ok || !result.success) {
+  if (!result.success) {
     throw new Error(result.message || "Đổi mật khẩu thất bại.");
   }
 

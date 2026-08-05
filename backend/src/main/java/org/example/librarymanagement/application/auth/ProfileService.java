@@ -22,6 +22,9 @@ public class ProfileService implements ProfileUseCase {
 
     @Override
     public UserResult getProfile(Long userId) {
+        if (userId == null) {
+            throw new DomainException("ID người dùng không được để trống.");
+        }
         User user = findUserPort.findById(userId)
                 .orElseThrow(() -> new DomainException("Không tìm thấy thông tin người dùng."));
         return mapToResult(user);
@@ -29,6 +32,13 @@ public class ProfileService implements ProfileUseCase {
 
     @Override
     public UserResult updateProfile(Long userId, UpdateProfileCommand command) {
+        if (userId == null) {
+            throw new DomainException("ID người dùng không được để trống.");
+        }
+        if (command == null) {
+            throw new DomainException("Dữ liệu cập nhật không được để trống.");
+        }
+
         User user = findUserPort.findById(userId)
                 .orElseThrow(() -> new DomainException("Không tìm thấy thông tin người dùng."));
 

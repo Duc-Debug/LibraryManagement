@@ -52,8 +52,34 @@ export default function Page() {
         console.error('Failed to restore user session:', e);
       }
     }
-    setIsInitialized(true);
+
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageParam = urlParams.get('page');
+      if (pageParam && ['dashboard', 'books', 'members', 'borrowing', 'returns', 'accounts', 'settings'].includes(pageParam)) {
+        setCurrentPage(pageParam);
+      }
+
+      const handlePopState = () => {
+        const params = new URLSearchParams(window.location.search);
+        const p = params.get('page') || 'dashboard';
+        setCurrentPage(p);
+      };
+      window.addEventListener('popstate', handlePopState);
+      setIsInitialized(true);
+      return () => window.removeEventListener('popstate', handlePopState);
+    } else {
+      setIsInitialized(true);
+    }
   }, []);
+
+  const handlePageChange = (page: string) => {
+    setCurrentPage(page);
+    if (typeof window !== 'undefined') {
+      const newUrl = page === 'dashboard' ? '/' : `/?page=${page}`;
+      window.history.pushState({ page }, '', newUrl);
+    }
+  };
 
   if (!isInitialized) {
     return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">Đang tải...</div>;
@@ -160,7 +186,7 @@ export default function Page() {
     <div className="flex h-screen bg-background">
       <Sidebar
         currentPage={currentPage}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
         currentUser={currentUser}
         onLogout={handleLogout}
       />
