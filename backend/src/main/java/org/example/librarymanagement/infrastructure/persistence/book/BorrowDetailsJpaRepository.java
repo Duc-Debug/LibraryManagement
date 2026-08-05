@@ -6,9 +6,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BorrowDetailsJpaRepository extends JpaRepository<Object,Long> {
+public interface BorrowDetailsJpaRepository extends JpaRepository<BookJpaEntity, Long> {
     
-    @Query(value =  "SELECT COUNT(*) > 0 FROM borrow_details bd " +
+    @Query(value = "SELECT COUNT(*) > 0 FROM borrow_details bd " +
                    "JOIN borrow_slips bs ON bd.borrow_slip_id = bs.id " +
                    "WHERE bd.book_id = :bookId AND bs.status IN ('BORROWED', 'OVERDUE')", nativeQuery = true)
     boolean existsActiveBorrowByBookId(@Param("bookId") Long bookId);
