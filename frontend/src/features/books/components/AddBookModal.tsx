@@ -21,6 +21,7 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
     isbn: '',
     totalCopies: 1,
     availableCopies: 1,
+    publisher: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -122,9 +123,21 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Nhà xuất bản</label>
+            <input
+              type="text"
+              name="publisher"
+              value={formData.publisher}
+              onChange={handleChange}
+              placeholder="VD: NXB Kim Đồng"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Số lượng bản sao</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Tổng số lượng</label>
               <input
                 type="number"
                 name="totalCopies"

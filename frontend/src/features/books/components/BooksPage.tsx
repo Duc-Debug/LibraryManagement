@@ -6,6 +6,7 @@ import type { Book } from '../types/book.types';
 import { Search, Plus, Edit2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddBookModal } from './AddBookModal';
+import { EditBookModal } from './EditBookModal';
 
 const CATEGORIES = ['Tất cả', 'Kinh tế', 'Lịch sử', 'Tâm lý học', 'Chiến lược', 'Tiểu thuyết', 'Công nghệ'];
 
@@ -38,6 +39,11 @@ export function BooksPage() {
 
   const handleDeleteBook = (id: string) => {
     setBooks(books.filter((book) => book.id !== id));
+  };
+
+  const handleUpdateBook = (updatedBook: Book) => {
+    setBooks(books.map((b) => (b.id === updatedBook.id ? updatedBook : b)));
+    setEditingBook(null);
   };
 
   return (
@@ -112,6 +118,7 @@ export function BooksPage() {
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0"
+                        onClick={() => setEditingBook(book)}
                       >
                         <Edit2 className="w-4 h-4" />
                       </Button>
@@ -137,6 +144,16 @@ export function BooksPage() {
         <AddBookModal
           onClose={() => setShowAddModal(false)}
           onSave={handleAddBook}
+        />
+      )}
+
+      {/* Edit Book Modal */}
+      {editingBook && (
+        <EditBookModal
+          book={editingBook}
+          existingBooks={books}
+          onClose={() => setEditingBook(null)}
+          onSave={handleUpdateBook}
         />
       )}
     </div>

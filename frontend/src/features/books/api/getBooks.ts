@@ -1,8 +1,13 @@
 import type { Book } from '../types/book.types';
+import { getCategoryByName } from '../data/categories';
+
+function withCategoryId(book: Omit<Book, 'categoryId'>): Book {
+  return { ...book, categoryId: getCategoryByName(book.category)?.id };
+}
 
 // Nguồn dữ liệu mock — sau này có thể thay bằng gọi API thật (fetch/axios)
 export const mockBooks: Book[] = [
-  {
+  withCategoryId({
     id: 'book1',
     title: 'Những người thừa kế',
     author: 'Keynes Piketty',
@@ -11,8 +16,13 @@ export const mockBooks: Book[] = [
     isbn: 'ISBN-001',
     totalCopies: 3,
     availableCopies: 1,
-  },
-  {
+    publisher: 'NXB Trẻ',
+    shelfLocation: 'Kệ A1-01',
+    active: true,
+    createdAt: '2024-01-10T08:00:00',
+    updatedAt: '2024-01-10T08:00:00',
+  }),
+  withCategoryId({
     id: 'book2',
     title: 'Sapiens',
     author: 'Yuval Noah Harari',
@@ -21,8 +31,13 @@ export const mockBooks: Book[] = [
     isbn: 'ISBN-002',
     totalCopies: 5,
     availableCopies: 3,
-  },
-  {
+    publisher: 'NXB Thế Giới',
+    shelfLocation: 'Kệ A2-05',
+    active: true,
+    createdAt: '2024-01-10T08:00:00',
+    updatedAt: '2024-01-10T08:00:00',
+  }),
+  withCategoryId({
     id: 'book3',
     title: 'Đọc vị nhân tâm',
     author: 'Joe Navarro',
@@ -31,8 +46,11 @@ export const mockBooks: Book[] = [
     isbn: 'ISBN-003',
     totalCopies: 4,
     availableCopies: 2,
-  },
-  {
+    active: true,
+    createdAt: '2024-01-10T08:00:00',
+    updatedAt: '2024-01-10T08:00:00',
+  }),
+  withCategoryId({
     id: 'book4',
     title: 'Nghệ thuật chiến tranh',
     author: 'Tôn Tử',
@@ -41,8 +59,11 @@ export const mockBooks: Book[] = [
     isbn: 'ISBN-004',
     totalCopies: 2,
     availableCopies: 1,
-  },
-  {
+    active: true,
+    createdAt: '2024-01-10T08:00:00',
+    updatedAt: '2024-01-10T08:00:00',
+  }),
+  withCategoryId({
     id: 'book5',
     title: 'Tuổi trẻ đáng giá bao nhiêu',
     author: 'Nguyễn Nhật Ánh',
@@ -51,8 +72,11 @@ export const mockBooks: Book[] = [
     isbn: 'ISBN-005',
     totalCopies: 6,
     availableCopies: 2,
-  },
-  {
+    active: true,
+    createdAt: '2024-01-10T08:00:00',
+    updatedAt: '2024-01-10T08:00:00',
+  }),
+  withCategoryId({
     id: 'book6',
     title: 'Lập trình Python',
     author: 'Mark Lutz',
@@ -61,8 +85,11 @@ export const mockBooks: Book[] = [
     isbn: 'ISBN-006',
     totalCopies: 3,
     availableCopies: 1,
-  },
-  {
+    active: true,
+    createdAt: '2024-01-10T08:00:00',
+    updatedAt: '2024-01-10T08:00:00',
+  }),
+  withCategoryId({
     id: 'book7',
     title: 'Những bí mật tâm lý',
     author: 'Robert Cialdini',
@@ -71,8 +98,11 @@ export const mockBooks: Book[] = [
     isbn: 'ISBN-007',
     totalCopies: 4,
     availableCopies: 3,
-  },
-  {
+    active: true,
+    createdAt: '2024-01-10T08:00:00',
+    updatedAt: '2024-01-10T08:00:00',
+  }),
+  withCategoryId({
     id: 'book8',
     title: 'Hành trình tới phía tây',
     author: 'Jack Kerouac',
@@ -81,7 +111,10 @@ export const mockBooks: Book[] = [
     isbn: 'ISBN-008',
     totalCopies: 2,
     availableCopies: 2,
-  },
+    active: true,
+    createdAt: '2024-01-10T08:00:00',
+    updatedAt: '2024-01-10T08:00:00',
+  }),
 ];
 
 /** Lấy toàn bộ danh sách sách */
