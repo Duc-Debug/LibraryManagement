@@ -86,7 +86,7 @@ public class DataSeeder implements CommandLineRunner {
             // 1. Seed 1 Danh mục mặc định nếu chưa có
             CategoryJpaEntity defaultCategory = categoryJpaRepository.findByName("Công nghệ & Phần mềm")
                     .orElseGet(() -> categoryJpaRepository.save(
-                            new CategoryJpaEntity(null, "Công nghệ & Phần mềm", "Danh mục sách công nghệ")
+                            new CategoryJpaEntity(null, "Công nghệ & Phần mềm", "Danh mục sách công nghệ", true)
                     ));
 
             Long categoryId = defaultCategory.getId();

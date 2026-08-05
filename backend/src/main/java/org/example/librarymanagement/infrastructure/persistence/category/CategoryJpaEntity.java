@@ -24,6 +24,9 @@ public class CategoryJpaEntity {
     @Column(name = "description", length = 255)
     private String description;
 
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -33,10 +36,11 @@ public class CategoryJpaEntity {
     protected CategoryJpaEntity() {
     }
 
-    public CategoryJpaEntity(Long id, String name, String description) {
+    public CategoryJpaEntity(Long id, String name, String description, boolean active) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.active = active;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -56,4 +60,6 @@ public class CategoryJpaEntity {
     public Long getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 }

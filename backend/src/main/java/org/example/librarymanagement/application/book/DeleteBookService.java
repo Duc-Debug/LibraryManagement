@@ -56,6 +56,18 @@ public class DeleteBookService implements DeleteBookUseCase {
         saveBookPort.save(book);
     }
 
+    @Override
+    public void unhideBook(Long bookId) {
+        validateBookId(bookId);
+
+        Book book = loadBookPort.findById(bookId)
+                .orElseThrow(() -> new DomainException("Không tìm thấy sách với ID: " + bookId));
+
+        book.activate();
+
+        saveBookPort.save(book);
+    }
+
     private void validateBookId(Long bookId) {
         if (bookId == null || bookId <= 0) {
             throw new DomainException("Book ID must be greater than 0");

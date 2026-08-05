@@ -10,17 +10,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, CheckActiveBorrowPort {
     private final BookJpaRepository bookJpaRepository;
-    private final BorrowDetailsJpaRepository borrowDetailsJpaRepository;
 
-    public BookPersistenceAdapter(BookJpaRepository bookJpaRepository,
-            BorrowDetailsJpaRepository borrowDetailsJpaRepository) {
+    public BookPersistenceAdapter(BookJpaRepository bookJpaRepository) {
         this.bookJpaRepository = bookJpaRepository;
-        this.borrowDetailsJpaRepository = borrowDetailsJpaRepository;
     }
 
     @Override
     public boolean hasActiveBorrowSlips(Long bookId) {
-       return borrowDetailsJpaRepository.countActiveBorrowByBookId(bookId) > 0;
+        return bookJpaRepository.countActiveBorrowByBookId(bookId) > 0;
     }
 
     @Override
@@ -32,13 +29,12 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
 
     @Override
     public void deleteById(Long bookId) {
-       bookJpaRepository.deleteById(bookId);
+        bookJpaRepository.deleteById(bookId);
     }
 
     @Override
     public Optional<Book> findById(Long bookId) {
-       return bookJpaRepository.findById(bookId)
-            .map(BookPersistenceMapper::toDomain);
+        return bookJpaRepository.findById(bookId)
+                .map(BookPersistenceMapper::toDomain);
     }
-
 }

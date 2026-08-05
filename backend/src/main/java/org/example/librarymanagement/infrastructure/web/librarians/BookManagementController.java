@@ -27,4 +27,10 @@ public class BookManagementController {
         deleteBookUseCase.hideBook(id);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/{id}/unhide")
+    public ResponseEntity<Void> unhideBook(@PathVariable Long id){
+        deleteBookUseCase.unhideBook(id);
+        return ResponseEntity.ok().build();
+    }
 }

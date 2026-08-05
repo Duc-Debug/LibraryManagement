@@ -24,7 +24,7 @@ public class BookJpaEntity {
     @Column(name = "author", nullable = false, length = 150)
     private String author;
 
-    @Column(name = "isbn", length = 50)
+    @Column(name = "isbn", nullable = false, unique = true, length = 20)
     private String isbn;
 
     @Column(name = "description", columnDefinition = "TEXT")

@@ -28,10 +28,14 @@ public class Book {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Book(Long id, String title, String author, String isbn, String description, 
-                String coverImageUrl, String publisher, Short publishedYear, 
-                String shelfLocation, int totalQuantity, int availableQuantity, 
-                Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Book(Long id, String title, String author, String isbn, String description,
+            String coverImageUrl, String publisher, Short publishedYear,
+            String shelfLocation, int totalQuantity, int availableQuantity,
+            Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
+
+        validateNotBlank(title, "Title is not null");
+        validateNotBlank(author, "Author is not null");
+        validateQuantities(totalQuantity, availableQuantity);
         this.bookId = id;
         this.title = title;
         this.author = author;
@@ -55,7 +59,7 @@ public class Book {
 
     public void decreaseAvailableQuantity() {
         if (!isAvailableForBorrow()) {
-            throw new DomainException("Sách hiện không còn sẵn để mượn.");
+            throw new DomainException("Book now is not have more to borrow.");
         }
         this.availableQuantity--;
         touch();
@@ -63,7 +67,7 @@ public class Book {
 
     public void increaseAvailableQuantity() {
         if (this.availableQuantity >= this.totalQuantity) {
-            throw new DomainException("Số lượng có sẵn không thể vượt quá tổng số lượng.");
+            throw new DomainException("Avaiable quantity is not more than total quantity book.");
         }
         this.availableQuantity++;
         touch();
@@ -83,6 +87,18 @@ public class Book {
         }
     }
 
+     /**
+     * Hành vi nghiệp vụ: Nhập thêm số lượng sách mới vào kho
+     * @param addedQuantity Số lượng sách nhập thêm (phải > 0)
+     */
+    public void restock(int addedQuantity) {
+        if (addedQuantity <= 0) {
+            throw new DomainException("Số lượng sách nhập thêm phải lớn hơn 0.");
+        }
+        this.totalQuantity += addedQuantity;
+        this.availableQuantity += addedQuantity;
+        touch();
+    }
     private void touch() {
         this.updatedAt = LocalDateTime.now();
     }
@@ -163,16 +179,8 @@ public class Book {
         return totalQuantity;
     }
 
-    public void setTotalQuantity(int totalQuantity) {
-        this.totalQuantity = totalQuantity;
-    }
-
     public int getAvailableQuantity() {
         return availableQuantity;
-    }
-
-    public void setAvailableQuantity(int availableQuantity) {
-        this.availableQuantity = availableQuantity;
     }
 
     public Long getCategoryId() {
@@ -191,22 +199,16 @@ public class Book {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Book book = (Book) o;
         return Objects.equals(bookId, book.bookId);
     }
@@ -214,5 +216,23 @@ public class Book {
     @Override
     public int hashCode() {
         return Objects.hash(bookId);
+    }
+
+    private void validateNotBlank(String value, String errorMEsseage) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new DomainException(errorMEsseage);
+        }
+    }
+
+    private void validateQuantities(int total, int available) {
+        if (total < 0) {
+            throw new DomainException("Tổng số lượng sách không được nhỏ hơn 0.");
+        }
+        if (available < 0) {
+            throw new DomainException("Số lượng sách có sẵn không được nhỏ hơn 0.");
+        }
+        if (available > total) {
+            throw new DomainException("Số lượng sách có sẵn không được vượt quá tổng số lượng.");
+        }
     }
 }
