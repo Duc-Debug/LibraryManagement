@@ -62,6 +62,11 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
           },
         ]
       : []),
+    {
+      id: 'settings',
+      label: 'Cài đặt cá nhân',
+      icon: User,
+    },
   ];
 
   return (

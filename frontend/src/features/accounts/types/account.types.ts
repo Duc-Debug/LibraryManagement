@@ -5,6 +5,8 @@ export interface UserAccount {
   username: string;
   password: string;
   fullName: string;
+  email?: string;
+  phone?: string;
   role: UserRole;
   active: boolean;
 }
