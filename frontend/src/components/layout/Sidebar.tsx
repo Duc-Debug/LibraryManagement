@@ -14,6 +14,7 @@ import {
   Settings,
   Search,
   User,
+  Tags,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -37,6 +38,11 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
       id: 'books',
       label: 'Quản lý Sách',
       icon: BookOpen,
+    },
+    {
+      id: 'categories',
+      label: 'Thể loại sách',
+      icon: Tags,
     },
     {
       id: 'members',
