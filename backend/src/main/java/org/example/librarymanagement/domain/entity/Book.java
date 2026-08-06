@@ -3,7 +3,7 @@ package org.example.librarymanagement.domain.entity;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 
 public class Book {
     private Long bookId;
@@ -86,19 +86,19 @@ public class Book {
 
     private void validateNotBlank(String value, String errorMessage) {
         if (value == null || value.trim().isEmpty()) {
-            throw new DomainException(errorMessage);
+            throw new InvalidBookDataException(errorMessage);
         }
     }
 
     private void validateQuantities(int total, int available) {
         if (total < 0) {
-            throw new DomainException("Total quantity cannot be negative");
+            throw new InvalidBookDataException("Total quantity cannot be negative");
         }
         if (available < 0) {
-            throw new DomainException("Available quantity cannot be negative");
+            throw new InvalidBookDataException("Available quantity cannot be negative");
         }
         if (available > total) {
-            throw new DomainException("Available quantity cannot exceed total quantity");
+            throw new InvalidBookDataException("Available quantity cannot exceed total quantity");
         }
     }
 
@@ -130,7 +130,7 @@ public class Book {
 
     public void restock(int addedQuantity) {
         if (addedQuantity <= 0) {
-            throw new DomainException("Added quantity must be greater than 0");
+            throw new InvalidBookDataException("Added quantity must be greater than 0");
         }
         this.totalQuantity += addedQuantity;
         this.availableQuantity += addedQuantity;
@@ -143,7 +143,7 @@ public class Book {
 
     public void decreaseAvailableQuantity() {
         if (!isAvailableForBorrow()) {
-            throw new DomainException("Sách hiện không còn sẵn để mượn.");
+            throw new InvalidBookDataException("Sách hiện không còn sẵn để mượn.");
         }
         this.availableQuantity--;
         touch();
@@ -151,7 +151,7 @@ public class Book {
 
     public void increaseAvailableQuantity() {
         if (this.availableQuantity >= this.totalQuantity) {
-            throw new DomainException("Số lượng có sẵn không thể vượt quá tổng số lượng.");
+            throw new InvalidBookDataException("Số lượng có sẵn không thể vượt quá tổng số lượng.");
         }
         this.availableQuantity++;
         touch();
