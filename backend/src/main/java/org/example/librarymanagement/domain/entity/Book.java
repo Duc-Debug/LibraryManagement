@@ -2,12 +2,11 @@ package org.example.librarymanagement.domain.entity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.UUID;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.policies.UniqueIsbnPolicy;
 public class Book {
-    private UUID bookId;
+    private Long bookId;
     private String title;
     private String author;
     private String isbn;
@@ -18,22 +17,21 @@ public class Book {
     private String shelfLocation;
     private int totalQuantity;
     private int availableQuantity;
-    public UUID categoryId;
+    public Long categoryId;
     private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public Book() {
-        this.bookId = UUID.randomUUID();
         this.active = true;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
-    public Book(UUID id, String title, String author, String isbn, String description, 
+    public Book(Long id, String title, String author, String isbn, String description, 
                 String coverImageUrl, String publisher, Integer publishedYear, 
                 String shelfLocation, int totalQuantity, int availableQuantity, 
-                UUID categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.bookId = id != null ? id : UUID.randomUUID();
+                Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.bookId = id;
         this.title = title;
         this.author = author;
         this.isbn = isbn;
@@ -68,10 +66,10 @@ public class Book {
         this.availableQuantity++;
         this.updatedAt = LocalDateTime.now();
     }
-    public UUID getBookId() {
+    public Long getBookId() {
         return bookId;
     }
-    public void setBookId(UUID bookId) {
+    public void setBookId(Long bookId) {
         this.bookId = bookId;
     }
     public String getTitle() {
@@ -134,10 +132,10 @@ public class Book {
     public void setAvailableQuantity(int availableQuantity) {
         this.availableQuantity = availableQuantity;
     }
-    public UUID getCategoryId() {
+    public Long getCategoryId() {
         return categoryId;
     }
-    public void setCategoryId(UUID categoryId) {
+    public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
     }
     public boolean isActive() {
@@ -173,7 +171,7 @@ public class Book {
     public void updateInfor(String title, String author, String newIsbn, String description, 
                      String coverImageUrl, String publisher, Integer publishedYear, 
                      String shelfLocation, int newTotalQuantity,  
-                     UUID categoryId) {
+                     Long categoryId) {
 
                         int currentYear = LocalDateTime.now().getYear();
 

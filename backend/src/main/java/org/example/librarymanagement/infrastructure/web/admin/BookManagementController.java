@@ -1,6 +1,5 @@
 package org.example.librarymanagement.infrastructure.web.admin;
 
-import java.util.UUID;
 
 import org.example.librarymanagement.port.inbound.manage.BookResult;
 import org.example.librarymanagement.port.inbound.manage.UpdateBookCommand;
@@ -27,7 +26,7 @@ public class BookManagementController {
 
     @PutMapping("/{id}")    
     public ResponseEntity<BookResult> updateBook(
-        @PathVariable("id") UUID bookId,
+        @PathVariable("id") Long bookId,
         @Valid @RequestBody UpdateBookCommand command)
         {
 

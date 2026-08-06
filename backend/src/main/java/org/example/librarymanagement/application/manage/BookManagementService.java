@@ -7,14 +7,18 @@ import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
-import org.example.librarymanagement.domain.policies.UniqueIsbnPolicy;
+
 import org.example.librarymanagement.port.inbound.manage.BookResult;
 import org.example.librarymanagement.port.inbound.manage.UpdateBookCommand;
 import org.example.librarymanagement.port.inbound.manage.UpdateBookUseCase;
 import org.example.librarymanagement.port.outbound.manage.BookRepository;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
+
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+
+
+@Service
 
 public class BookManagementService implements UpdateBookUseCase {
   
@@ -60,10 +64,27 @@ public class BookManagementService implements UpdateBookUseCase {
 
     }
 
-    private void verifyStaffAccess()
-    {
+    // private void verifyStaffAccess()
+    // {
+    //     User currentUser = getAuthenticatedUserPort.getCurrentUser();
+    //     if (!currentUser.hasRole("ROLE_STAFF") && !currentUser.hasRole("ROLE_ADMIN")) {
+    //         throw new DomainException("Error Security: User does not have permission to perform this action.");
+    //     }
+
+    //     AccountLockPolicy.validateAccountActive(currentUser);
+    //     AuthorizationAccessPolicy.validateStaffAccess(currentUser);
+    // }
+
+    private void verifyStaffAccess() {
         User currentUser = getAuthenticatedUserPort.getCurrentUser();
-        if (!currentUser.hasRole("ROLE_STAFF") && !currentUser.hasRole("ROLE_ADMIN")) {
+        
+        // Cập nhật kiểm tra cả tên trong DB ('LIBRARIAN', 'ADMIN') lẫn dạng có tiền tố ('ROLE_STAFF', 'ROLE_ADMIN')
+        boolean isAuthorized = currentUser.hasRole("LIBRARIAN") 
+                            || currentUser.hasRole("ADMIN")
+                            || currentUser.hasRole("ROLE_STAFF") 
+                            || currentUser.hasRole("ROLE_ADMIN");
+
+        if (!isAuthorized) {
             throw new DomainException("Error Security: User does not have permission to perform this action.");
         }
 

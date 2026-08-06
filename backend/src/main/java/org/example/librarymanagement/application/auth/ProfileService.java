@@ -12,13 +12,15 @@ import org.example.librarymanagement.port.inbound.manage.UserResult;
 import org.example.librarymanagement.port.outbound.manage.FindUserPort;
 import org.example.librarymanagement.port.outbound.manage.SaveUserPort;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
 public class ProfileService implements ProfileUseCase {
 
     private final FindUserPort findUserPort;
     private final SaveUserPort saveUserPort;
+
+    public ProfileService(FindUserPort findUserPort, SaveUserPort saveUserPort) {
+        this.findUserPort = findUserPort;
+        this.saveUserPort = saveUserPort;
+    }
 
     @Override
     public UserResult getProfile(Long userId) {

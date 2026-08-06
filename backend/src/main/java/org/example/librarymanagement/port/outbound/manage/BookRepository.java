@@ -1,13 +1,12 @@
 package org.example.librarymanagement.port.outbound.manage;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.example.librarymanagement.domain.entity.Book;
 
 public interface BookRepository {
-    Optional<Book> findById(UUID id);
-    boolean existsById(String id);
-    boolean existsByIsbnAndIdNot(String isbn, UUID id);
+    Optional<Book> findById(Long id);
+    boolean existsById(Long id);
+    boolean existsByIsbnAndIdNot(String isbn, Long id);
     Book save(Book book);
 }

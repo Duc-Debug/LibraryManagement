@@ -1,10 +1,9 @@
 package org.example.librarymanagement.port.inbound.manage;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record BookResult(
-    UUID bookId,
+    Long bookId,
     String title,
     String author,
     String isbn,
@@ -15,7 +14,7 @@ public record BookResult(
     String shelfLocation,
     int totalQuantity,
     int availableQuantity,
-    UUID categoryId,
+    Long categoryId,
     boolean active,
     LocalDateTime createdAt,
     LocalDateTime updatedAt

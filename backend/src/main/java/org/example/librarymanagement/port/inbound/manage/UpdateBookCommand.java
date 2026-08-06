@@ -6,8 +6,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateBookCommand(
-       @NotNull(message = "Title cannot be null")
-       UUID bookId,
+      
+       Long bookId,
        @NotNull(message = "Title cannot be null")
         String title,
         @NotNull(message = "Author cannot be null")
@@ -25,7 +25,7 @@ public record UpdateBookCommand(
         @Min(value = 0, message = "Total quantity cannot be negative")
         int totalQuantity,
         @NotNull(message = "Category ID cannot be null")
-        UUID categoryId
+        Long categoryId
         
 ) {}
 
