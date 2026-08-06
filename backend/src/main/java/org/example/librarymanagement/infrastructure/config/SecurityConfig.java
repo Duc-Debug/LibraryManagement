@@ -21,6 +21,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -28,7 +30,9 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -39,7 +43,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
@@ -124,6 +127,7 @@ public class SecurityConfig {
         configuration.setExposedHeaders(List.of(
                 "Authorization"
         ));
+        
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
 
@@ -135,3 +139,4 @@ public class SecurityConfig {
         return source;
     }
 }
+
