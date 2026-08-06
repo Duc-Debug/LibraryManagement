@@ -3,11 +3,23 @@ import type { UserAccount } from "@/types";
 import { getProfileApi, updateProfileApi, changePasswordApi } from "@/api/authApi";
 
 interface SettingsPageProps {
-  currentUser: UserAccount;
-  onProfileUpdated: (updated: UserAccount) => void;
+  currentUser?: UserAccount;
+  onProfileUpdated?: (updated: UserAccount) => void;
 }
 
-export default function SettingsPage({ currentUser, onProfileUpdated }: SettingsPageProps) {
+const defaultCurrentUser: UserAccount = {
+  id: "",
+  username: "",
+  password: "",
+  fullName: "",
+  role: "thu_thu",
+  active: true,
+};
+
+export default function SettingsPage({
+  currentUser = defaultCurrentUser,
+  onProfileUpdated = () => {},
+}: SettingsPageProps) {
   const [activeTab, setActiveTab] = useState<"profile" | "password">("profile");
 
   // Profile Form State
