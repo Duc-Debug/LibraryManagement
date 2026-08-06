@@ -1,5 +1,7 @@
 package org.example.librarymanagement.domain.policies;
 
+import java.time.LocalDateTime;
+
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.junit.jupiter.api.DisplayName;
@@ -11,13 +13,31 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class BookDeletionPolicyTest {
 
+    private Book createSampleBook(Long id, String title) {
+        return new Book(
+                id,
+                title,
+                "Robert C. Martin",
+                "978-0134494166",
+                "Mô tả sách",
+                "https://example.com/cover.jpg",
+                "NXB Tri Thức",
+                (short) 2024,
+                "Kệ A1-01",
+                5,
+                5,
+                1L,
+                true,
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
+    }
+
     @Test
     @DisplayName("Cho phép Xóa/Ẩn sách khi KHÔNG CÓ phiếu mượn chưa hoàn trả")
     void shouldAllowDeletionWhenNoActiveBorrowSlips() {
         // Arrange
-        Book book = new Book();
-        book.setBookId(1L);
-        book.setTitle("Lập trình Java DDD");
+        Book book = createSampleBook(1L, "Lập trình Java DDD");
         boolean hasActiveBorrowSlips = false;
 
         // Act & Assert
@@ -28,9 +48,7 @@ class BookDeletionPolicyTest {
     @DisplayName("CHẶN Xóa/Ẩn sách và ném DomainException khi ĐANG CÓ phiếu mượn chưa hoàn trả")
     void shouldBlockDeletionWhenActiveBorrowSlipsExist() {
         // Arrange
-        Book book = new Book();
-        book.setBookId(1L);
-        book.setTitle("Lập trình Java DDD");
+        Book book = createSampleBook(1L, "Lập trình Java DDD");
         boolean hasActiveBorrowSlips = true;
 
         // Act & Assert

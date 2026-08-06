@@ -22,20 +22,49 @@ public class Book {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Book() {
-        this.active = true;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    // 1. Static Factory Method dùng khi Tạo Mới Sách
+    public static Book create(
+            String title,
+            String author,
+            String isbn,
+            String description,
+            String coverImageUrl,
+            String publisher,
+            Short publishedYear,
+            String shelfLocation,
+            int totalQuantity,
+            Long categoryId
+    ) {
+        LocalDateTime now = LocalDateTime.now();
+        return new Book(
+                null,
+                title,
+                author,
+                isbn,
+                description,
+                coverImageUrl,
+                publisher,
+                publishedYear,
+                shelfLocation,
+                totalQuantity,
+                totalQuantity,
+                categoryId,
+                true,
+                now,
+                now
+        );
     }
 
-    public Book(Long id, String title, String author, String isbn, String description,
-            String coverImageUrl, String publisher, Short publishedYear,
-            String shelfLocation, int totalQuantity, int availableQuantity,
-            Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    // 2. Full-Args Constructor dùng khi Re-constitute Entity từ Database (Persistence Mapper)
+    public Book(Long id, String title, String author, String isbn, String description, 
+                String coverImageUrl, String publisher, Short publishedYear, 
+                String shelfLocation, int totalQuantity, int availableQuantity, 
+                Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
 
-        validateNotBlank(title, "Title is not null");
-        validateNotBlank(author, "Author is not null");
+        validateNotBlank(title, "Title must not be blank");
+        validateNotBlank(author, "Author must not be blank");
         validateQuantities(totalQuantity, availableQuantity);
+
         this.bookId = id;
         this.title = title;
         this.author = author;
@@ -53,13 +82,68 @@ public class Book {
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
     }
 
+    // ==================== DOMAIN BEHAVIORS & INVARIANTS ====================
+
+    private void validateNotBlank(String value, String errorMessage) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new DomainException(errorMessage);
+        }
+    }
+
+    private void validateQuantities(int total, int available) {
+        if (total < 0) {
+            throw new DomainException("Total quantity cannot be negative");
+        }
+        if (available < 0) {
+            throw new DomainException("Available quantity cannot be negative");
+        }
+        if (available > total) {
+            throw new DomainException("Available quantity cannot exceed total quantity");
+        }
+    }
+
+    public void updateInfo(
+            String title,
+            String author,
+            String isbn,
+            String description,
+            String coverImageUrl,
+            String publisher,
+            Short publishedYear,
+            String shelfLocation,
+            Long categoryId
+    ) {
+        validateNotBlank(title, "Title must not be blank");
+        validateNotBlank(author, "Author must not be blank");
+
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+        this.description = description;
+        this.coverImageUrl = coverImageUrl;
+        this.publisher = publisher;
+        this.publishedYear = publishedYear;
+        this.shelfLocation = shelfLocation;
+        this.categoryId = categoryId;
+        touch();
+    }
+
+    public void restock(int addedQuantity) {
+        if (addedQuantity <= 0) {
+            throw new DomainException("Added quantity must be greater than 0");
+        }
+        this.totalQuantity += addedQuantity;
+        this.availableQuantity += addedQuantity;
+        touch();
+    }
+
     public boolean isAvailableForBorrow() {
         return this.active && this.availableQuantity > 0;
     }
 
     public void decreaseAvailableQuantity() {
         if (!isAvailableForBorrow()) {
-            throw new DomainException("Book now is not have more to borrow.");
+            throw new DomainException("Sách hiện không còn sẵn để mượn.");
         }
         this.availableQuantity--;
         touch();
@@ -67,7 +151,7 @@ public class Book {
 
     public void increaseAvailableQuantity() {
         if (this.availableQuantity >= this.totalQuantity) {
-            throw new DomainException("Avaiable quantity is not more than total quantity book.");
+            throw new DomainException("Số lượng có sẵn không thể vượt quá tổng số lượng.");
         }
         this.availableQuantity++;
         touch();
@@ -87,92 +171,46 @@ public class Book {
         }
     }
 
-     /**
-     * Hành vi nghiệp vụ: Nhập thêm số lượng sách mới vào kho
-     * @param addedQuantity Số lượng sách nhập thêm (phải > 0)
-     */
-    public void restock(int addedQuantity) {
-        if (addedQuantity <= 0) {
-            throw new DomainException("Số lượng sách nhập thêm phải lớn hơn 0.");
-        }
-        this.totalQuantity += addedQuantity;
-        this.availableQuantity += addedQuantity;
-        touch();
-    }
     private void touch() {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // ==================== GETTERS ONLY (NO DANGEROUS SETTERS) ====================
+
     public Long getBookId() {
         return bookId;
-    }
-
-    public void setBookId(Long bookId) {
-        this.bookId = bookId;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getAuthor() {
         return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
     }
 
     public String getIsbn() {
         return isbn;
     }
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getCoverImageUrl() {
         return coverImageUrl;
     }
 
-    public void setCoverImageUrl(String coverImageUrl) {
-        this.coverImageUrl = coverImageUrl;
-    }
-
     public String getPublisher() {
         return publisher;
-    }
-
-    public void setPublisher(String publisher) {
-        this.publisher = publisher;
     }
 
     public Short getPublishedYear() {
         return publishedYear;
     }
 
-    public void setPublishedYear(Short publishedYear) {
-        this.publishedYear = publishedYear;
-    }
-
     public String getShelfLocation() {
         return shelfLocation;
-    }
-
-    public void setShelfLocation(String shelfLocation) {
-        this.shelfLocation = shelfLocation;
     }
 
     public int getTotalQuantity() {
@@ -185,10 +223,6 @@ public class Book {
 
     public Long getCategoryId() {
         return categoryId;
-    }
-
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
     }
 
     public boolean isActive() {
@@ -205,10 +239,8 @@ public class Book {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
         return Objects.equals(bookId, book.bookId);
     }
@@ -216,23 +248,5 @@ public class Book {
     @Override
     public int hashCode() {
         return Objects.hash(bookId);
-    }
-
-    private void validateNotBlank(String value, String errorMEsseage) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new DomainException(errorMEsseage);
-        }
-    }
-
-    private void validateQuantities(int total, int available) {
-        if (total < 0) {
-            throw new DomainException("Tổng số lượng sách không được nhỏ hơn 0.");
-        }
-        if (available < 0) {
-            throw new DomainException("Số lượng sách có sẵn không được nhỏ hơn 0.");
-        }
-        if (available > total) {
-            throw new DomainException("Số lượng sách có sẵn không được vượt quá tổng số lượng.");
-        }
     }
 }

@@ -1,5 +1,6 @@
 package org.example.librarymanagement.application.book;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.DomainException;
@@ -39,13 +40,32 @@ class DeleteBookServiceTest {
         deleteBookService = new DeleteBookService(loadBookPort, saveBookPort, checkActiveBorrowPort);
     }
 
+    private Book createSampleBook(Long id, String title) {
+        return new Book(
+                id,
+                title,
+                "Uncle Bob",
+                "978-0134494167",
+                "Description",
+                "https://example.com/cover.jpg",
+                "Publisher",
+                (short) 2023,
+                "Shelf A1",
+                5,
+                5,
+                1L,
+                true,
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
+    }
+
     @Test
     @DisplayName("deleteBook: Xóa cứng thành công khi sách không thuộc phiếu mượn active")
     void deleteBook_Success() {
         // Arrange
         Long bookId = 1L;
-        Book book = new Book();
-        book.setBookId(bookId);
+        Book book = createSampleBook(bookId, "Clean Code");
 
         when(loadBookPort.findById(bookId)).thenReturn(Optional.of(book));
         when(checkActiveBorrowPort.hasActiveBorrowSlips(bookId)).thenReturn(false);
@@ -62,9 +82,7 @@ class DeleteBookServiceTest {
     void deleteBook_BlockedByPolicy() {
         // Arrange
         Long bookId = 1L;
-        Book book = new Book();
-        book.setBookId(bookId);
-        book.setTitle("Clean Code");
+        Book book = createSampleBook(bookId, "Clean Code");
 
         when(loadBookPort.findById(bookId)).thenReturn(Optional.of(book));
         when(checkActiveBorrowPort.hasActiveBorrowSlips(bookId)).thenReturn(true);
@@ -81,8 +99,7 @@ class DeleteBookServiceTest {
     void hideBook_Success() {
         // Arrange
         Long bookId = 1L;
-        Book book = new Book();
-        book.setBookId(bookId);
+        Book book = createSampleBook(bookId, "Clean Code");
 
         when(loadBookPort.findById(bookId)).thenReturn(Optional.of(book));
         when(checkActiveBorrowPort.hasActiveBorrowSlips(bookId)).thenReturn(false);
