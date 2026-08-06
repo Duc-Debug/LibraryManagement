@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BookHasActiveBorrowException.class)
     public ResponseEntity<ErrorResponse> handleBookHasActiveBorrow(BookHasActiveBorrowException exception) {
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of("BOOK_HAS_ACTIVE_BORROW", exception.getMessage()));
     }
 
