@@ -29,12 +29,9 @@ public class DeleteBookService implements DeleteBookUseCase {
     @Override
     public void deleteBook(Long bookId) {
         validateBookId(bookId);
+        Book book = loadBookById(bookId);
 
-        Book book = loadBookPort.findById(bookId)
-                .orElseThrow(() -> new DomainException("Không tìm thấy sách với ID: " + bookId));
-
-        boolean hasActiveBorrowSlips = checkActiveBorrowPort.hasActiveBorrowSlips(bookId);
-
+        boolean hasActiveBorrowSlips = loadAndValidateBookForDeletion(bookId);
         BookDeletionPolicy.validateCanDeleteOrHide(book, hasActiveBorrowSlips);
 
         saveBookPort.deleteById(bookId);
@@ -44,30 +41,32 @@ public class DeleteBookService implements DeleteBookUseCase {
     public void hideBook(Long bookId) {
         validateBookId(bookId);
 
-        Book book = loadBookPort.findById(bookId)
-                .orElseThrow(() -> new DomainException("Không tìm thấy sách với ID: " + bookId));
+        Book book = loadBookById(bookId);
 
-        boolean hasActiveBorrowSlips = checkActiveBorrowPort.hasActiveBorrowSlips(bookId);
+        boolean hasActiveBorrowSlips = loadAndValidateBookForDeletion(bookId);
 
         BookDeletionPolicy.validateCanDeleteOrHide(book, hasActiveBorrowSlips);
 
         book.deactivate();
-
         saveBookPort.save(book);
     }
 
     @Override
     public void unhideBook(Long bookId) {
         validateBookId(bookId);
-
-        Book book = loadBookPort.findById(bookId)
-                .orElseThrow(() -> new DomainException("Không tìm thấy sách với ID: " + bookId));
+        Book book = loadBookById(bookId);     
 
         book.activate();
-
         saveBookPort.save(book);
     }
 
+    private Book loadBookById(Long bookId){
+    return loadBookPort.findById(bookId)
+                .orElseThrow(() -> new DomainException("Không tìm thấy sách với ID: " + bookId));
+    }
+    private boolean loadAndValidateBookForDeletion(Long bookId){
+        return checkActiveBorrowPort.hasActiveBorrowSlips(bookId);
+    } 
     private void validateBookId(Long bookId) {
         if (bookId == null || bookId <= 0) {
             throw new DomainException("Book ID must be greater than 0");
