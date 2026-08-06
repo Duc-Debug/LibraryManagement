@@ -27,31 +27,40 @@ public class DeleteBookService implements DeleteBookUseCase {
                 "CheckActiveBorrowPort must not be null");
     }
 
-     @Override
+    @Override
     public void deleteBook(Long bookId) {
-        Book book = loadAndValidateBookForDeletion(bookId);
-        saveBookPort.deleteById(book.getBookId());
+        Book book = loadBookById(bookId);
+
+        ValidateBookForDeletion(book);
+        saveBookPort.deleteById(bookId);
     }
+
     @Override
     public void hideBook(Long bookId) {
-        Book book = loadAndValidateBookForDeletion(bookId);
+        Book book = loadBookById(bookId);
+        ValidateBookForDeletion(book);
+
         book.deactivate();
         saveBookPort.save(book);
     }
+
     @Override
     public void unhideBook(Long bookId) {
-        Book book = loadAndValidateBookForDeletion(bookId);
+        Book book = loadBookById(bookId);
         book.activate();
         saveBookPort.save(book);
     }
-    private Book loadAndValidateBookForDeletion(Long bookId) {
+
+    private Book loadBookById(Long bookId) {
         if (bookId == null || bookId <= 0) {
             throw new InvalidBookDataException("Book ID must be greater than 0");
         }
-        Book book = loadBookPort.findById(bookId)
+        return loadBookPort.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
-        boolean hasActiveBorrowSlips = checkActiveBorrowPort.hasActiveBorrowSlips(bookId);
+    }
+
+    private void ValidateBookForDeletion(Book book) {
+        boolean hasActiveBorrowSlips = checkActiveBorrowPort.hasActiveBorrowSlips(book.getBookId());
         BookDeletionPolicy.validateCanDeleteOrHide(book, hasActiveBorrowSlips);
-        return book;
     }
 }
