@@ -23,7 +23,7 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
 
     @Override
     public boolean hasActiveBorrowSlips(Long bookId) {
-        return bookJpaRepository.countActiveBorrowByBookId(bookId) > 0;
+        return bookJpaRepository.existsActiveBorrowByBookId(bookId) > 0;
     }
 
     @Override
@@ -53,7 +53,9 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
             jpaPage = bookJpaRepository.findAll(pageable);
         } else {
             String search = keyword.trim();
-            jpaPage = bookJpaRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(search, search, pageable);
+            jpaPage = bookJpaRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
+                    search, search, search, pageable
+            );
         }
 
         List<Book> domainBooks = jpaPage.getContent().stream()

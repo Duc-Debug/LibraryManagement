@@ -10,12 +10,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookJpaRepository extends JpaRepository<BookJpaEntity, Long> {
 
-    @Query(value = "SELECT COUNT(*) FROM borrow_details bd " +
-                   "JOIN borrow_slips bs ON bd.borrow_slip_id = bs.id " +
-                   "WHERE bd.book_id = :bookId AND bs.status IN ('BORROWING', 'OVERDUE')", nativeQuery = true)
-    long countActiveBorrowByBookId(@Param("bookId") Long bookId);
+    @Query(value = """
+        SELECT CASE WHEN EXISTS (
+            SELECT 1 FROM borrow_details bd 
+            JOIN borrow_slips bs ON bd.borrow_slip_id = bs.id 
+            WHERE bd.book_id = :bookId AND bs.status IN ('BORROWING', 'OVERDUE')
+        ) THEN TRUE ELSE FALSE END
+        """, nativeQuery = true)
+    long existsActiveBorrowByBookId(@Param("bookId") Long bookId);
 
-    Page<BookJpaEntity> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(
-            String title, String author, Pageable pageable
+    Page<BookJpaEntity> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
+            String title, String author, String isbn, Pageable pageable
     );
 }
