@@ -46,5 +46,6 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
     return {} as T;
   }
 
-  return response.json();
+  const text = await response.text();
+  return text ? (JSON.parse(text) as T) : ({} as T);
 }

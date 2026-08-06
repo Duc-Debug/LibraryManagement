@@ -1,20 +1,25 @@
 package org.example.librarymanagement.infrastructure.persistence.category;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.example.librarymanagement.application.category.exception.CategoryInUseException;
 import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
 import org.example.librarymanagement.domain.entity.Category;
 import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;
+import org.example.librarymanagement.port.outbound.category.LoadCategoryPort;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class CategoryPersistenceAdapter
-        implements CategoryRepositoryPort {
+        implements CategoryRepositoryPort, LoadCategoryPort {
 
     private static final String UNIQUE_NAME_CONSTRAINT =
             "uk_categories_name";
@@ -40,6 +45,16 @@ public class CategoryPersistenceAdapter
                         mapper,
                         "Category persistence mapper must not be null"
                 );
+    }
+
+    @Override
+    public Map<Long, String> findCategoryNamesByIds(Set<Long> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return categoryJpaRepository.findAllById(categoryIds).stream()
+                .collect(Collectors.toMap(CategoryJpaEntity::getId, CategoryJpaEntity::getName));
     }
 
     @Override

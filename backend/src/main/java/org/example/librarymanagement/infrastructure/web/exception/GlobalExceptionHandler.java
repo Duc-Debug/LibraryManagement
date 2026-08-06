@@ -4,6 +4,9 @@ import java.util.stream.Collectors;
 
 import org.example.librarymanagement.application.auth.InvalidCredentialsException;
 import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.book.BookHasActiveBorrowException;
+import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
+import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 import org.example.librarymanagement.infrastructure.web.auth.InvalidAuthorizationHeaderException;
 import org.example.librarymanagement.port.outbound.auth.token.InvalidAccessTokenException;
 import org.slf4j.Logger;
@@ -73,6 +76,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.of("UNAUTHENTICATED", exception.getMessage()));
+    }
+
+    @ExceptionHandler(BookNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBookNotFound(BookNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("BOOK_NOT_FOUND", exception.getMessage()));
+    }
+
+    @ExceptionHandler(BookHasActiveBorrowException.class)
+    public ResponseEntity<ErrorResponse> handleBookHasActiveBorrow(BookHasActiveBorrowException exception) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of("BOOK_HAS_ACTIVE_BORROW", exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidBookDataException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidBookData(InvalidBookDataException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("INVALID_BOOK_DATA", exception.getMessage()));
     }
 
     @ExceptionHandler(DomainException.class)
