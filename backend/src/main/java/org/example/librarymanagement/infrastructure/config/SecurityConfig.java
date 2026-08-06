@@ -43,7 +43,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
@@ -128,6 +127,7 @@ public class SecurityConfig {
         configuration.setExposedHeaders(List.of(
                 "Authorization"
         ));
+        
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
 
@@ -139,3 +139,4 @@ public class SecurityConfig {
         return source;
     }
 }
+
