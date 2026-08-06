@@ -33,6 +33,9 @@ public class BookPersistenceMapper {
     }
 
     public BookJpaEntity toJpaEntity(Book domain) {
+        if (domain == null) {
+            return null;
+        }
         BookJpaEntity entity = new BookJpaEntity();
         updateJpaEntity(domain, entity);
         entity.setId(domain.getBookId());
@@ -40,6 +43,9 @@ public class BookPersistenceMapper {
     }
 
     public void updateJpaEntity(Book domain, BookJpaEntity entity) {
+        if (domain == null || entity == null) {
+            return;
+        }
         entity.setTitle(domain.getTitle());
         entity.setAuthor(domain.getAuthor());
         entity.setIsbn(domain.getIsbn());
