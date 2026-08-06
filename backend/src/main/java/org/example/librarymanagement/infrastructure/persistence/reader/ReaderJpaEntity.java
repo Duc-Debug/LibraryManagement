@@ -12,6 +12,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -20,7 +21,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "readers")
+@Table(
+    name = "readers",
+    indexes = {
+        @Index(name = "idx_reader_card_number", columnList = "card_number"),
+        @Index(name = "idx_reader_email", columnList = "email"),
+        @Index(name = "idx_reader_phone", columnList = "phone_number")
+    }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,10 +39,10 @@ public class ReaderJpaEntity {
     @Column(name = "id", nullable = false, updatable = false)
     private Long id;
 
-    @Column(name = "card_code", nullable = false, unique = true, length = 50)
+    @Column(name = "card_number", nullable = false, unique = true, length = 50)
     private String cardNumber;
 
-    @Column(name = "full_name", nullable = false, length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     @Column(name = "email", nullable = false, unique = true, length = 100)
