@@ -7,13 +7,13 @@ interface SettingsPageProps {
   onProfileUpdated: (updated: UserAccount) => void;
 }
 
-export default function SettingsPage({ currentUser, onProfileUpdated }: SettingsPageProps) {
+export default function SettingsPage({ currentUser = {} as any, onProfileUpdated }: SettingsPageProps) {
   const [activeTab, setActiveTab] = useState<"profile" | "password">("profile");
 
   // Profile Form State
-  const [fullName, setFullName] = useState(currentUser.fullName || "");
-  const [email, setEmail] = useState(currentUser.email || "");
-  const [phone, setPhone] = useState(currentUser.phone || "");
+  const [fullName, setFullName] = useState(currentUser?.fullName || "");
+  const [email, setEmail] = useState(currentUser?.email || "");
+  const [phone, setPhone] = useState(currentUser?.phone || "");
 
   // Password Form State
   const [oldPassword, setOldPassword] = useState("");
@@ -206,7 +206,7 @@ export default function SettingsPage({ currentUser, onProfileUpdated }: Settings
                   <label className="block text-xs font-semibold text-muted-foreground mb-1">Tên đăng nhập</label>
                   <input
                     type="text"
-                    value={currentUser.username}
+                    value={currentUser?.username || ""}
                     disabled
                     className="w-full px-3 py-2 text-sm bg-muted/60 border border-border rounded-xl text-muted-foreground cursor-not-allowed"
                   />
@@ -217,7 +217,7 @@ export default function SettingsPage({ currentUser, onProfileUpdated }: Settings
                   <label className="block text-xs font-semibold text-muted-foreground mb-1">Vai trò hệ thống</label>
                   <input
                     type="text"
-                    value={currentUser.role === "admin" ? "Quản trị viên (ADMIN)" : "Thủ thư (LIBRARIAN)"}
+                    value={currentUser?.role === "admin" ? "Quản trị viên (ADMIN)" : "Thủ thư (LIBRARIAN)"}
                     disabled
                     className="w-full px-3 py-2 text-sm bg-muted/60 border border-border rounded-xl text-muted-foreground cursor-not-allowed"
                   />
