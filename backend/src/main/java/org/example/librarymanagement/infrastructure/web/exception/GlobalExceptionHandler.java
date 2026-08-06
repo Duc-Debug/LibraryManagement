@@ -1,9 +1,16 @@
 package org.example.librarymanagement.infrastructure.web.exception;
 
+import java.util.stream.Collectors;
+
 import org.example.librarymanagement.application.auth.InvalidCredentialsException;
 import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.book.BookHasActiveBorrowException;
+import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
+import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 import org.example.librarymanagement.infrastructure.web.auth.InvalidAuthorizationHeaderException;
 import org.example.librarymanagement.port.outbound.auth.token.InvalidAccessTokenException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,21 +18,23 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.stream.Collectors;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 1. Trả về thông tin chi tiết các trường bị lỗi validation (@Valid)
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
-        String detailMessage = ex.getBindingResult().getFieldErrors().stream()
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException exception) {
+        String detailMessage = exception.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of("VALIDATION_ERROR", detailMessage.isEmpty() ? "Invalid request" : detailMessage));
+                .body(ErrorResponse.of(
+                        "VALIDATION_ERROR",
+                        detailMessage.isEmpty() ? "Invalid request" : detailMessage
+                ));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -42,6 +51,15 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("INVALID_CREDENTIALS", exception.getMessage()));
     }
 
+    @ExceptionHandler(InvalidAuthorizationHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAuthorizationHeader(
+            InvalidAuthorizationHeaderException exception
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("INVALID_AUTHORIZATION_HEADER", exception.getMessage()));
+    }
+
     @ExceptionHandler(InvalidAccessTokenException.class)
     public ResponseEntity<ErrorResponse> handleInvalidAccessToken(
             InvalidAccessTokenException exception
@@ -51,13 +69,6 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("INVALID_TOKEN", exception.getMessage()));
     }
 
-    @ExceptionHandler(InvalidAuthorizationHeaderException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidAuthorizationHeader(InvalidAuthorizationHeaderException ex) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of("INVALID_AUTHORIZATION_HEADER", ex.getMessage()));
-    }
-
     @ExceptionHandler(org.example.librarymanagement.domain.exceptions.UnauthenticatedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthenticated(
             org.example.librarymanagement.domain.exceptions.UnauthenticatedException exception
@@ -65,6 +76,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.of("UNAUTHENTICATED", exception.getMessage()));
+    }
+
+    @ExceptionHandler(BookNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBookNotFound(BookNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("BOOK_NOT_FOUND", exception.getMessage()));
+    }
+
+    @ExceptionHandler(BookHasActiveBorrowException.class)
+    public ResponseEntity<ErrorResponse> handleBookHasActiveBorrow(BookHasActiveBorrowException exception) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of("BOOK_HAS_ACTIVE_BORROW", exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidBookDataException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidBookData(InvalidBookDataException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("INVALID_BOOK_DATA", exception.getMessage()));
     }
 
     @ExceptionHandler(DomainException.class)
@@ -82,9 +114,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception ex) {
-        // Nên log lỗi ra console hoặc file để debug
-        ex.printStackTrace(); 
+    public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception exception) {
+        log.error("Unexpected exception", exception);
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of("INTERNAL_ERROR", "Unexpected server error"));
