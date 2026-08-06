@@ -42,15 +42,15 @@ public class BookManagementController {
 
     @GetMapping
     public ResponseEntity<PageResult<BookResponseDto>> getBooks(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) String keyword
-    ){
-        PageResult<BookResponseDto> result= getBooksUseCase.getBooks(page, size, keyword);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword) {
+        PageResult<BookResponseDto> result = getBooksUseCase.getBooks(page, size, keyword);
         return ResponseEntity.ok(result);
     }
+
     @GetMapping("/{id}")
-    public ResponseEntity<BookResponseDto> getBookById(@PathVariable Long id){
+    public ResponseEntity<BookResponseDto> getBookById(@PathVariable Long id) {
         BookResponseDto responseDto = getBooksUseCase.getBookById(id);
         return ResponseEntity.ok(responseDto);
     }
