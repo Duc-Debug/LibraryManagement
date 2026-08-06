@@ -1,13 +1,21 @@
 package org.example.librarymanagement.infrastructure.web.reader;
 
+import java.util.List;
+
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
+import org.example.librarymanagement.port.dtos.reader.UpdateReaderCommand;
 import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -33,32 +41,67 @@ public class ReaderManagementController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ReaderResponse.fromResult(result));
     }
 
-    @org.springframework.web.bind.annotation.GetMapping
-    public ResponseEntity<Object> getAllReaders(
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer page,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer size
-    ) {
-        if (page != null && size != null) {
-            org.example.librarymanagement.port.dtos.common.PageResult<ReaderResult> pageResult =
-                    readerManagementUseCase.getAllReaders(page, size);
-
-            java.util.List<ReaderResponse> content = pageResult.content().stream()
-                    .map(ReaderResponse::fromResult)
-                    .collect(java.util.stream.Collectors.toList());
-
-            org.example.librarymanagement.port.dtos.common.PageResult<ReaderResponse> responsePage =
-                    org.example.librarymanagement.port.dtos.common.PageResult.of(
-                            content,
-                            pageResult.page(),
-                            pageResult.size(),
-                            pageResult.totalElements()
-                    );
-            return ResponseEntity.ok(responsePage);
+   
+    @GetMapping
+public ResponseEntity<?> getAllReaders(
+        @RequestParam(required = false) Integer page,
+        @RequestParam(required = false) Integer size
+) {
+    if (page != null || size != null) {
+        if (page == null || size == null) {
+            throw new IllegalArgumentException(
+                    "Page and size must be provided together."
+            );
         }
 
-        java.util.List<ReaderResponse> list = readerManagementUseCase.getAllReaders().stream()
-                .map(ReaderResponse::fromResult)
-                .collect(java.util.stream.Collectors.toList());
-        return ResponseEntity.ok(list);
+        PageResult<ReaderResult> resultPage =
+                readerManagementUseCase.getAllReaders(
+                        page,
+                        size
+                );
+
+        List<ReaderResponse> content =
+                resultPage.content().stream()
+                        .map(ReaderResponse::fromResult)
+                        .toList();
+
+        PageResult<ReaderResponse> responsePage =
+                PageResult.of(
+                        content,
+                        resultPage.page(),
+                        resultPage.size(),
+                        resultPage.totalElements()
+                );
+
+        return ResponseEntity.ok(responsePage);
     }
+
+    List<ReaderResponse> response =
+            readerManagementUseCase.getAllReaders().stream()
+                    .map(ReaderResponse::fromResult)
+                    .toList();
+
+    return ResponseEntity.ok(response);
+}
+    
+    @PutMapping("/{readerId}")
+public ResponseEntity<ReaderResponse> updateReader(
+        @PathVariable Long readerId,
+        @Valid @RequestBody UpdateReaderRequest request
+) {
+    UpdateReaderCommand command = new UpdateReaderCommand(
+            readerId,
+            request.name(),
+            request.email(),
+            request.phoneNumber(),
+            request.address()
+    );
+
+    ReaderResult result =
+            readerManagementUseCase.updateReader(command);
+
+    return ResponseEntity.ok(
+            ReaderResponse.fromResult(result)
+    );
+}
 }

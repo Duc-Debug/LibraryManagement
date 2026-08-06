@@ -17,7 +17,10 @@ public record ReaderResponse(
         LocalDate cardExpiryAt,
         String createdByName
 ) {
-    public static ReaderResponse fromResult(ReaderResult result) {
+
+    public static ReaderResponse fromResult(
+            ReaderResult result
+    ) {
         return new ReaderResponse(
                 result.id(),
                 result.cardNumber(),

@@ -1,7 +1,6 @@
 package org.example.librarymanagement.port.outbound.reader;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.example.librarymanagement.domain.entity.Readers;
 
@@ -26,4 +25,13 @@ public interface ReaderRepositoryPort {
     org.example.librarymanagement.port.dtos.common.PageResult<Readers> findAll(int page, int size);
 
     org.example.librarymanagement.port.dtos.common.PageResult<Readers> findByCreatedByUserId(Long createdByUserId, int page, int size);
+    boolean existsByEmailAndIdNot(
+        String email,
+        Long excludedReaderId
+);
+
+boolean existsByPhoneNumberAndIdNot(
+        String phoneNumber,
+        Long excludedReaderId
+);
 }

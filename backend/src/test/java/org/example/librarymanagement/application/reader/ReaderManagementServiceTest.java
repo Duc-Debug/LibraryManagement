@@ -1,16 +1,23 @@
 package org.example.librarymanagement.application.reader;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.example.librarymanagement.domain.entity.Readers;
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
+import org.example.librarymanagement.domain.enums.CardStatus;
+import org.example.librarymanagement.domain.exceptions.ReaderAccessDeniedException;
 import org.example.librarymanagement.domain.exceptions.ReaderAlreadyExistsException;
+import org.example.librarymanagement.domain.exceptions.ReaderNotFoundException;
 import org.example.librarymanagement.domain.exceptions.UnauthenticatedException;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
+import org.example.librarymanagement.port.dtos.reader.UpdateReaderCommand;
 import org.example.librarymanagement.port.outbound.manage.FindUserPort;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
@@ -24,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -107,6 +115,238 @@ class ReaderManagementServiceTest {
         assertEquals(1, result.content().size());
         verify(readerRepositoryPort).findAll(0, 10);
     }
+    @Test
+@DisplayName("Updates reader successfully when librarian owns the reader")
+void updateReader_Success_WhenLibrarianOwnsReader() {
+    User librarian = mockUser(
+            1L,
+            "librarian",
+            "LIBRARIAN"
+    );
+
+    Readers existingReader = existingReader(
+            10L,
+            1L,
+            true
+    );
+
+    UpdateReaderCommand command =
+            new UpdateReaderCommand(
+                    10L,
+                    "  Nguyen Van B  ",
+                    "  NEW.EMAIL@GMAIL.COM  ",
+                    "0987654321",
+                    "  Thai Nguyen  "
+            );
+
+    when(getAuthenticatedUserPort.getCurrentUser())
+            .thenReturn(librarian);
+
+    when(readerRepositoryPort.findById(10L))
+            .thenReturn(Optional.of(existingReader));
+
+    when(readerRepositoryPort.existsByEmailAndIdNot(
+            "new.email@gmail.com",
+            10L
+    )).thenReturn(false);
+
+    when(readerRepositoryPort.existsByPhoneNumberAndIdNot(
+            "0987654321",
+            10L
+    )).thenReturn(false);
+
+    when(readerRepositoryPort.save(existingReader))
+            .thenReturn(existingReader);
+
+    ReaderResult result =
+            readerManagementService.updateReader(command);
+
+    assertNotNull(result);
+    assertEquals(10L, result.id());
+    assertEquals("Nguyen Van B", result.name());
+    assertEquals(
+            "new.email@gmail.com",
+            result.email()
+    );
+    assertEquals(
+            "0987654321",
+            result.phoneNumber()
+    );
+    assertEquals(
+            "Thai Nguyen",
+            result.address()
+    );
+
+    verify(readerRepositoryPort)
+            .existsByEmailAndIdNot(
+                    "new.email@gmail.com",
+                    10L
+            );
+
+    verify(readerRepositoryPort)
+            .existsByPhoneNumberAndIdNot(
+                    "0987654321",
+                    10L
+            );
+
+    verify(readerRepositoryPort)
+            .save(existingReader);
+}
+@Test
+@DisplayName("Throws ReaderNotFoundException when reader does not exist")
+void updateReader_ThrowsNotFound_WhenReaderDoesNotExist() {
+    User librarian = mockUser(
+            1L,
+            "librarian",
+            "LIBRARIAN"
+    );
+
+    UpdateReaderCommand command =
+            new UpdateReaderCommand(
+                    99L,
+                    "Nguyen Van B",
+                    "reader@gmail.com",
+                    "0987654321",
+                    "Thai Nguyen"
+            );
+
+    when(getAuthenticatedUserPort.getCurrentUser())
+            .thenReturn(librarian);
+
+    when(readerRepositoryPort.findById(99L))
+            .thenReturn(Optional.empty());
+
+    assertThrows(
+            ReaderNotFoundException.class,
+            () -> readerManagementService.updateReader(command)
+    );
+
+    verify(readerRepositoryPort, never())
+            .save(any());
+}
+@Test
+@DisplayName("Throws ReaderAccessDeniedException when librarian does not own the reader")
+void updateReader_ThrowsAccessDenied_WhenLibrarianDoesNotOwnReader() {
+    User librarian = mockUser(
+            1L,
+            "librarian",
+            "LIBRARIAN"
+    );
+
+    Readers existingReader = existingReader(
+            10L,
+            2L,
+            true
+    );
+
+    UpdateReaderCommand command =
+            new UpdateReaderCommand(
+                    10L,
+                    "Nguyen Van B",
+                    "reader@gmail.com",
+                    "0987654321",
+                    "Thai Nguyen"
+            );
+
+    when(getAuthenticatedUserPort.getCurrentUser())
+            .thenReturn(librarian);
+
+    when(readerRepositoryPort.findById(10L))
+            .thenReturn(Optional.of(existingReader));
+
+    assertThrows(
+            ReaderAccessDeniedException.class,
+            () -> readerManagementService.updateReader(command)
+    );
+
+    verify(readerRepositoryPort, never())
+            .existsByEmailAndIdNot(
+                    anyString(),
+                    any()
+            );
+
+    verify(readerRepositoryPort, never())
+            .save(any());
+}
+@Test
+@DisplayName("Throws ReaderAlreadyExistsException when email belongs to another reader")
+void updateReader_ThrowsDuplicateEmail() {
+    User librarian = mockUser(
+            1L,
+            "librarian",
+            "LIBRARIAN"
+    );
+
+    Readers existingReader = existingReader(
+            10L,
+            1L,
+            true
+    );
+
+    UpdateReaderCommand command =
+            new UpdateReaderCommand(
+                    10L,
+                    "Nguyen Van B",
+                    "duplicate@gmail.com",
+                    "0987654321",
+                    "Thai Nguyen"
+            );
+
+    when(getAuthenticatedUserPort.getCurrentUser())
+            .thenReturn(librarian);
+
+    when(readerRepositoryPort.findById(10L))
+            .thenReturn(Optional.of(existingReader));
+
+    when(readerRepositoryPort.existsByEmailAndIdNot(
+            "duplicate@gmail.com",
+            10L
+    )).thenReturn(true);
+
+    assertThrows(
+            ReaderAlreadyExistsException.class,
+            () -> readerManagementService.updateReader(command)
+    );
+
+    verify(readerRepositoryPort, never())
+            .save(any());
+}
+private Readers existingReader(
+        Long id,
+        Long creatorId,
+        boolean active
+) {
+    LocalDate issuedAt = LocalDate.of(
+            2026,
+            1,
+            1
+    );
+
+    LocalDateTime createdAt =
+            LocalDateTime.of(
+                    2026,
+                    1,
+                    1,
+                    8,
+                    0
+            );
+
+    return Readers.builder()
+            .id(id)
+            .cardNumber("RD-2026-0001")
+            .name("Original Reader")
+            .email("original@gmail.com")
+            .phoneNumber("0912345678")
+            .address("Ha Noi")
+            .cardStatus(CardStatus.ACTIVE)
+            .cardIssuedAt(issuedAt)
+            .cardExpiryAt(issuedAt.plusYears(1))
+            .createdAt(createdAt)
+            .updatedAt(createdAt)
+            .isActive(active)
+            .createdByUserId(creatorId)
+            .build();
+}
 
     private User mockUser(Long id, String username, String roleName) {
         return new User(id, username, "hash", "Full " + username, username + "@test.com", "0123", true, null, null, null, Set.of(new Role(1L, roleName, roleName)));

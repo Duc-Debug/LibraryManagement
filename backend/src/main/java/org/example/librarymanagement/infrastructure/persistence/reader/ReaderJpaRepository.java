@@ -1,13 +1,11 @@
 package org.example.librarymanagement.infrastructure.persistence.reader;
 
 import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ReaderJpaRepository extends JpaRepository<ReaderJpaEntity, Long> {
@@ -23,4 +21,13 @@ public interface ReaderJpaRepository extends JpaRepository<ReaderJpaEntity, Long
     java.util.List<ReaderJpaEntity> findByCreatedByUserId(Long createdByUserId);
 
     Page<ReaderJpaEntity> findByCreatedByUserId(Long createdByUserId, Pageable pageable);
+    boolean existsByEmailIgnoreCaseAndIdNot(
+        String email,
+        Long excludedReaderId
+);
+
+boolean existsByPhoneNumberAndIdNot(
+        String phoneNumber,
+        Long excludedReaderId
+);
 }

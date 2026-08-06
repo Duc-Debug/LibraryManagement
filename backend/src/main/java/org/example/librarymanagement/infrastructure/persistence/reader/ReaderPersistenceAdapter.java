@@ -1,7 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.reader;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.example.librarymanagement.domain.entity.Readers;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
@@ -17,18 +16,21 @@ public class ReaderPersistenceAdapter implements ReaderRepositoryPort {
     private final ReaderPersistenceMapper readerPersistenceMapper;
 
     @Override
-    public Readers save(Readers reader) {
-        ReaderJpaEntity entity = readerPersistenceMapper.toJpaEntity(reader);
-        ReaderJpaEntity savedEntity = readerJpaRepository.save(entity);
-        return readerPersistenceMapper.toDomain(savedEntity);
-    }
+public Optional<Readers> findById(Long readerId) {
+    return readerJpaRepository.findById(readerId)
+            .map(readerPersistenceMapper::toDomain);
+}
 
-    @Override
-    public Optional<Readers> findById(Long id) {
-        return readerJpaRepository.findById(id)
-                .map(readerPersistenceMapper::toDomain);
-    }
+@Override
+public Readers save(Readers reader) {
+    ReaderJpaEntity entity =
+            readerPersistenceMapper.toJpaEntity(reader);
 
+    ReaderJpaEntity savedEntity =
+            readerJpaRepository.save(entity);
+
+    return readerPersistenceMapper.toDomain(savedEntity);
+}
     @Override
     public Optional<Readers> findByCardNumber(String cardNumber) {
         return readerJpaRepository.findByCardNumber(cardNumber)
@@ -97,4 +99,27 @@ public class ReaderPersistenceAdapter implements ReaderRepositoryPort {
                 jpaPage.getTotalElements()
         );
     }
+ @Override
+public boolean existsByEmailAndIdNot(
+        String email,
+        Long excludedReaderId
+) {
+    return readerJpaRepository
+            .existsByEmailIgnoreCaseAndIdNot(
+                    email,
+                    excludedReaderId
+            );
+}
+
+@Override
+public boolean existsByPhoneNumberAndIdNot(
+        String phoneNumber,
+        Long excludedReaderId
+) {
+    return readerJpaRepository
+            .existsByPhoneNumberAndIdNot(
+                    phoneNumber,
+                    excludedReaderId
+            );
+}
 }
