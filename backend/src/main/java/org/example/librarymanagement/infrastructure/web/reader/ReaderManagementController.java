@@ -9,6 +9,7 @@ import org.example.librarymanagement.port.dtos.reader.UpdateReaderCommand;
 import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +41,14 @@ public class ReaderManagementController {
         ReaderResult result = readerManagementUseCase.createReader(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(ReaderResponse.fromResult(result));
     }
+@DeleteMapping("/{readerId}")
+public ResponseEntity<Void> deleteReader(
+        @PathVariable Long readerId
+) {
+    readerManagementUseCase.deleteReader(readerId);
 
+    return ResponseEntity.noContent().build();
+}
    
     @GetMapping
 public ResponseEntity<?> getAllReaders(

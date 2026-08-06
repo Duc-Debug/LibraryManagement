@@ -54,14 +54,14 @@ public Readers save(Readers reader) {
 
     @Override
     public java.util.List<Readers> findAll() {
-        return readerJpaRepository.findAll().stream()
+        return readerJpaRepository.findByIsActiveTrue().stream()
                 .map(readerPersistenceMapper::toDomain)
                 .collect(java.util.stream.Collectors.toList());
     }
 
     @Override
     public java.util.List<Readers> findByCreatedByUserId(Long createdByUserId) {
-        return readerJpaRepository.findByCreatedByUserId(createdByUserId).stream()
+        return readerJpaRepository.findByCreatedByUserIdAndIsActiveTrue(createdByUserId).stream()
                 .map(readerPersistenceMapper::toDomain)
                 .collect(java.util.stream.Collectors.toList());
     }
@@ -69,7 +69,7 @@ public Readers save(Readers reader) {
     @Override
     public org.example.librarymanagement.port.dtos.common.PageResult<Readers> findAll(int page, int size) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        org.springframework.data.domain.Page<ReaderJpaEntity> jpaPage = readerJpaRepository.findAll(pageable);
+        org.springframework.data.domain.Page<ReaderJpaEntity> jpaPage = readerJpaRepository.findByIsActiveTrue(pageable);
 
         java.util.List<Readers> content = jpaPage.getContent().stream()
                 .map(readerPersistenceMapper::toDomain)
@@ -86,7 +86,7 @@ public Readers save(Readers reader) {
     @Override
     public org.example.librarymanagement.port.dtos.common.PageResult<Readers> findByCreatedByUserId(Long createdByUserId, int page, int size) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        org.springframework.data.domain.Page<ReaderJpaEntity> jpaPage = readerJpaRepository.findByCreatedByUserId(createdByUserId, pageable);
+        org.springframework.data.domain.Page<ReaderJpaEntity> jpaPage = readerJpaRepository.findByCreatedByUserIdAndIsActiveTrue(createdByUserId, pageable);
 
         java.util.List<Readers> content = jpaPage.getContent().stream()
                 .map(readerPersistenceMapper::toDomain)

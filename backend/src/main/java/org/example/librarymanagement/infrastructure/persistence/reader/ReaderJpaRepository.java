@@ -1,5 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.reader;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -18,16 +19,21 @@ public interface ReaderJpaRepository extends JpaRepository<ReaderJpaEntity, Long
 
     boolean existsByPhoneNumber(String phoneNumber);
 
-    java.util.List<ReaderJpaEntity> findByCreatedByUserId(Long createdByUserId);
+    List<ReaderJpaEntity> findByIsActiveTrue();
 
-    Page<ReaderJpaEntity> findByCreatedByUserId(Long createdByUserId, Pageable pageable);
+    Page<ReaderJpaEntity> findByIsActiveTrue(Pageable pageable);
+
+    List<ReaderJpaEntity> findByCreatedByUserIdAndIsActiveTrue(Long createdByUserId);
+
+    Page<ReaderJpaEntity> findByCreatedByUserIdAndIsActiveTrue(Long createdByUserId, Pageable pageable);
+
     boolean existsByEmailIgnoreCaseAndIdNot(
-        String email,
-        Long excludedReaderId
-);
+            String email,
+            Long excludedReaderId
+    );
 
-boolean existsByPhoneNumberAndIdNot(
-        String phoneNumber,
-        Long excludedReaderId
-);
+    boolean existsByPhoneNumberAndIdNot(
+            String phoneNumber,
+            Long excludedReaderId
+    );
 }

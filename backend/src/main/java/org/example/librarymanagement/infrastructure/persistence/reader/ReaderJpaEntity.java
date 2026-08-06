@@ -40,7 +40,7 @@ public class ReaderJpaEntity {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "phone_number", nullable = false, unique = true, length = 20)
+   @Column(name = "phone", nullable = false, unique = true, length = 20)
     private String phoneNumber;
 
     @Column(name = "address", nullable = false, length = 255)
@@ -53,7 +53,7 @@ public class ReaderJpaEntity {
     @Column(name = "card_issued_at", nullable = false)
     private LocalDate cardIssuedAt;
 
-    @Column(name = "card_expiry_at", nullable = false)
+    @Column(name = "card_expiry_date", nullable = false)
     private LocalDate cardExpiryAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -62,7 +62,7 @@ public class ReaderJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "active", nullable = false)
     private boolean isActive;
 
     @Column(name = "created_by_user_id")

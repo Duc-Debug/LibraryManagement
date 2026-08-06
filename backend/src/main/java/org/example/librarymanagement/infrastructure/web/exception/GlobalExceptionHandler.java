@@ -6,6 +6,7 @@ import org.example.librarymanagement.application.auth.InvalidCredentialsExceptio
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.ReaderAccessDeniedException;
 import org.example.librarymanagement.domain.exceptions.ReaderAlreadyExistsException;
+import org.example.librarymanagement.domain.exceptions.ReaderHasActiveBorrowException;
 import org.example.librarymanagement.domain.exceptions.ReaderNotFoundException;
 import org.example.librarymanagement.domain.exceptions.UnauthenticatedException;
 import org.example.librarymanagement.infrastructure.web.auth.InvalidAuthorizationHeaderException;
@@ -112,6 +113,17 @@ public ResponseEntity<ErrorResponse> handleReaderAlreadyExists(
             .status(HttpStatus.CONFLICT)
             .body(ErrorResponse.of(
                     "READER_ALREADY_EXISTS",
+                    exception.getMessage()
+            ));
+}
+@ExceptionHandler(ReaderHasActiveBorrowException.class)
+public ResponseEntity<ErrorResponse> handleReaderHasActiveBorrow(
+        ReaderHasActiveBorrowException exception
+) {
+    return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(ErrorResponse.of(
+                    "READER_HAS_ACTIVE_BORROW",
                     exception.getMessage()
             ));
 }

@@ -12,8 +12,9 @@ public interface ReaderManagementUseCase {
     ReaderResult createReader(CreateReaderCommand command);
 
     ReaderResult updateReader(UpdateReaderCommand command);
-    
+
     List<ReaderResult> getAllReaders();
+    void deleteReader(Long readerId);
 
     PageResult<ReaderResult> getAllReaders(int page, int size);
 }

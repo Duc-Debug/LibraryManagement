@@ -204,6 +204,23 @@ public void updateInformation(
             return new Readers(this);
         }
     }
+    public void deactivate(LocalDateTime updatedAt) {
+    if (updatedAt == null) {
+        throw new DomainException(
+                "Updated time must not be null."
+        );
+    }
+
+    if (!isActive) {
+        throw new DomainException(
+                "Reader is already inactive."
+        );
+    }
+
+    this.isActive = false;
+    this.updatedAt = updatedAt;
+}
+
 
     public Long getCreatedByUserId() {
         return createdByUserId;

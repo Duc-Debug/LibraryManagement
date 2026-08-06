@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.example.librarymanagement.domain.entity.Readers;
@@ -11,6 +12,7 @@ import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.domain.exceptions.ReaderAccessDeniedException;
 import org.example.librarymanagement.domain.exceptions.ReaderAlreadyExistsException;
+import org.example.librarymanagement.domain.exceptions.ReaderHasActiveBorrowException;
 import org.example.librarymanagement.domain.exceptions.ReaderNotFoundException;
 import org.example.librarymanagement.domain.exceptions.UnauthenticatedException;
 import org.example.librarymanagement.port.dtos.common.PageResult;
@@ -18,6 +20,7 @@ import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
 import org.example.librarymanagement.port.dtos.reader.UpdateReaderCommand;
 import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
+import org.example.librarymanagement.port.outbound.borrow.CheckActiveReaderBorrowPort;
 import org.example.librarymanagement.port.outbound.manage.FindUserPort;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
@@ -30,27 +33,37 @@ public class ReaderManagementService implements ReaderManagementUseCase {
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
     private final CardNumberGeneratorPort cardNumberGeneratorPort;
     private final FindUserPort findUserPort;
+    private final CheckActiveReaderBorrowPort checkActiveReaderBorrowPort;
 public ReaderManagementService(
         ReaderRepositoryPort readerRepositoryPort,
         GetAuthenticatedUserPort getAuthenticatedUserPort,
         CardNumberGeneratorPort cardNumberGeneratorPort,
-        FindUserPort findUserPort
+        FindUserPort findUserPort,
+        CheckActiveReaderBorrowPort checkActiveReaderBorrowPort
 ) {
-    this.readerRepositoryPort = java.util.Objects.requireNonNull(
+    this.readerRepositoryPort = Objects.requireNonNull(
             readerRepositoryPort,
             "Reader repository port must not be null."
     );
-    this.getAuthenticatedUserPort = java.util.Objects.requireNonNull(
+
+    this.getAuthenticatedUserPort = Objects.requireNonNull(
             getAuthenticatedUserPort,
             "Authenticated user port must not be null."
     );
-    this.cardNumberGeneratorPort = java.util.Objects.requireNonNull(
+
+    this.cardNumberGeneratorPort = Objects.requireNonNull(
             cardNumberGeneratorPort,
             "Card number generator port must not be null."
     );
-    this.findUserPort = java.util.Objects.requireNonNull(
+
+    this.findUserPort = Objects.requireNonNull(
             findUserPort,
             "Find user port must not be null."
+    );
+
+    this.checkActiveReaderBorrowPort = Objects.requireNonNull(
+            checkActiveReaderBorrowPort,
+            "Check active reader borrow port must not be null."
     );
 }
     @Override
@@ -101,7 +114,51 @@ public ReaderManagementService(
         // 7. Chuyển đổi và trả về Result DTO
         return mapToResult(savedReader);
     }
+@Override
+public void deleteReader(Long readerId) {
+    if (readerId == null || readerId <= 0) {
+        throw new IllegalArgumentException(
+                "Reader id must be greater than 0."
+        );
+    }
 
+    User currentUser =
+            getAuthenticatedUserPort.getCurrentUser();
+
+    if (currentUser == null) {
+        throw UnauthenticatedException.defaultMessage();
+    }
+
+    Readers reader = readerRepositoryPort
+            .findById(readerId)
+            .orElseThrow(() ->
+                    ReaderNotFoundException.withId(readerId)
+            );
+
+    boolean admin = isAdmin(currentUser);
+
+    boolean owner = currentUser.getId() != null
+            && currentUser.getId().equals(
+                    reader.getCreatedByUserId()
+            );
+
+    if (!admin && !owner) {
+        throw ReaderAccessDeniedException.forReader(
+                readerId
+        );
+    }
+if (checkActiveReaderBorrowPort
+        .hasActiveBorrowByReaderId(readerId)) {
+        throw ReaderHasActiveBorrowException
+                .withReaderId(readerId);
+    }
+
+    reader.deactivate(
+            LocalDateTime.now()
+    );
+
+    readerRepositoryPort.save(reader);
+}
 @Override
 public ReaderResult updateReader(
         UpdateReaderCommand command
