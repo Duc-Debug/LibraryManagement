@@ -3,7 +3,8 @@ import { CategoryResponse, fetchCategoriesApi, updateCategoryApi } from "../api/
 import { AddCategoryModal } from "./AddCategoryModal";
 import { EditCategoryModal } from "./EditCategoryModal";
 import { ConfirmDeleteCategoryModal } from "./ConfirmDeleteCategoryModal";
-import { IconSearch, IconX } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { Search, Plus, Eye, EyeOff, Edit3, Trash2, X } from "lucide-react";
 
 export function CategoriesPage() {
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
@@ -59,56 +60,54 @@ export function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quản lý Thể Loại Sách</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Quản lý Thể Loại Sách</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Quản lý các danh mục phân loại sách trong hệ thống thư viện
           </p>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddModal(true)}
-          className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition flex items-center gap-2"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold flex items-center gap-2"
         >
-          <span>➕</span> Thêm Thể Loại Mới
-        </button>
+          <Plus className="w-4 h-4" /> Thêm Thể Loại Mới
+        </Button>
       </div>
 
       {/* Notifications */}
       {error && (
-        <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex justify-between items-center">
+        <div className="mb-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex justify-between items-center">
           <span>⚠️ {error}</span>
-          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
-            <IconX />
+          <button onClick={() => setError(null)} className="text-destructive hover:opacity-80">
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {successMessage && (
-        <div className="mb-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm flex justify-between items-center">
+        <div className="mb-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-sm flex justify-between items-center">
           <span>✅ {successMessage}</span>
-          <button onClick={() => setSuccessMessage(null)} className="text-emerald-500 hover:text-emerald-700">
-            <IconX />
+          <button onClick={() => setSuccessMessage(null)} className="text-emerald-600 hover:opacity-80">
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {/* Live Search */}
       <div className="relative mb-6">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-          <IconSearch />
-        </span>
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Tìm kiếm theo tên thể loại..."
-          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+          className="w-full pl-10 pr-4 py-3 border border-border rounded-xl text-sm bg-background text-foreground shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
         />
       </div>
 
       {/* Categories Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-card rounded-2xl shadow-xs border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50/80 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
+            <thead className="bg-muted/50 border-b border-border text-xs uppercase text-muted-foreground font-semibold">
               <tr>
                 <th className="px-6 py-4">Mã ID</th>
                 <th className="px-6 py-4">Tên Thể Loại</th>
@@ -118,68 +117,82 @@ export function CategoriesPage() {
                 <th className="px-6 py-4 text-right">Thao Tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
                     Đang nạp dữ liệu thể loại từ máy chủ...
                   </td>
                 </tr>
               ) : filteredCategories.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
                     Không tìm thấy thể loại nào trong Database.
                   </td>
                 </tr>
               ) : (
                 filteredCategories.map((c) => (
-                  <tr key={c.id} className="hover:bg-gray-50/60 transition">
-                    <td className="px-6 py-4 font-mono text-xs font-semibold text-gray-400">
+                  <tr key={c.id} className="hover:bg-muted/30 transition">
+                    <td className="px-6 py-4 font-mono text-xs font-semibold text-muted-foreground">
                       #{c.id}
                     </td>
-                    <td className="px-6 py-4 font-bold text-gray-900">{c.name}</td>
-                    <td className="px-6 py-4 text-gray-600 max-w-xs truncate text-xs">
+                    <td className="px-6 py-4 font-bold text-foreground">{c.name}</td>
+                    <td className="px-6 py-4 text-muted-foreground max-w-xs truncate text-xs">
                       {c.description || "Chưa có mô tả"}
                     </td>
                     <td className="px-6 py-4 text-center">
                       {c.active ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-600">
                           Đang hiện
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
                           Đã ẩn
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-500 text-xs">
+                    <td className="px-6 py-4 text-center text-muted-foreground text-xs">
                       {c.createdAt ? new Date(c.createdAt).toLocaleDateString("vi-VN") : "N/A"}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {/* Nút Ẩn / Khôi phục */}
-                        <button
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleToggleActive(c)}
-                          className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
+                          className="text-xs h-8"
                         >
-                          {c.active ? "👁️‍🗨️ Ẩn" : "👁️ Hiện"}
-                        </button>
+                          {c.active ? (
+                            <>
+                              <EyeOff className="w-3.5 h-3.5 mr-1.5" /> Ẩn
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="w-3.5 h-3.5 mr-1.5" /> Hiện
+                            </>
+                          )}
+                        </Button>
 
                         {/* Nút Sửa */}
-                        <button
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => setCategoryToEdit(c)}
-                          className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
+                          className="text-xs h-8"
                         >
-                          ✏️ Sửa
-                        </button>
+                          <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Sửa
+                        </Button>
 
                         {/* Nút Xóa */}
-                        <button
+                        <Button
+                          variant="destructive"
+                          size="sm"
                           onClick={() => setCategoryToDelete(c)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition"
+                          className="text-xs h-8 font-semibold"
                         >
-                          🗑️ Xóa
-                        </button>
+                          <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Xóa
+                        </Button>
                       </div>
                     </td>
                   </tr>

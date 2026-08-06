@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createCategoryApi } from "../api/categoryApi";
-import { IconX } from "@/components/icons";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface AddCategoryModalProps {
   onClose: () => void;
@@ -41,34 +42,34 @@ export function AddCategoryModal({ onClose, onSuccess }: AddCategoryModalProps) 
       });
       onSuccess();
     } catch (err: any) {
-      setError(err.message || "Tạo thể loại mới thất bại.");
+      setError(err.message || "Thêm thể loại mới thất bại.");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">➕ Thêm Thể Loại Mới</h2>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+      <div className="bg-card rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-150 text-foreground">
+        <div className="flex items-center justify-between pb-4 border-b border-border">
+          <h2 className="text-xl font-bold text-foreground">Thêm thể loại mới</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition"
+            className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted transition animate-in spin-in-12"
           >
-            <IconX />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
+          <div className="mt-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
             ⚠️ {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-sm">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-muted-foreground mb-1">
               Tên Thể Loại <span className="text-red-500">*</span>
             </label>
             <input
@@ -77,47 +78,48 @@ export function AddCategoryModal({ onClose, onSuccess }: AddCategoryModalProps) 
               maxLength={100}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="VD: Công nghệ & Phần mềm, Kinh tế, Văn học..."
-              className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl bg-white shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+              placeholder="Ví dụ: Kinh tế, Công nghệ thông tin..."
+              className="w-full px-3.5 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground shadow-xs focus:outline-none focus:ring-2 focus:ring-primary transition"
             />
-            <span className="text-[11px] text-gray-400 mt-1 block text-right">
+            <span className="text-[11px] text-muted-foreground mt-1 block text-right">
               {name.length}/100 ký tự
             </span>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Mô Tả Chi Tiết (Không bắt buộc)
+            <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              Mô Tả Chi Tiết
             </label>
             <textarea
-              rows={3}
+              rows={4}
               maxLength={500}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Nhập mô tả về danh mục sách này..."
-              className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl bg-white shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition leading-relaxed resize-none text-xs"
+              placeholder="Nhập mô tả tóm tắt về thể loại sách này..."
+              className="w-full px-3.5 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground shadow-xs focus:outline-none focus:ring-2 focus:ring-primary transition leading-relaxed resize-none text-xs"
             />
-            <span className="text-[11px] text-gray-400 mt-1 block text-right">
+            <span className="text-[11px] text-muted-foreground mt-1 block text-right">
               {description.length}/500 ký tự
             </span>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
-            <button
+          <div className="pt-4 border-t border-border flex justify-end gap-3">
+            <Button
               type="button"
+              variant="outline"
               disabled={submitting}
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition"
+              className="px-4 py-2 rounded-xl text-xs font-medium"
             >
               Hủy
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition disabled:opacity-50"
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              {submitting ? "Đang tạo..." : "Lưu Thể Loại"}
-            </button>
+              {submitting ? "Đang tạo..." : "Tạo Mới Thể Loại"}
+            </Button>
           </div>
         </form>
       </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CategoryResponse, updateCategoryApi } from "../api/categoryApi";
-import { IconX } from "@/components/icons";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface EditCategoryModalProps {
   category: CategoryResponse;
@@ -51,27 +52,27 @@ export function EditCategoryModal({ category, onClose, onSuccess }: EditCategory
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">✏️ Chỉnh Sửa Thể Loại (ID #{category.id})</h2>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+      <div className="bg-card rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-150 text-foreground">
+        <div className="flex items-center justify-between pb-4 border-b border-border">
+          <h2 className="text-xl font-bold text-foreground">Chỉnh sửa thể loại</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition"
+            className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted transition"
           >
-            <IconX />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
+          <div className="mt-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
             ⚠️ {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-sm">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-muted-foreground mb-1">
               Tên Thể Loại <span className="text-red-500">*</span>
             </label>
             <input
@@ -81,15 +82,15 @@ export function EditCategoryModal({ category, onClose, onSuccess }: EditCategory
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nhập tên thể loại..."
-              className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl bg-white shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+              className="w-full px-3.5 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground shadow-xs focus:outline-none focus:ring-2 focus:ring-primary transition"
             />
-            <span className="text-[11px] text-gray-400 mt-1 block text-right">
+            <span className="text-[11px] text-muted-foreground mt-1 block text-right">
               {name.length}/100 ký tự
             </span>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-muted-foreground mb-1">
               Mô Tả Chi Tiết
             </label>
             <textarea
@@ -98,17 +99,17 @@ export function EditCategoryModal({ category, onClose, onSuccess }: EditCategory
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Nhập mô tả về danh mục sách..."
-              className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl bg-white shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition leading-relaxed resize-none text-xs"
+              className="w-full px-3.5 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground shadow-xs focus:outline-none focus:ring-2 focus:ring-primary transition leading-relaxed resize-none text-xs"
             />
-            <span className="text-[11px] text-gray-400 mt-1 block text-right">
+            <span className="text-[11px] text-muted-foreground mt-1 block text-right">
               {description.length}/500 ký tự
             </span>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+          <div className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border">
             <div>
-              <span className="text-xs font-semibold text-gray-800 block">Trạng Thái Hiển Thị</span>
-              <span className="text-[11px] text-gray-400">Cho phép thủ thư chọn thể loại này khi tạo sách</span>
+              <span className="text-xs font-semibold text-foreground block">Trạng Thái Hiển Thị</span>
+              <span className="text-[11px] text-muted-foreground">Cho phép thủ thư chọn thể loại này khi tạo sách</span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -117,26 +118,27 @@ export function EditCategoryModal({ category, onClose, onSuccess }: EditCategory
                 onChange={(e) => setActive(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+              <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
             </label>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
-            <button
+          <div className="pt-4 border-t border-border flex justify-end gap-3">
+            <Button
               type="button"
+              variant="outline"
               disabled={submitting}
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition"
+              className="px-4 py-2 rounded-xl text-xs font-medium"
             >
               Hủy
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition disabled:opacity-50"
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {submitting ? "Đang lưu..." : "Cập Nhật"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
