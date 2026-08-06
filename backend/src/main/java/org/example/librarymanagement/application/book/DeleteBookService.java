@@ -31,14 +31,14 @@ public class DeleteBookService implements DeleteBookUseCase {
     public void deleteBook(Long bookId) {
         Book book = loadBookById(bookId);
 
-        ValidateBookForDeletion(book);
+        validateBookForDeletion(book);
         saveBookPort.deleteById(bookId);
     }
 
     @Override
     public void hideBook(Long bookId) {
         Book book = loadBookById(bookId);
-        ValidateBookForDeletion(book);
+        validateBookForDeletion(book);
 
         book.deactivate();
         saveBookPort.save(book);
@@ -47,7 +47,6 @@ public class DeleteBookService implements DeleteBookUseCase {
     @Override
     public void unhideBook(Long bookId) {
         Book book = loadBookById(bookId);
-        ValidateBookForDeletion(book);
         book.activate();
         saveBookPort.save(book);
     }
@@ -60,7 +59,7 @@ public class DeleteBookService implements DeleteBookUseCase {
                 .orElseThrow(() -> new BookNotFoundException(bookId));
     }
 
-    private void ValidateBookForDeletion(Book book) {
+    private void validateBookForDeletion(Book book) {
         boolean hasActiveBorrowSlips = checkActiveBorrowPort.hasActiveBorrowSlips(book.getBookId());
         BookDeletionPolicy.validateCanDeleteOrHide(book, hasActiveBorrowSlips);
     }
