@@ -66,10 +66,26 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("INVALID_TOKEN", exception.getMessage()));
     }
 
+    @ExceptionHandler(InvalidAuthorizationHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAuthorizationHeader(InvalidAuthorizationHeaderException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("INVALID_AUTHORIZATION_HEADER", ex.getMessage()));
+    }
+
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.UnauthenticatedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthenticated(
+            org.example.librarymanagement.domain.exceptions.UnauthenticatedException exception
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of("UNAUTHENTICATED", exception.getMessage()));
+    }
+
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ErrorResponse> handleDomainException(DomainException exception) {
         return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
+                .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of("DOMAIN_ERROR", exception.getMessage()));
     }
 
