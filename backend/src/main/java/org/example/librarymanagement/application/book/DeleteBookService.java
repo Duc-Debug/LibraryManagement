@@ -47,6 +47,7 @@ public class DeleteBookService implements DeleteBookUseCase {
     @Override
     public void unhideBook(Long bookId) {
         Book book = loadBookById(bookId);
+        ValidateBookForDeletion(book);
         book.activate();
         saveBookPort.save(book);
     }
