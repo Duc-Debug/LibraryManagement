@@ -1,65 +1,123 @@
 package org.example.librarymanagement.infrastructure.persistence.category;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "categories")
+@Table(
+        name = "categories",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_categories_name",
+                columnNames = "name"
+        )
+)
 public class CategoryJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(
+            name = "id",
+            nullable = false,
+            updatable = false
+    )
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(
+            name = "name",
+            nullable = false,
+            length = 100
+    )
     private String name;
 
-    @Column(name = "description", length = 255)
+    @Column(
+            name = "description",
+            length = 500
+    )
     private String description;
 
-    @Column(name = "active", nullable = false)
-    private boolean active = true;
+    @Column(
+            name = "active",
+            nullable = false
+    )
+    private boolean active;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(
+            name = "updated_at",
+            nullable = false
+    )
     private LocalDateTime updatedAt;
 
     protected CategoryJpaEntity() {
+        // Required by JPA.
     }
 
-    public CategoryJpaEntity(Long id, String name, String description, boolean active) {
+    public CategoryJpaEntity(
+            Long id,
+            String name,
+            String description,
+            boolean active
+    ) {
+        this(
+                id,
+                name,
+                description,
+                active,
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
+    }
+
+    public CategoryJpaEntity(
+            Long id,
+            String name,
+            String description,
+            boolean active,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.active = active;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    @PrePersist
-    void prePersist() {
-        LocalDateTime now = LocalDateTime.now();
-        if (createdAt == null) createdAt = now;
-        if (updatedAt == null) updatedAt = now;
+    public Long getId() {
+        return id;
     }
 
-    @PreUpdate
-    void preUpdate() {
-        updatedAt = LocalDateTime.now();
+    public String getName() {
+        return name;
     }
 
-    public Long getId() { return id; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }
