@@ -3,7 +3,8 @@ package org.example.librarymanagement.application.book;
 import java.util.Objects;
 
 import org.example.librarymanagement.domain.entity.Book;
-import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
+import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 import org.example.librarymanagement.domain.policies.BookDeletionPolicy;
 import org.example.librarymanagement.port.inbound.book.DeleteBookUseCase;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
@@ -60,16 +61,18 @@ public class DeleteBookService implements DeleteBookUseCase {
         saveBookPort.save(book);
     }
 
-    private Book loadBookById(Long bookId){
-    return loadBookPort.findById(bookId)
-                .orElseThrow(() -> new DomainException("Không tìm thấy sách với ID: " + bookId));
+    private Book loadBookById(Long bookId) {
+        return loadBookPort.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
     }
-    private boolean loadAndValidateBookForDeletion(Long bookId){
+
+    private boolean loadAndValidateBookForDeletion(Long bookId) {
         return checkActiveBorrowPort.hasActiveBorrowSlips(bookId);
     } 
+
     private void validateBookId(Long bookId) {
         if (bookId == null || bookId <= 0) {
-            throw new DomainException("Book ID must be greater than 0");
+            throw new InvalidBookDataException("Book ID must be greater than 0");
         }
     }
 }
