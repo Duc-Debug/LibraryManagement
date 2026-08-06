@@ -69,22 +69,6 @@ public class CategoryJpaEntity {
             Long id,
             String name,
             String description,
-            boolean active
-    ) {
-        this(
-                id,
-                name,
-                description,
-                active,
-                LocalDateTime.now(),
-                LocalDateTime.now()
-        );
-    }
-
-    public CategoryJpaEntity(
-            Long id,
-            String name,
-            String description,
             boolean active,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
