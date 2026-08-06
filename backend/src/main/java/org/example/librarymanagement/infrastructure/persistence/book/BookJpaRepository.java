@@ -17,7 +17,7 @@ public interface BookJpaRepository extends JpaRepository<BookJpaEntity, Long> {
             WHERE bd.book_id = :bookId AND bs.status IN ('BORROWING', 'OVERDUE')
         ) THEN TRUE ELSE FALSE END
         """, nativeQuery = true)
-    long existsActiveBorrowByBookId(@Param("bookId") Long bookId);
+    boolean existsActiveBorrowByBookId(@Param("bookId") Long bookId);
 
     Page<BookJpaEntity> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
             String title, String author, String isbn, Pageable pageable
