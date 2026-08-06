@@ -45,7 +45,7 @@ export default function App() {
 
   // Shared state
   const [accounts, setAccounts] = useState<UserAccount[]>(INITIAL_USER_ACCOUNTS);
-  const [books, setBooks] = useState<Book[]>(INITIAL_BOOKS);
+  const [books, setBooks] = useState<Book[]>([]);
   const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
   const [records, setRecords] = useState<BorrowRecord[]>(INITIAL_BORROW_RECORDS);
 
@@ -104,7 +104,7 @@ export default function App() {
       case "dashboard":
         return <Dashboard books={books} members={members} records={records} />;
       case "books":
-        return <BooksPage books={books} setBooks={setBooks} />;
+        return <BooksPage />;
       case "members":
         return <MembersPage />;
       case "borrow":
