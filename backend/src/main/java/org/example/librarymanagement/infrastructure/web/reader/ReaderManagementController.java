@@ -1,8 +1,8 @@
 package org.example.librarymanagement.infrastructure.web.reader;
 
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
-import org.example.librarymanagement.port.dtos.reader.CreateReaderResult;
-import org.example.librarymanagement.port.inbound.reader.CreateReaderUseCase;
+import org.example.librarymanagement.port.dtos.reader.ReaderResult;
+import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReaderManagementController {
 
-    private final CreateReaderUseCase createReaderUseCase;
+    private final ReaderManagementUseCase readerManagementUseCase;
 
     @PostMapping
     public ResponseEntity<ReaderResponse> createReader(@Valid @RequestBody CreateReaderRequest request) {
@@ -29,7 +29,7 @@ public class ReaderManagementController {
                 request.address()
         );
 
-        CreateReaderResult result = createReaderUseCase.createReader(command);
+        ReaderResult result = readerManagementUseCase.createReader(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(ReaderResponse.fromResult(result));
     }
 
@@ -39,8 +39,8 @@ public class ReaderManagementController {
             @org.springframework.web.bind.annotation.RequestParam(required = false) Integer size
     ) {
         if (page != null && size != null) {
-            org.example.librarymanagement.port.dtos.common.PageResult<CreateReaderResult> pageResult =
-                    createReaderUseCase.getAllReaders(page, size);
+            org.example.librarymanagement.port.dtos.common.PageResult<ReaderResult> pageResult =
+                    readerManagementUseCase.getAllReaders(page, size);
 
             java.util.List<ReaderResponse> content = pageResult.content().stream()
                     .map(ReaderResponse::fromResult)
@@ -56,7 +56,7 @@ public class ReaderManagementController {
             return ResponseEntity.ok(responsePage);
         }
 
-        java.util.List<ReaderResponse> list = createReaderUseCase.getAllReaders().stream()
+        java.util.List<ReaderResponse> list = readerManagementUseCase.getAllReaders().stream()
                 .map(ReaderResponse::fromResult)
                 .collect(java.util.stream.Collectors.toList());
         return ResponseEntity.ok(list);

@@ -2,26 +2,27 @@ package org.example.librarymanagement.application.reader;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Random;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.example.librarymanagement.domain.entity.Readers;
+import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.domain.exceptions.ReaderAlreadyExistsException;
+import org.example.librarymanagement.domain.exceptions.UnauthenticatedException;
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
-import org.example.librarymanagement.port.dtos.reader.CreateReaderResult;
-import org.example.librarymanagement.port.inbound.reader.CreateReaderUseCase;
+import org.example.librarymanagement.port.dtos.reader.ReaderResult;
+import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
+import org.example.librarymanagement.port.outbound.manage.FindUserPort;
+import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
+import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
 
 import lombok.RequiredArgsConstructor;
 
-import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
-
-import org.example.librarymanagement.port.outbound.manage.FindUserPort;
-import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
-
 @RequiredArgsConstructor
-public class ReaderManagementService implements CreateReaderUseCase {
+public class ReaderManagementService implements ReaderManagementUseCase {
 
     private final ReaderRepositoryPort readerRepositoryPort;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
@@ -29,7 +30,7 @@ public class ReaderManagementService implements CreateReaderUseCase {
     private final FindUserPort findUserPort;
 
     @Override
-    public CreateReaderResult createReader(CreateReaderCommand command) {
+    public ReaderResult createReader(CreateReaderCommand command) {
         // 1. Kiểm tra Email đã tồn tại chưa
         if (readerRepositoryPort.existsByEmail(command.email())) {
             throw ReaderAlreadyExistsException.withEmail(command.email());
@@ -77,54 +78,71 @@ public class ReaderManagementService implements CreateReaderUseCase {
         return mapToResult(savedReader);
     }
 
-    @Override
-    public java.util.List<CreateReaderResult> getAllReaders() {
-        User currentUser = getAuthenticatedUserPort.getCurrentUser();
-        if (currentUser == null) {
-            throw org.example.librarymanagement.domain.exceptions.UnauthenticatedException.defaultMessage();
-        }
+   @Override
+public List<ReaderResult> getAllReaders() {
+    User currentUser = getAuthenticatedUserPort.getCurrentUser();
 
-        boolean isAdmin = currentUser.getRoles() != null &&
-                currentUser.getRoles().stream().anyMatch(r -> "ADMIN".equalsIgnoreCase(r.getName()));
-
-        java.util.List<Readers> readersList = isAdmin
-                ? readerRepositoryPort.findAll()
-                : readerRepositoryPort.findByCreatedByUserId(currentUser.getId());
-
-        return readersList.stream()
-                .map(this::mapToResult)
-                .collect(java.util.stream.Collectors.toList());
+    if (currentUser == null) {
+        throw UnauthenticatedException.defaultMessage();
     }
 
-    @Override
-    public org.example.librarymanagement.port.dtos.common.PageResult<CreateReaderResult> getAllReaders(int page, int size) {
-        User currentUser = getAuthenticatedUserPort.getCurrentUser();
-        if (currentUser == null) {
-            throw org.example.librarymanagement.domain.exceptions.UnauthenticatedException.defaultMessage();
-        }
+    boolean isAdmin = currentUser.getRoles() != null
+            && currentUser.getRoles().stream()
+            .anyMatch(role ->
+                    "ADMIN".equalsIgnoreCase(role.getName())
+            );
 
-        boolean isAdmin = currentUser.getRoles() != null &&
-                currentUser.getRoles().stream().anyMatch(r -> "ADMIN".equalsIgnoreCase(r.getName()));
+    List<Readers> readersList = isAdmin
+            ? readerRepositoryPort.findAll()
+            : readerRepositoryPort.findByCreatedByUserId(
+                    currentUser.getId()
+            );
 
-        org.example.librarymanagement.port.dtos.common.PageResult<Readers> domainPage = isAdmin
-                ? readerRepositoryPort.findAll(page, size)
-                : readerRepositoryPort.findByCreatedByUserId(currentUser.getId(), page, size);
+    return readersList.stream()
+            .map(this::mapToResult)
+            .collect(Collectors.toList());
+}
 
-        java.util.List<CreateReaderResult> content = domainPage.content().stream()
-                .map(this::mapToResult)
-                .collect(java.util.stream.Collectors.toList());
+@Override
+public PageResult<ReaderResult> getAllReaders(
+        int page,
+        int size
+) {
+    User currentUser = getAuthenticatedUserPort.getCurrentUser();
 
-        return org.example.librarymanagement.port.dtos.common.PageResult.of(
-                content,
-                domainPage.page(),
-                domainPage.size(),
-                domainPage.totalElements()
-        );
+    if (currentUser == null) {
+        throw UnauthenticatedException.defaultMessage();
     }
 
-    private CreateReaderResult mapToResult(Readers r) {
+    boolean isAdmin = currentUser.getRoles() != null
+            && currentUser.getRoles().stream()
+            .anyMatch(role ->
+                    "ADMIN".equalsIgnoreCase(role.getName())
+            );
+
+    PageResult<Readers> domainPage = isAdmin
+            ? readerRepositoryPort.findAll(page, size)
+            : readerRepositoryPort.findByCreatedByUserId(
+                    currentUser.getId(),
+                    page,
+                    size
+            );
+
+    List<ReaderResult> content = domainPage.content().stream()
+            .map(this::mapToResult)
+            .collect(Collectors.toList());
+
+    return PageResult.of(
+            content,
+            domainPage.page(),
+            domainPage.size(),
+            domainPage.totalElements()
+    );
+}
+
+    private ReaderResult mapToResult(Readers r) {
         String createdByName = resolveCreatedByName(r.getCreatedByUserId());
-        return new CreateReaderResult(
+        return new ReaderResult(
                 r.getId(),
                 r.getCardNumber(),
                 r.getName(),

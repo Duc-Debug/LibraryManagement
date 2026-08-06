@@ -10,7 +10,7 @@ import org.example.librarymanagement.domain.exceptions.ReaderAlreadyExistsExcept
 import org.example.librarymanagement.domain.exceptions.UnauthenticatedException;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
-import org.example.librarymanagement.port.dtos.reader.CreateReaderResult;
+import org.example.librarymanagement.port.dtos.reader.ReaderResult;
 import org.example.librarymanagement.port.outbound.manage.FindUserPort;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
@@ -63,7 +63,7 @@ class ReaderManagementServiceTest {
 
         CreateReaderCommand command = new CreateReaderCommand("Nguyễn Văn A", "nva@gmail.com", "0987654321", "Hà Nội");
 
-        CreateReaderResult result = readerManagementService.createReader(command);
+        ReaderResult result = readerManagementService.createReader(command);
 
         assertNotNull(result);
         assertEquals("RD-260805-1001", result.cardNumber());
@@ -102,7 +102,7 @@ class ReaderManagementServiceTest {
         Readers r1 = mockReader(1L, "RD-1", "A", 2L);
         when(readerRepositoryPort.findAll(0, 10)).thenReturn(PageResult.of(List.of(r1), 0, 10, 1));
 
-        PageResult<CreateReaderResult> result = readerManagementService.getAllReaders(0, 10);
+        PageResult<ReaderResult> result = readerManagementService.getAllReaders(0, 10);
 
         assertEquals(1, result.content().size());
         verify(readerRepositoryPort).findAll(0, 10);

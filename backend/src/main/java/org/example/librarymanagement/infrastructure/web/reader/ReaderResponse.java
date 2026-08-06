@@ -1,10 +1,9 @@
 package org.example.librarymanagement.infrastructure.web.reader;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import org.example.librarymanagement.domain.enums.CardStatus;
-import org.example.librarymanagement.port.dtos.reader.CreateReaderResult;
+import org.example.librarymanagement.port.dtos.reader.ReaderResult;
 
 public record ReaderResponse(
         Long id,
@@ -18,7 +17,7 @@ public record ReaderResponse(
         LocalDate cardExpiryAt,
         String createdByName
 ) {
-    public static ReaderResponse fromResult(CreateReaderResult result) {
+    public static ReaderResponse fromResult(ReaderResult result) {
         return new ReaderResponse(
                 result.id(),
                 result.cardNumber(),

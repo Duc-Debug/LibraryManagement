@@ -5,7 +5,7 @@ import org.example.librarymanagement.application.manage.UserManagementService;
 import org.example.librarymanagement.application.reader.ReaderManagementService;
 import org.example.librarymanagement.port.inbound.auth.ProfileUseCase;
 import org.example.librarymanagement.port.inbound.manage.ManageUserUseCase;
-import org.example.librarymanagement.port.inbound.reader.CreateReaderUseCase;
+import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.example.librarymanagement.port.outbound.admin.EncodePasswordPort;
 import org.example.librarymanagement.port.outbound.manage.FindUserPort;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
@@ -51,7 +51,7 @@ public class UseCaseConfig {
 
     @Bean
     @Transactional
-    public CreateReaderUseCase createReaderUseCase(
+    public ReaderManagementUseCase readerManagementUseCase(
             ReaderRepositoryPort readerRepositoryPort,
             GetAuthenticatedUserPort getAuthenticatedUserPort,
             CardNumberGeneratorPort cardNumberGeneratorPort,
