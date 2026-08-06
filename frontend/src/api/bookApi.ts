@@ -13,6 +13,7 @@ export interface BookResponseDto {
   totalQuantity: number;
   availableQuantity: number;
   categoryId?: number;
+  categoryName?: string;
   active: boolean;
   createdAt?: string;
 }

@@ -15,6 +15,7 @@ public record BookResponseDto(
     int totalQuantity,
     int availableQuantity,
     Long categoryId,
+    String categoryName,
     boolean active,
     LocalDateTime createdAt
 ) {}

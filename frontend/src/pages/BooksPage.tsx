@@ -8,7 +8,7 @@ import {
   BookResponseDto,
   PageResult,
 } from "@/api/bookApi";
-import { IconSearch, IconX, IconEye, IconTrash, IconEyeOff } from "@/components/icons";
+import { IconSearch, IconX } from "@/components/icons";
 
 export default function BooksPage() {
   const [booksPage, setBooksPage] = useState<PageResult<BookResponseDto>>({
@@ -27,15 +27,16 @@ export default function BooksPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Detail Modal State
+  // Detail & Delete Modal State
   const [selectedBook, setSelectedBook] = useState<BookResponseDto | null>(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState<BookResponseDto | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Debounce search input (300ms delay)
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
-      setPage(0); // Reset to first page on new search
+      setPage(0);
     }, 300);
 
     return () => clearTimeout(handler);
@@ -61,15 +62,12 @@ export default function BooksPage() {
 
   // View Book Detail Handler
   const handleViewDetail = async (bookId: number) => {
-    setLoadingDetail(true);
     setError(null);
     try {
       const bookDetail = await fetchBookByIdApi(bookId);
       setSelectedBook(bookDetail);
     } catch (err: any) {
       setError(err.message || "Không thể nạp chi tiết sách.");
-    } finally {
-      setLoadingDetail(false);
     }
   };
 
@@ -94,22 +92,23 @@ export default function BooksPage() {
     }
   };
 
-  // Hard Delete Handler
-  const handleDelete = async (book: BookResponseDto) => {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn cuốn sách "${book.title}"?`)) {
-      return;
-    }
+  // Hard Delete Confirm Handler
+  const confirmHardDelete = async () => {
+    if (!bookToDelete) return;
+    setDeleting(true);
     setError(null);
     setSuccessMessage(null);
     try {
-      await deleteBookApi(book.bookId);
-      setSuccessMessage(`Đã xóa vĩnh viễn sách "${book.title}" thành công.`);
-      if (selectedBook && selectedBook.bookId === book.bookId) {
-        setSelectedBook(null);
-      }
+      await deleteBookApi(bookToDelete.bookId);
+      setSuccessMessage(`Đã xóa vĩnh viễn sách "${bookToDelete.title}" thành công.`);
+      setBookToDelete(null);
+      setSelectedBook(null);
       loadBooks();
     } catch (err: any) {
       setError(err.message || "Không thể xóa sách.");
+      setBookToDelete(null);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -120,7 +119,7 @@ export default function BooksPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Quản lý Sách (UC A2.5)</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Xem danh sách sách từ Database có phân trang & xem chi tiết
+            Nhấp vào từng dòng sách để xem thông tin chi tiết & thực hiện các thao tác quản lý
           </p>
         </div>
       </div>
@@ -152,7 +151,7 @@ export default function BooksPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Nhập tên sách hoặc tác giả để tìm kiếm tự động (Live Search)..."
+          placeholder="Tìm theo tên sách hoặc tác giả để tìm kiếm tự động (Live Search)..."
           className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
         />
       </div>
@@ -166,24 +165,25 @@ export default function BooksPage() {
                 <th className="px-6 py-4">ID</th>
                 <th className="px-6 py-4">Tên Sách</th>
                 <th className="px-6 py-4">Tác Giả</th>
+                <th className="px-6 py-4">Thể Loại</th>
                 <th className="px-6 py-4">ISBN</th>
                 <th className="px-6 py-4 text-center">Tổng Số</th>
                 <th className="px-6 py-4 text-center">Còn Sẵn</th>
                 <th className="px-6 py-4 text-center">Trạng Thái</th>
-                <th className="px-6 py-4 text-right">Thao Tác</th>
+                <th className="px-6 py-4 text-right">Chi Tiết</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={9} className="px-6 py-8 text-center text-gray-400">
                     Đang nạp dữ liệu từ máy chủ...
                   </td>
                 </tr>
               ) : booksPage.items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-gray-400">
-                    Không tìm thấy cuốn sách nào phù hợp.
+                  <td colSpan={9} className="px-6 py-8 text-center text-gray-400">
+                    Không tìm thấy cuốn sách nào trong Database.
                   </td>
                 </tr>
               ) : (
@@ -198,6 +198,11 @@ export default function BooksPage() {
                     </td>
                     <td className="px-6 py-4 font-semibold text-gray-900">{b.title}</td>
                     <td className="px-6 py-4 text-gray-600">{b.author}</td>
+                    <td className="px-6 py-4 text-gray-600 font-medium">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-100">
+                        {b.categoryName || "Chưa phân loại"}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 font-mono text-xs text-gray-500">{b.isbn}</td>
                     <td className="px-6 py-4 text-center font-medium text-gray-700">
                       {b.totalQuantity}
@@ -216,31 +221,10 @@ export default function BooksPage() {
                         </span>
                       )}
                     </td>
-                    <td
-                      className="px-6 py-4 text-right space-x-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => handleViewDetail(b.bookId)}
-                        className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition"
-                        title="Xem chi tiết"
-                      >
-                        <IconEye />
-                      </button>
-                      <button
-                        onClick={() => handleToggleHide(b)}
-                        className="p-1.5 text-gray-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition"
-                        title={b.active ? "Ẩn sách" : "Bỏ ẩn sách"}
-                      >
-                        {b.active ? <IconEyeOff /> : <IconEye />}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(b)}
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                        title="Xóa vĩnh viễn"
-                      >
-                        <IconTrash />
-                      </button>
+                    <td className="px-6 py-4 text-right">
+                      <span className="text-xs font-semibold text-emerald-700 hover:underline">
+                        Xem chi tiết &rarr;
+                      </span>
                     </td>
                   </tr>
                 ))
@@ -304,74 +288,182 @@ export default function BooksPage() {
               </button>
             </div>
 
-            {loadingDetail ? (
-              <div className="py-8 text-center text-gray-400">Đang tải chi tiết...</div>
-            ) : (
-              <div className="py-4 space-y-3.5 text-sm">
-                <div>
-                  <span className="text-gray-400 block text-xs">Tên Sách</span>
-                  <span className="font-bold text-gray-900 text-base">{selectedBook.title}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+            <div className="py-4 space-y-3.5 text-sm">
+              <div className="flex items-start gap-4">
+                {selectedBook.coverImageUrl ? (
+                  <img
+                    src={selectedBook.coverImageUrl}
+                    alt={selectedBook.title}
+                    className="w-20 h-28 object-cover rounded-lg border border-gray-100 shrink-0 shadow-xs"
+                  />
+                ) : (
+                  <div className="w-20 h-28 bg-gray-50 rounded-lg border border-gray-200 shrink-0 flex flex-col items-center justify-center text-gray-400 text-xs p-2 text-center">
+                    📚 <span>Không có ảnh</span>
+                  </div>
+                )}
+                <div className="space-y-1 flex-1">
+                  <div>
+                    <span className="text-gray-400 block text-xs">Tên Sách</span>
+                    <span className="font-bold text-gray-900 text-base">{selectedBook.title}</span>
+                  </div>
                   <div>
                     <span className="text-gray-400 block text-xs">Tác Giả</span>
                     <span className="font-semibold text-gray-800">{selectedBook.author}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400 block text-xs">Mã ISBN</span>
-                    <span className="font-mono text-gray-800">{selectedBook.isbn}</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-gray-400 block text-xs">Nhà Xuất Bản</span>
-                    <span className="text-gray-800">{selectedBook.publisher || "Chưa cập nhật"}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 block text-xs">Năm Xuất Bản</span>
-                    <span className="text-gray-800">{selectedBook.publishedYear || "N/A"}</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-gray-400 block text-xs">Vị Trí Kệ Sách</span>
-                    <span className="text-gray-800 font-medium">{selectedBook.shelfLocation || "N/A"}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 block text-xs">Trạng Thái Hiển Thị</span>
-                    <span className="font-semibold text-emerald-700">
-                      {selectedBook.active ? "Đang Hiện" : "Đã Ẩn"}
+                    <span className="text-gray-400 block text-xs">Thể Loại</span>
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-100">
+                      {selectedBook.categoryName || "Chưa phân loại"}
                     </span>
                   </div>
                 </div>
+              </div>
 
-                {/* Quantities Showcase Box */}
-                <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 grid grid-cols-2 text-center my-2">
-                  <div>
-                    <span className="text-xs text-gray-500 font-medium block">Tổng Số Lượng</span>
-                    <span className="text-xl font-bold text-gray-800">{selectedBook.totalQuantity}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-emerald-800 font-medium block">Sẵn Có (Trong Kho)</span>
-                    <span className="text-xl font-bold text-emerald-700">{selectedBook.availableQuantity}</span>
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-2">
                 <div>
-                  <span className="text-gray-400 block text-xs">Mô Tả</span>
-                  <p className="text-gray-700 mt-1 bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs leading-relaxed max-h-28 overflow-y-auto">
-                    {selectedBook.description || "Chưa có mô tả cho cuốn sách này."}
-                  </p>
+                  <span className="text-gray-400 block text-xs">Mã ISBN</span>
+                  <span className="font-mono text-gray-800">{selectedBook.isbn}</span>
+                </div>
+                <div>
+                  <span className="text-gray-400 block text-xs">Nhà Xuất Bản</span>
+                  <span className="text-gray-800">{selectedBook.publisher || "Chưa cập nhật"}</span>
                 </div>
               </div>
-            )}
 
-            <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-gray-400 block text-xs">Năm Xuất Bản</span>
+                  <span className="text-gray-800">{selectedBook.publishedYear || "N/A"}</span>
+                </div>
+                <div>
+                  <span className="text-gray-400 block text-xs">Vị Trí Kệ Sách</span>
+                  <span className="text-gray-800 font-medium">{selectedBook.shelfLocation || "N/A"}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-gray-400 block text-xs">Trạng Thái Hiển Thị</span>
+                  <span className="font-semibold text-emerald-700">
+                    {selectedBook.active ? "Đang Hiện" : "Đã Ẩn"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-400 block text-xs">Ngày Nhập Sách</span>
+                  <span className="text-gray-800">
+                    {selectedBook.createdAt
+                      ? new Date(selectedBook.createdAt).toLocaleDateString("vi-VN")
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Quantities Showcase Box */}
+              <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 grid grid-cols-2 text-center my-2">
+                <div>
+                  <span className="text-xs text-gray-500 font-medium block">Tổng Số Lượng</span>
+                  <span className="text-xl font-bold text-gray-800">{selectedBook.totalQuantity}</span>
+                </div>
+                <div>
+                  <span className="text-xs text-emerald-800 font-medium block">Sẵn Có (Trong Kho)</span>
+                  <span className="text-xl font-bold text-emerald-700">{selectedBook.availableQuantity}</span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-gray-400 block text-xs">Mô Tả</span>
+                <p className="text-gray-700 mt-1 bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs leading-relaxed max-h-28 overflow-y-auto">
+                  {selectedBook.description || "Chưa có mô tả cho cuốn sách này."}
+                </p>
+              </div>
+            </div>
+
+            {/* Chân Modal */}
+            <div className="pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleToggleHide(selectedBook)}
+                  className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
+                >
+                  {selectedBook.active ? "👁️‍🗨️ Ẩn sách" : "👁️ Khôi phục"}
+                </button>
+
+                <button
+                  onClick={() => alert("Chức năng Sửa thông tin đang được team phát triển!")}
+                  className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
+                >
+                  ✏️ Sửa sách
+                </button>
+
+                <button
+                  onClick={() => alert("Chức năng Nhập kho (+Số lượng) đang được team phát triển!")}
+                  className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
+                >
+                  📦 Nhập kho
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setBookToDelete(selectedBook)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition"
+                >
+                  🗑️ Xóa
+                </button>
+
+                <button
+                  onClick={() => setSelectedBook(null)}
+                  className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP XÁC NHẬN XÓA AN TOÀN */}
+      {bookToDelete && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-red-100 space-y-4">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="p-3 rounded-2xl bg-red-50 text-xl">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Xác Nhận Xóa Vĩnh Viễn</h3>
+                <p className="text-xs text-gray-500">Hành động này không thể hoàn tác!</p>
+              </div>
+            </div>
+
+            <div className="py-2 text-sm text-gray-700 space-y-2">
+              <p>
+                Bạn có chắc chắn muốn xóa vĩnh viễn cuốn sách:
+              </p>
+              <div className="p-3 bg-red-50/50 rounded-xl border border-red-100 font-semibold text-red-900">
+                "{bookToDelete.title}" (Mã Sách: #{bookToDelete.bookId})
+              </div>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                ⚠️ Hệ thống sẽ tự động kiểm tra: Nếu sách đang thuộc bất kỳ Phiếu mượn nào chưa hoàn trả, thao tác xóa sẽ bị chặn để bảo vệ dữ liệu.
+              </p>
+            </div>
+
+            <div className="pt-3 border-t border-gray-100 flex justify-end gap-3">
               <button
-                onClick={() => setSelectedBook(null)}
+                disabled={deleting}
+                onClick={() => setBookToDelete(null)}
                 className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
               >
-                Đóng
+                Hủy
+              </button>
+
+              <button
+                disabled={deleting}
+                onClick={confirmHardDelete}
+                className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition"
+              >
+                {deleting ? "Đang xóa..." : "Xác nhận Xóa Vĩnh Viễn"}
               </button>
             </div>
           </div>
