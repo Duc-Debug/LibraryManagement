@@ -26,7 +26,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
+
 @Component
+
 public class JwtAccessTokenAdapter
         implements AccessTokenIssuerPort,
                    AccessTokenVerifierPort {

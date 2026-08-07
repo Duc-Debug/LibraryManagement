@@ -1,12 +1,16 @@
 package org.example.librarymanagement.infrastructure.persistence.book;
 
 import org.example.librarymanagement.domain.entity.Book;
+import org.springframework.stereotype.Component;
 
+@Component
 public class BookPersistenceMapper {
-    public static Book toDomain(BookJpaEntity entity){
-        if(entity==null) return null;
+
+    public Book toDomain(BookJpaEntity entity) {
+        if (entity == null)
+            return null;
         return new Book(
-             entity.getId(),
+                entity.getId(),
                 entity.getTitle(),
                 entity.getAuthor(),
                 entity.getIsbn(),
@@ -20,27 +24,38 @@ public class BookPersistenceMapper {
                 entity.getCategoryId(),
                 entity.isActive(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
-        );
+                entity.getUpdatedAt());
     }
-    public static BookJpaEntity toJpaEntity(Book domain) {
-        if (domain == null) return null;
-        return new BookJpaEntity(
-                domain.getBookId(),
-                domain.getTitle(),
-                domain.getAuthor(),
-                domain.getIsbn(),
-                domain.getDescription(),
-                domain.getCoverImageUrl(),
-                domain.getPublisher(),
-                domain.getPublishedYear(),
-                domain.getShelfLocation(),
-                domain.getTotalQuantity(),
-                domain.getAvailableQuantity(),
-                domain.getCategoryId(),
-                domain.isActive(),
-                domain.getCreatedAt(),
-                domain.getUpdatedAt()
-        );
+
+    public BookJpaEntity toJpaEntity(Book domain) {
+        if (domain == null) {
+            return null;
+        }
+        BookJpaEntity entity = new BookJpaEntity();
+        updateJpaEntity(domain, entity);
+        entity.setId(domain.getBookId());
+        return entity;
+    }
+
+    public void updateJpaEntity(Book domain, BookJpaEntity entity) {
+        if (domain == null || entity == null) {
+            return;
+        }
+        entity.setTitle(domain.getTitle());
+        entity.setAuthor(domain.getAuthor());
+        entity.setIsbn(domain.getIsbn());
+        entity.setDescription(domain.getDescription());
+        entity.setCoverImageUrl(domain.getCoverImageUrl());
+        entity.setPublisher(domain.getPublisher());
+        entity.setPublishedYear(domain.getPublishedYear() == null
+                ? null
+                : domain.getPublishedYear().shortValue());
+        entity.setShelfLocation(domain.getShelfLocation());
+        entity.setTotalQuantity(domain.getTotalQuantity());
+        entity.setAvailableQuantity(domain.getAvailableQuantity());
+        entity.setCategoryId(domain.getCategoryId());
+        entity.setActive(domain.isActive());
+        entity.setCreatedAt(domain.getCreatedAt());
+        entity.setUpdatedAt(domain.getUpdatedAt());
     }
 }

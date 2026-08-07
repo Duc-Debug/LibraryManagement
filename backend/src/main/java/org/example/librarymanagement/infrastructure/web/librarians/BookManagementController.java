@@ -1,26 +1,34 @@
 package org.example.librarymanagement.infrastructure.web.librarians;
 
 import org.example.librarymanagement.port.inbound.book.BookResponseDto;
+import org.example.librarymanagement.port.inbound.book.BookResult;
 import org.example.librarymanagement.port.inbound.book.DeleteBookUseCase;
 import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
+import org.example.librarymanagement.port.inbound.book.UpdateBookCommand;
+import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
 import org.example.librarymanagement.port.inbound.common.PageResult;
+import org.example.librarymanagement.infrastructure.web.librarians.dto.UpdateBookRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RestController
+@RestController("librarianBookManagementController")
 @RequestMapping("/api/librarians/books")
 @RequiredArgsConstructor
 public class BookManagementController {
     private final DeleteBookUseCase deleteBookUseCase;
     private final GetBooksUseCase getBooksUseCase;
+    private final UpdateBookUseCase updateBookUseCase;
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
@@ -53,5 +61,27 @@ public class BookManagementController {
     public ResponseEntity<BookResponseDto> getBookById(@PathVariable Long id) {
         BookResponseDto responseDto = getBooksUseCase.getBookById(id);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BookResult> updateBook(
+            @PathVariable("id") Long bookId,
+            @Valid @RequestBody UpdateBookRequest request) {
+
+        UpdateBookCommand commandToExecute = new UpdateBookCommand(
+                bookId,
+                request.title(),
+                request.author(),
+                request.isbn(),
+                request.description(),
+                request.coverImageUrl(),
+                request.publisher(),
+                request.publishedYear(),
+                request.shelfLocation(),
+                request.totalQuantity(),
+                request.categoryId()
+        );
+        BookResult result = updateBookUseCase.updateBook(commandToExecute);
+        return ResponseEntity.ok(result);
     }
 }

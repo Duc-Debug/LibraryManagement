@@ -3,6 +3,7 @@ package org.example.librarymanagement.domain.entity;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 
 public class Book {
@@ -248,5 +249,56 @@ public class Book {
     @Override
     public int hashCode() {
         return Objects.hash(bookId);
+    }
+
+    public void updateInfor(String title, String author, String newIsbn, String description, 
+                     String coverImageUrl, String publisher, Short publishedYear, 
+                     String shelfLocation, int newTotalQuantity,  
+                     Long categoryId) {
+
+                        int currentYear = LocalDateTime.now().getYear();
+
+                        //validation du lieu co ban
+                        if (title == null || title.trim().isEmpty()) {
+                            throw new InvalidBookDataException("Title cannot be null or empty.");
+                        }
+                        if( newIsbn != null && !newIsbn.trim().isEmpty() && newIsbn.length() != 13) {
+                            throw new InvalidBookDataException("ISBN must be 13 characters long.");
+                        }
+                        if(categoryId == null) {
+                            throw new InvalidBookDataException("Category ID cannot be null.");
+                        }
+                        if(publishedYear != null && (publishedYear < 0 || publishedYear > currentYear)) {
+                            throw new InvalidBookDataException("Published year must be a valid year.");
+                        }
+
+                       
+
+                        // validate khong cho phep availableQuantity > totalQuantity
+                        int borrowedQuantity = this.totalQuantity - this.availableQuantity;
+                        if (newTotalQuantity < borrowedQuantity) {
+                           throw new DomainException(
+                            "New total quantity(" + newTotalQuantity + ") cannot be less than the number of borrowed books (" + borrowedQuantity + ")."
+                           );
+                        }
+
+                        //update thong tin sach
+                        this.title = title.trim();
+                        this.author = author != null ? author.trim() : null;
+                        this.isbn = newIsbn;
+                        this.description = description != null ? description.trim() : null;
+                        this.coverImageUrl = coverImageUrl != null ? coverImageUrl.trim() : null;
+                        this.publisher = publisher != null ? publisher.trim() : null;
+                        this.publishedYear = publishedYear;
+                        this.shelfLocation = shelfLocation != null ? shelfLocation.trim() : null;
+                        this.totalQuantity = newTotalQuantity;
+                        this.availableQuantity = newTotalQuantity - borrowedQuantity;
+                        this.categoryId = categoryId;
+                        this.active = active;
+                        this.updatedAt = LocalDateTime.now();
+
+                    
+
+       
     }
 }
