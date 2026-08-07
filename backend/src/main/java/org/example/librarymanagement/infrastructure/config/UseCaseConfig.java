@@ -3,6 +3,8 @@ package org.example.librarymanagement.infrastructure.config;
 import org.example.librarymanagement.application.auth.ProfileService;
 import org.example.librarymanagement.application.reader.ReaderManagementService;
 import org.example.librarymanagement.application.user.UserManagementService;
+import org.example.librarymanagement.infrastructure.transaction.reader.TransactionalReaderManagementUseCase;
+import org.example.librarymanagement.infrastructure.transaction.user.TransactionalManageUserUseCase;
 import org.example.librarymanagement.port.inbound.auth.ProfileUseCase;
 import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.example.librarymanagement.port.inbound.user.ManageUserUseCase;
@@ -24,15 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class UseCaseConfig {
 
     @Bean
-    @Transactional
-    public ProfileUseCase profileUseCase(
-            FindUserPort findUserPort,
-            SaveUserPort saveUserPort) {
-        return new ProfileService(findUserPort, saveUserPort);
-    }
-
-    @Bean
-    @Transactional // Quản lý Transaction được dời ra ngoài Infrastructure
     public ManageUserUseCase manageUserUseCase(
             FindUserPort findUserPort,
             LoadRolePort loadRolePort,
@@ -40,13 +33,14 @@ public class UseCaseConfig {
             EncodePasswordPort encodePasswordPort,
             GetAuthenticatedUserPort getAuthenticatedUserPort) {
 
-        return new UserManagementService(
+       UserManagementService service = new UserManagementService(
                 findUserPort,
                 loadRolePort,
                 saveUserPort,
                 encodePasswordPort,
                 getAuthenticatedUserPort
         );
+        return new TransactionalManageUserUseCase(service);
     }
 
  @Bean
@@ -58,13 +52,14 @@ public ReaderManagementUseCase readerManagementUseCase(
         FindUserPort findUserPort,
         CheckActiveReaderBorrowPort checkActiveReaderBorrowPort
 ) {
-    return new ReaderManagementService(
-            readerRepositoryPort,
-            getAuthenticatedUserPort,
-            cardNumberGeneratorPort,
-            findUserPort,
-            checkActiveReaderBorrowPort
-    );
+    ReaderManagementService service = new ReaderManagementService(
+                readerRepositoryPort,
+                getAuthenticatedUserPort,
+                cardNumberGeneratorPort,
+                findUserPort,
+                checkActiveReaderBorrowPort
+        );
+        return new TransactionalReaderManagementUseCase(service);
 }
 }
 

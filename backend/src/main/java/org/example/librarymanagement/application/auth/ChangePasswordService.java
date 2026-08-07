@@ -8,7 +8,7 @@ import org.example.librarymanagement.port.dtos.auth.ChangePasswordCommand;
 import org.example.librarymanagement.port.dtos.auth.ChangePasswordResult;
 import org.example.librarymanagement.port.inbound.auth.ChangePasswordUseCase;
 import org.example.librarymanagement.port.outbound.auth.PasswordVerifierPort;
-import org.example.librarymanagement.port.outbound.auth.SaveUserPort;
+import org.example.librarymanagement.port.outbound.user.SaveUserPort;
 import org.example.librarymanagement.port.outbound.user.LoadUserPort;
 
 public class ChangePasswordService implements ChangePasswordUseCase {

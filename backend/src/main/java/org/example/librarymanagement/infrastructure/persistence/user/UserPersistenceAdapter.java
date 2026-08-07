@@ -1,12 +1,14 @@
 package org.example.librarymanagement.infrastructure.persistence.user;
+
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.port.outbound.auth.SaveUserPort;
+import org.example.librarymanagement.port.outbound.user.SaveUserPort;
 import org.example.librarymanagement.port.outbound.user.LoadUserPort;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
+
 @Component
 @RequiredArgsConstructor
 public class UserPersistenceAdapter implements LoadUserPort, SaveUserPort {
@@ -29,19 +31,23 @@ public class UserPersistenceAdapter implements LoadUserPort, SaveUserPort {
     }
 
     @Override
-    public void save(User user) {
-       if (user.getId() != null) {
-            // Luồng UPDATE: Tìm Managed Entity từ DB rồi update các trường thay đổi
-            userJpaRepository.findById(user.getId()).ifPresent(existingEntity -> {
-                userPersistenceMapper.updateJpaEntity(user, existingEntity);
-                // Vì nằm trong Transaction, Hibernate sẽ tự động Dirty Check và gọi SQL UPDATE
-                userJpaRepository.save(existingEntity); 
-            });
+    public User save(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserJpaEntity entityToSave;
+        if (user.getId() != null) {
+            // Luồng UPDATE: Tìm Managed Entity từ DB để Hibernate Dirty Check & update các
+            // trường thay đổi
+            entityToSave = userJpaRepository.findById(user.getId())
+                    .orElseGet(() -> userPersistenceMapper.toJpaEntity(user));
+            userPersistenceMapper.updateJpaEntity(user, entityToSave);
         } else {
             // Luồng CREATE: Tạo mới hoàn toàn
-            UserJpaEntity newEntity = userPersistenceMapper.toJpaEntity(user);
-            userJpaRepository.save(newEntity);
+            entityToSave = userPersistenceMapper.toJpaEntity(user);
         }
+        UserJpaEntity savedEntity = userJpaRepository.save(entityToSave);
+        return userPersistenceMapper.toDomain(savedEntity);
     }
 
 }
