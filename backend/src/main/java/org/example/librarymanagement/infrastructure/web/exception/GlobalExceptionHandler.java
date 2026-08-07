@@ -4,6 +4,11 @@ import java.util.stream.Collectors;
 
 import org.example.librarymanagement.application.auth.InvalidCredentialsException;
 import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.ReaderAccessDeniedException;
+import org.example.librarymanagement.domain.exceptions.ReaderAlreadyExistsException;
+import org.example.librarymanagement.domain.exceptions.ReaderHasActiveBorrowException;
+import org.example.librarymanagement.domain.exceptions.ReaderNotFoundException;
+import org.example.librarymanagement.domain.exceptions.UnauthenticatedException;
 import org.example.librarymanagement.domain.exceptions.book.BookHasActiveBorrowException;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
@@ -17,7 +22,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -69,15 +73,63 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("INVALID_TOKEN", exception.getMessage()));
     }
 
-    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.UnauthenticatedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthenticated(
-            org.example.librarymanagement.domain.exceptions.UnauthenticatedException exception
-    ) {
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponse.of("UNAUTHENTICATED", exception.getMessage()));
-    }
+   @ExceptionHandler(UnauthenticatedException.class)
+public ResponseEntity<ErrorResponse> handleUnauthenticated(
+        UnauthenticatedException exception
+) {
+    return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse.of(
+                    "UNAUTHENTICATED",
+                    exception.getMessage()
+            ));
+}
+@ExceptionHandler(ReaderNotFoundException.class)
+public ResponseEntity<ErrorResponse> handleReaderNotFound(
+        ReaderNotFoundException exception
+) {
+    return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(ErrorResponse.of(
+                    "READER_NOT_FOUND",
+                    exception.getMessage()
+            ));
+}
 
+@ExceptionHandler(ReaderAccessDeniedException.class)
+public ResponseEntity<ErrorResponse> handleReaderAccessDenied(
+        ReaderAccessDeniedException exception
+) {
+    return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse.of(
+                    "READER_ACCESS_DENIED",
+                    exception.getMessage()
+            ));
+}
+
+@ExceptionHandler(ReaderAlreadyExistsException.class)
+public ResponseEntity<ErrorResponse> handleReaderAlreadyExists(
+        ReaderAlreadyExistsException exception
+) {
+    return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(ErrorResponse.of(
+                    "READER_ALREADY_EXISTS",
+                    exception.getMessage()
+            ));
+}
+@ExceptionHandler(ReaderHasActiveBorrowException.class)
+public ResponseEntity<ErrorResponse> handleReaderHasActiveBorrow(
+        ReaderHasActiveBorrowException exception
+) {
+    return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(ErrorResponse.of(
+                    "READER_HAS_ACTIVE_BORROW",
+                    exception.getMessage()
+            ));
+}
     @ExceptionHandler(BookNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleBookNotFound(BookNotFoundException exception) {
         return ResponseEntity

@@ -6,8 +6,8 @@ import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptionHandler;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
-import org.example.librarymanagement.port.dtos.reader.CreateReaderResult;
-import org.example.librarymanagement.port.inbound.reader.CreateReaderUseCase;
+import org.example.librarymanagement.port.dtos.reader.ReaderResult;
+import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,18 +27,18 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 class ReaderManagementControllerTest {
 
-    private CreateReaderUseCase createReaderUseCase;
+    private ReaderManagementUseCase readerManagementUseCase;
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        createReaderUseCase = mock(CreateReaderUseCase.class);
+        readerManagementUseCase = mock(ReaderManagementUseCase.class);
 
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new ReaderManagementController(createReaderUseCase))
+                .standaloneSetup(new ReaderManagementController(readerManagementUseCase))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setValidator(validator)
                 .build();
@@ -47,12 +47,12 @@ class ReaderManagementControllerTest {
     @Test
     @DisplayName("POST /api/v1/readers trả về HTTP 201 Created khi gửi dữ liệu tạo bạn đọc hợp lệ")
     void createReader_Returns201_WhenValid() throws Exception {
-        CreateReaderResult mockResult = new CreateReaderResult(
+        ReaderResult mockResult = new ReaderResult(
                 1L, "RD-260805-1001", "Nguyễn Văn A", "nva@gmail.com", "0987654321", "Hà Nội",
                 CardStatus.ACTIVE, null, null, "Thủ thư 1"
         );
 
-        when(createReaderUseCase.createReader(any(CreateReaderCommand.class))).thenReturn(mockResult);
+        when(readerManagementUseCase.createReader(any(CreateReaderCommand.class))).thenReturn(mockResult);
 
         String jsonBody = """
                 {
@@ -71,19 +71,19 @@ class ReaderManagementControllerTest {
                 .andExpect(jsonPath("$.name").value("Nguyễn Văn A"))
                 .andExpect(jsonPath("$.createdByName").value("Thủ thư 1"));
 
-        verify(createReaderUseCase).createReader(any(CreateReaderCommand.class));
+        verify(readerManagementUseCase).createReader(any(CreateReaderCommand.class));
     }
 
     @Test
     @DisplayName("GET /api/v1/readers?page=0&size=10 trả về HTTP 200 OK cùng dữ liệu phân trang")
     void getAllReaders_Paginated_Returns200() throws Exception {
-        CreateReaderResult mockResult = new CreateReaderResult(
+        ReaderResult mockResult = new ReaderResult(
                 1L, "RD-260805-1001", "Nguyễn Văn A", "nva@gmail.com", "0987654321", "Hà Nội",
                 CardStatus.ACTIVE, null, null, "Thủ thư 1"
         );
 
-        PageResult<CreateReaderResult> pageResult = PageResult.of(List.of(mockResult), 0, 10, 1);
-        when(createReaderUseCase.getAllReaders(anyInt(), anyInt())).thenReturn(pageResult);
+        PageResult<ReaderResult> pageResult = PageResult.of(List.of(mockResult), 0, 10, 1);
+        when(readerManagementUseCase.getAllReaders(anyInt(), anyInt())).thenReturn(pageResult);
 
         mockMvc.perform(get("/api/v1/readers")
                 .param("page", "0")
@@ -91,6 +91,27 @@ class ReaderManagementControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].cardNumber").value("RD-260805-1001"));
 
-        verify(createReaderUseCase).getAllReaders(0, 10);
+        verify(readerManagementUseCase).getAllReaders(0, 10);
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/readers without query params returns default paginated response")
+    void getAllReaders_DefaultPagination_ReturnsPageResult() throws Exception {
+        ReaderResult mockResult = new ReaderResult(
+                1L, "RD-260805-1001", "Nguyen Van A", "nva@gmail.com", "0987654321", "Ha Noi",
+                CardStatus.ACTIVE, null, null, "Thu thu 1"
+        );
+
+        PageResult<ReaderResult> pageResult = PageResult.of(List.of(mockResult), 0, 20, 1);
+        when(readerManagementUseCase.getAllReaders(0, 20)).thenReturn(pageResult);
+
+        mockMvc.perform(get("/api/v1/readers"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].cardNumber").value("RD-260805-1001"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        verify(readerManagementUseCase).getAllReaders(0, 20);
     }
 }
