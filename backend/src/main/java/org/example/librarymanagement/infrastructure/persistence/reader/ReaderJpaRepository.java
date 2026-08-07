@@ -1,16 +1,18 @@
 package org.example.librarymanagement.infrastructure.persistence.reader;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ReaderJpaRepository extends JpaRepository<ReaderJpaEntity, Long> {
+public interface ReaderJpaRepository extends
+        JpaRepository<ReaderJpaEntity, Long>,
+        JpaSpecificationExecutor<ReaderJpaEntity> {
 
     Optional<ReaderJpaEntity> findByCardNumber(String cardNumber);
 
@@ -20,7 +22,21 @@ public interface ReaderJpaRepository extends JpaRepository<ReaderJpaEntity, Long
 
     boolean existsByPhoneNumber(String phoneNumber);
 
-    java.util.List<ReaderJpaEntity> findByCreatedByUserId(Long createdByUserId);
+    List<ReaderJpaEntity> findByIsActiveTrue();
 
-    Page<ReaderJpaEntity> findByCreatedByUserId(Long createdByUserId, Pageable pageable);
+    Page<ReaderJpaEntity> findByIsActiveTrue(Pageable pageable);
+
+    List<ReaderJpaEntity> findByCreatedByUserIdAndIsActiveTrue(Long createdByUserId);
+
+    Page<ReaderJpaEntity> findByCreatedByUserIdAndIsActiveTrue(Long createdByUserId, Pageable pageable);
+
+    boolean existsByEmailIgnoreCaseAndIdNot(
+            String email,
+            Long excludedReaderId
+    );
+
+    boolean existsByPhoneNumberAndIdNot(
+            String phoneNumber,
+            Long excludedReaderId
+    );
 }
