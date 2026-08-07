@@ -4,88 +4,80 @@ import java.util.List;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
+import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.port.inbound.common.PageResult;
+import org.example.librarymanagement.port.outbound.book.BookRepository;
+import org.example.librarymanagement.port.outbound.book.FindBookPort;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
-import org.example.librarymanagement.port.outbound.book.BookRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
-
 @Repository
-public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, CheckActiveBorrowPort, BookRepository {
+public class BookPersistenceAdapter implements 
+        LoadBookPort, 
+        CheckActiveBorrowPort, 
+        SaveBookPort,
+        FindBookPort,
+        BookRepository {
 
-    private final BookJpaRepository bookJpaRepository;
-    private final BookPersistenceMapper bookPersistenceMapper;
+    private final BookJpaRepository repository;
+    private final BookPersistenceMapper mapper;
 
-    public BookPersistenceAdapter(
-            BookJpaRepository bookJpaRepository,
-            BookPersistenceMapper bookPersistenceMapper
-    ) {
-        this.bookJpaRepository = bookJpaRepository;
-        this.bookPersistenceMapper = bookPersistenceMapper;
+    public BookPersistenceAdapter(BookJpaRepository repository, BookPersistenceMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
     }
+
+    // ==================== CHECK ACTIVE BORROW PORT ====================
 
     @Override
     public boolean hasActiveBorrowSlips(Long bookId) {
-        return bookJpaRepository.existsActiveBorrowByBookId(bookId) > 0;
+        return repository.existsActiveBorrowByBookId(bookId) > 0;
     }
+
+    // ==================== SAVE BOOK PORT ====================
+
     @Override
     public Book save(Book book) {
-        BookJpaEntity entity;
+        try {
+            BookJpaEntity entity;
 
-        // 1. Trường hợp TẠO MỚI (bookId == null): Tạo mới hoàn toàn JPA Entity
-        if (book.getBookId() == null) {
-            entity = create(book);
-        } 
-        // 2. Trường hợp CẬP NHẬT (bookId != null): Tìm Entity cũ và cập nhật thông tin
-        else {
-            entity = update(book);
+            // 1. Trường hợp TẠO MỚI (bookId == null): Tạo mới hoàn toàn JPA Entity
+            if (book.getBookId() == null) {
+                entity = mapper.toJpaEntity(book);
+            } 
+            // 2. Trường hợp CẬP NHẬT (bookId != null): Tìm Entity cũ từ DB và cập nhật thông tin
+            else {
+                entity = repository.findById(book.getBookId())
+                        .orElseGet(() -> mapper.toJpaEntity(book));
+                mapper.updateJpaEntity(book, entity);
+            }
+
+            BookJpaEntity saved = repository.save(entity);
+            return mapper.toDomain(saved);
+        } catch (DataIntegrityViolationException e) {
+            // Bắt lỗi an toàn khi ISBN trùng lặp từ DB hoặc vi phạm ràng buộc
+            throw new DomainException("Không thể lưu sách: ISBN đã tồn tại hoặc vi phạm ràng buộc dữ liệu.");
         }
-
-        BookJpaEntity saved = bookJpaRepository.save(entity);
-        return bookPersistenceMapper.toDomain(saved);
-    }
-
-    private BookJpaEntity create(Book book) {
-        return bookPersistenceMapper.toJpaEntity(book);
-    }
-
-    private BookJpaEntity update(Book book) {
-        BookJpaEntity entity = bookJpaRepository.findById(book.getBookId())
-                .orElseGet(() -> bookPersistenceMapper.toJpaEntity(book));
-        
-        // Chỉ cập nhật các trường thông tin đối với trường hợp Update
-        bookPersistenceMapper.updateJpaEntity(book, entity);
-        return entity;
     }
 
     @Override
     public void deleteById(Long bookId) {
-        bookJpaRepository.deleteById(bookId);
+        repository.deleteById(bookId);
     }
+
+    // ==================== LOAD BOOK PORT ====================
 
     @Override
     public Optional<Book> findById(Long bookId) {
-        return bookJpaRepository.findById(bookId)
-                .map(bookPersistenceMapper::toDomain);
-    }
-
-    @Override
-    public boolean existsById(Long id) {
-        return bookJpaRepository.existsById(id);
-    }
-
-    @Override
-    public boolean existsByIsbnAndIdNot(String isbn, Long id) {
-        if (id == null) {
-            return bookJpaRepository.existsByIsbn(isbn);
-        }
-        return bookJpaRepository.existsByIsbnAndIdNot(isbn, id);
+        return repository.findById(bookId)
+                .map(mapper::toDomain);
     }
 
     @Override
@@ -94,16 +86,16 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
         Page<BookJpaEntity> jpaPage;
 
         if (keyword == null || keyword.trim().isEmpty()) {
-            jpaPage = bookJpaRepository.findAll(pageable);
+            jpaPage = repository.findAll(pageable);
         } else {
             String search = keyword.trim();
-            jpaPage = bookJpaRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
+            jpaPage = repository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
                     search, search, search, pageable
             );
         }
 
         List<Book> domainBooks = jpaPage.getContent().stream()
-                .map(bookPersistenceMapper::toDomain)
+                .map(mapper::toDomain)
                 .toList();
 
         return new PageResult<>(
@@ -113,5 +105,38 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
                 jpaPage.getTotalElements(),
                 jpaPage.getTotalPages()
         );
+    }
+
+    // ==================== FIND BOOK PORT ====================
+
+    @Override
+    public boolean existsByIsbn(String isbn) {
+        return repository.existsByIsbnIgnoreCase(isbn.trim());
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return repository.existsById(id);
+    }
+
+    @Override
+    public boolean existsByIsbnAndIdNot(String isbn, Long id) {
+        return repository.existsByIsbnAndIdNot(isbn, id);
+    }
+
+    @Override
+    public List<Book> findAll(int page, int size) {
+        return repository.findAll(PageRequest.of(page, size))
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+    
+    // Backup hàm findAll không phân trang
+    public List<Book> findAll() {
+        return repository.findAll()
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }

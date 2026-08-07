@@ -9,13 +9,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookJpaRepository extends JpaRepository<BookJpaEntity, Long> {
 
-     @Query(value = """
-        SELECT CASE WHEN EXISTS (
-            SELECT 1 FROM borrow_details bd 
-            JOIN borrow_slips bs ON bd.borrow_slip_id = bs.id 
-            WHERE bd.book_id = :bookId AND bs.status IN ('BORROWING', 'OVERDUE')
-        ) THEN 1 ELSE 0 END
-        """, nativeQuery = true)
+    boolean existsByIsbnIgnoreCase(String isbn);
+
+    @Query(value = """
+       SELECT CASE WHEN EXISTS (
+           SELECT 1 FROM borrow_details bd 
+           JOIN borrow_slips bs ON bd.borrow_slip_id = bs.id 
+           WHERE bd.book_id = :bookId AND bs.status IN ('BORROWING', 'OVERDUE')
+       ) THEN 1 ELSE 0 END
+       """, nativeQuery = true)
     int existsActiveBorrowByBookId(@Param("bookId") Long bookId);
 
     Page<BookJpaEntity> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(

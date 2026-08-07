@@ -46,3 +46,7 @@ hs_err_pid*
 replay_pid*
 
 src/main/resources/application-local.properties
+
+# Ignore uploaded files locally
+uploads/*
+!uploads/.gitkeep

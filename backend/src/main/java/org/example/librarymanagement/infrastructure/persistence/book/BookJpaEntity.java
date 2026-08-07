@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "books")
 public class BookJpaEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -59,9 +60,14 @@ public class BookJpaEntity {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-    protected BookJpaEntity(){}
 
-    public BookJpaEntity(Long id,String title, String author, String isbn, String description, String coverImageUrl, String publisher, Short publishedYear, String shelfLocation, int totalQuantity, int availableQuantity, Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    protected BookJpaEntity() {
+    }
+
+    public BookJpaEntity(Long id, String title, String author, String isbn, String description, 
+                         String coverImageUrl, String publisher, Short publishedYear, 
+                         String shelfLocation, int totalQuantity, int availableQuantity, 
+                         Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.title = title;
         this.author = author;
@@ -80,44 +86,61 @@ public class BookJpaEntity {
     }
 
     @PrePersist
-    void prePersist(){
+    void prePersist() {
         LocalDateTime now = LocalDateTime.now();
-        if(createdAt==null) createdAt =now;
+        if (createdAt == null) createdAt = now;
         if (updatedAt == null) updatedAt = now;
     }
+
     @PreUpdate
     void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
 
+    // ==================== GETTERS & SETTERS ====================
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
+
     public String getAuthor() { return author; }
     public void setAuthor(String author) { this.author = author; }
+
     public String getIsbn() { return isbn; }
     public void setIsbn(String isbn) { this.isbn = isbn; }
+
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
     public String getCoverImageUrl() { return coverImageUrl; }
     public void setCoverImageUrl(String coverImageUrl) { this.coverImageUrl = coverImageUrl; }
+
     public String getPublisher() { return publisher; }
     public void setPublisher(String publisher) { this.publisher = publisher; }
+
     public Short getPublishedYear() { return publishedYear; }
     public void setPublishedYear(Short publishedYear) { this.publishedYear = publishedYear; }
+
     public String getShelfLocation() { return shelfLocation; }
     public void setShelfLocation(String shelfLocation) { this.shelfLocation = shelfLocation; }
+
     public int getTotalQuantity() { return totalQuantity; }
     public void setTotalQuantity(int totalQuantity) { this.totalQuantity = totalQuantity; }
+
     public int getAvailableQuantity() { return availableQuantity; }
     public void setAvailableQuantity(int availableQuantity) { this.availableQuantity = availableQuantity; }
+
     public Long getCategoryId() { return categoryId; }
     public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

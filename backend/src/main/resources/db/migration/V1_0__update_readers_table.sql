@@ -36,6 +36,7 @@ SET @sql = (
     'SELECT 1'
   )
 );
+
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
@@ -60,6 +61,7 @@ SET @sql = (
     'SELECT 1'
   )
 );
+
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
@@ -77,6 +79,7 @@ SET @sql = (
     'SELECT 1'
   )
 );
+
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;

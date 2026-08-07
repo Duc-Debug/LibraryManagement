@@ -19,10 +19,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -30,13 +31,16 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
+    // Khai báo chuẩn một Bean ObjectMapper duy nhất tích hợp JavaTimeModule cho toàn ứng dụng
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Bean
     public ObjectMapper objectMapper() {
-        return objectMapper;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
     }
 
     @Bean
@@ -47,33 +51,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             AccessTokenAuthenticationFilter accessTokenAuthenticationFilter,
-            CorsConfigurationSource corsConfigurationSource
+            CorsConfigurationSource corsConfigurationSource,
+            ObjectMapper objectMapper // Spring Boot sẽ tự động inject ObjectMapper mặc định của ứng dụng
     ) throws Exception {
 
         return http
-                .cors(cors
-                        -> cors.configurationSource(corsConfigurationSource)
-                )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session
-                        -> session.sessionCreationPolicy(
-                        SessionCreationPolicy.STATELESS
-                )
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(
-                        HttpMethod.OPTIONS,
-                        "/**"
-                ).permitAll()
-                .requestMatchers(
-                        HttpMethod.POST,
-                        "/api/auth/login",
-                        "/api/auth/logout"
-                ).permitAll()
-                .requestMatchers(
-                        "/error"
-                ).permitAll()
-                .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/logout").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(
                         accessTokenAuthenticationFilter,
@@ -84,12 +75,14 @@ public class SecurityConfig {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json;charset=UTF-8");
                             ErrorResponse error = ErrorResponse.of("UNAUTHORIZED", "Truy cập trái phép bị chặn (401): Vui lòng đăng nhập để truy cập tài nguyên này.");
+                            // Sử dụng auto-configured ObjectMapper để đảm bảo JSON contract đồng nhất
                             response.getWriter().write(objectMapper.writeValueAsString(error));
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json;charset=UTF-8");
                             ErrorResponse error = ErrorResponse.of("ACCESS_DENIED", "Truy cập trái phép bị chặn (403): Bạn không có quyền truy cập tài nguyên này.");
+                            // Sử dụng auto-configured ObjectMapper để đảm bảo JSON contract đồng nhất
                             response.getWriter().write(objectMapper.writeValueAsString(error));
                         })
                 )
@@ -110,18 +103,11 @@ public class SecurityConfig {
         ));
 
         configuration.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH",
-                "DELETE",
-                "OPTIONS"
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
 
         configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "Accept"
+                "Authorization", "Content-Type", "Accept"
         ));
 
         configuration.setExposedHeaders(List.of(
@@ -131,12 +117,11 @@ public class SecurityConfig {
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source
-                = new UrlBasedCorsConfigurationSource();
-
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
 }
+
 
