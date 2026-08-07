@@ -1,9 +1,15 @@
 package org.example.librarymanagement.infrastructure.persistence.reader;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.example.librarymanagement.domain.entity.Readers;
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
+import org.example.librarymanagement.port.outbound.reader.ReaderSearchCriteria;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -16,18 +22,21 @@ public class ReaderPersistenceAdapter implements ReaderRepositoryPort {
     private final ReaderPersistenceMapper readerPersistenceMapper;
 
     @Override
-    public Readers save(Readers reader) {
-        ReaderJpaEntity entity = readerPersistenceMapper.toJpaEntity(reader);
-        ReaderJpaEntity savedEntity = readerJpaRepository.save(entity);
-        return readerPersistenceMapper.toDomain(savedEntity);
-    }
+public Optional<Readers> findById(Long readerId) {
+    return readerJpaRepository.findById(readerId)
+            .map(readerPersistenceMapper::toDomain);
+}
 
-    @Override
-    public Optional<Readers> findById(Long id) {
-        return readerJpaRepository.findById(id)
-                .map(readerPersistenceMapper::toDomain);
-    }
+@Override
+public Readers save(Readers reader) {
+    ReaderJpaEntity entity =
+            readerPersistenceMapper.toJpaEntity(reader);
 
+    ReaderJpaEntity savedEntity =
+            readerJpaRepository.save(entity);
+
+    return readerPersistenceMapper.toDomain(savedEntity);
+}
     @Override
     public Optional<Readers> findByCardNumber(String cardNumber) {
         return readerJpaRepository.findByCardNumber(cardNumber)
@@ -50,50 +59,120 @@ public class ReaderPersistenceAdapter implements ReaderRepositoryPort {
     }
 
     @Override
-    public java.util.List<Readers> findAll() {
-        return readerJpaRepository.findAll().stream()
+    public PageResult<Readers> search(ReaderSearchCriteria criteria) {
+        ReaderSearchCriteria safeCriteria = normalizeCriteria(criteria);
+        Pageable pageable = PageRequest.of(
+                safeCriteria.page(),
+                safeCriteria.size()
+        );
+
+        Page<ReaderJpaEntity> jpaPage = readerJpaRepository.findAll(
+                ReaderSpecification.from(safeCriteria),
+                pageable
+        );
+
+        java.util.List<Readers> content = jpaPage.getContent().stream()
                 .map(readerPersistenceMapper::toDomain)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
+
+        return PageResult.of(
+                content,
+                jpaPage.getNumber(),
+                jpaPage.getSize(),
+                jpaPage.getTotalElements()
+        );
+    }
+
+    @Override
+    public java.util.List<Readers> findAll() {
+        return readerJpaRepository.findByIsActiveTrue().stream()
+                .map(readerPersistenceMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
     public java.util.List<Readers> findByCreatedByUserId(Long createdByUserId) {
-        return readerJpaRepository.findByCreatedByUserId(createdByUserId).stream()
+        return readerJpaRepository.findByCreatedByUserIdAndIsActiveTrue(createdByUserId).stream()
                 .map(readerPersistenceMapper::toDomain)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     @Override
-    public org.example.librarymanagement.port.dtos.common.PageResult<Readers> findAll(int page, int size) {
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        org.springframework.data.domain.Page<ReaderJpaEntity> jpaPage = readerJpaRepository.findAll(pageable);
-
-        java.util.List<Readers> content = jpaPage.getContent().stream()
-                .map(readerPersistenceMapper::toDomain)
-                .collect(java.util.stream.Collectors.toList());
-
-        return org.example.librarymanagement.port.dtos.common.PageResult.of(
-                content,
-                jpaPage.getNumber(),
-                jpaPage.getSize(),
-                jpaPage.getTotalElements()
-        );
+    public PageResult<Readers> findAll(int page, int size) {
+        return search(new ReaderSearchCriteria(
+                null,
+                null,
+                null,
+                page,
+                size
+        ));
     }
 
     @Override
-    public org.example.librarymanagement.port.dtos.common.PageResult<Readers> findByCreatedByUserId(Long createdByUserId, int page, int size) {
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        org.springframework.data.domain.Page<ReaderJpaEntity> jpaPage = readerJpaRepository.findByCreatedByUserId(createdByUserId, pageable);
+    public PageResult<Readers> findByCreatedByUserId(Long createdByUserId, int page, int size) {
+        return search(new ReaderSearchCriteria(
+                null,
+                null,
+                createdByUserId,
+                page,
+                size
+        ));
+    }
 
-        java.util.List<Readers> content = jpaPage.getContent().stream()
-                .map(readerPersistenceMapper::toDomain)
-                .collect(java.util.stream.Collectors.toList());
+    private ReaderSearchCriteria normalizeCriteria(
+            ReaderSearchCriteria criteria
+    ) {
+        if (criteria == null) {
+            return new ReaderSearchCriteria(
+                    null,
+                    null,
+                    null,
+                    ReaderSearchCriteria.DEFAULT_PAGE,
+                    ReaderSearchCriteria.DEFAULT_PAGE_SIZE
+            );
+        }
 
-        return org.example.librarymanagement.port.dtos.common.PageResult.of(
-                content,
-                jpaPage.getNumber(),
-                jpaPage.getSize(),
-                jpaPage.getTotalElements()
+        int safePage = Math.max(
+                criteria.page(),
+                0
+        );
+
+        int safeSize = criteria.size() <= 0
+                ? ReaderSearchCriteria.DEFAULT_PAGE_SIZE
+                : Math.min(
+                        criteria.size(),
+                        ReaderSearchCriteria.MAX_PAGE_SIZE
+                );
+
+        return new ReaderSearchCriteria(
+                criteria.keyword(),
+                criteria.status(),
+                criteria.createdByUserId(),
+                safePage,
+                safeSize
         );
     }
+ @Override
+public boolean existsByEmailAndIdNot(
+        String email,
+        Long excludedReaderId
+) {
+    return readerJpaRepository
+            .existsByEmailIgnoreCaseAndIdNot(
+                    email,
+                    excludedReaderId
+            );
+}
+
+@Override
+public boolean existsByPhoneNumberAndIdNot(
+        String phoneNumber,
+        Long excludedReaderId
+) {
+    return readerJpaRepository
+            .existsByPhoneNumberAndIdNot(
+                    phoneNumber,
+                    excludedReaderId
+            );
+}
 }

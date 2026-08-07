@@ -1,13 +1,20 @@
 package org.example.librarymanagement.infrastructure.web.reader;
 
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
-import org.example.librarymanagement.port.dtos.reader.CreateReaderResult;
-import org.example.librarymanagement.port.inbound.reader.CreateReaderUseCase;
+import org.example.librarymanagement.port.dtos.reader.ReaderResult;
+import org.example.librarymanagement.port.dtos.reader.UpdateReaderCommand;
+import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -18,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReaderManagementController {
 
-    private final CreateReaderUseCase createReaderUseCase;
+    private final ReaderManagementUseCase readerManagementUseCase;
 
     @PostMapping
     public ResponseEntity<ReaderResponse> createReader(@Valid @RequestBody CreateReaderRequest request) {
@@ -29,36 +36,62 @@ public class ReaderManagementController {
                 request.address()
         );
 
-        CreateReaderResult result = createReaderUseCase.createReader(command);
+        ReaderResult result = readerManagementUseCase.createReader(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(ReaderResponse.fromResult(result));
     }
+@DeleteMapping("/{readerId}")
+public ResponseEntity<Void> deleteReader(
+        @PathVariable Long readerId
+) {
+    readerManagementUseCase.deleteReader(readerId);
 
-    @org.springframework.web.bind.annotation.GetMapping
-    public ResponseEntity<Object> getAllReaders(
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer page,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer size
+    return ResponseEntity.noContent().build();
+}
+   
+    @GetMapping
+    public ResponseEntity<PageResult<ReaderResponse>> getAllReaders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
     ) {
-        if (page != null && size != null) {
-            org.example.librarymanagement.port.dtos.common.PageResult<CreateReaderResult> pageResult =
-                    createReaderUseCase.getAllReaders(page, size);
+        PageResult<ReaderResult> resultPage =
+                readerManagementUseCase.getAllReaders(
+                        page,
+                        size
+                );
 
-            java.util.List<ReaderResponse> content = pageResult.content().stream()
-                    .map(ReaderResponse::fromResult)
-                    .collect(java.util.stream.Collectors.toList());
+        var content =
+                resultPage.content().stream()
+                        .map(ReaderResponse::fromResult)
+                        .toList();
 
-            org.example.librarymanagement.port.dtos.common.PageResult<ReaderResponse> responsePage =
-                    org.example.librarymanagement.port.dtos.common.PageResult.of(
-                            content,
-                            pageResult.page(),
-                            pageResult.size(),
-                            pageResult.totalElements()
-                    );
-            return ResponseEntity.ok(responsePage);
-        }
-
-        java.util.List<ReaderResponse> list = createReaderUseCase.getAllReaders().stream()
-                .map(ReaderResponse::fromResult)
-                .collect(java.util.stream.Collectors.toList());
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(
+                PageResult.of(
+                        content,
+                        resultPage.page(),
+                        resultPage.size(),
+                        resultPage.totalElements()
+                )
+        );
     }
+    
+    @PutMapping("/{readerId}")
+public ResponseEntity<ReaderResponse> updateReader(
+        @PathVariable Long readerId,
+        @Valid @RequestBody UpdateReaderRequest request
+) {
+    UpdateReaderCommand command = new UpdateReaderCommand(
+            readerId,
+            request.name(),
+            request.email(),
+            request.phoneNumber(),
+            request.address()
+    );
+
+    ReaderResult result =
+            readerManagementUseCase.updateReader(command);
+
+    return ResponseEntity.ok(
+            ReaderResponse.fromResult(result)
+    );
+}
 }

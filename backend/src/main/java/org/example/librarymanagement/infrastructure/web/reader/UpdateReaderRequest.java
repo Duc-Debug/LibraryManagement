@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record CreateReaderRequest(
+public record UpdateReaderRequest(
 
         @NotBlank(message = "Reader name must not be blank.")
         @Size(
