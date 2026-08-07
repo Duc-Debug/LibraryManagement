@@ -15,12 +15,25 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "readers")
+@Table(
+        name = "readers",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_readers_email",
+                        columnNames = "email"
+                ),
+                @UniqueConstraint(
+                        name = "uk_readers_phone",
+                        columnNames = "phone"
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
