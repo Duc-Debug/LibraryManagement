@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
-import org.example.librarymanagement.application.book.BookManagementService;
+import org.example.librarymanagement.application.book.UpdateBookService;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
@@ -29,7 +29,7 @@ public class BookManagementServiceTest {
     private GetAuthenticatedUserPort getAuthenticatedUserPort;
 
     // đối tượng cần test
-    private BookManagementService bookManagementService;
+    private UpdateBookService bookManagementService;
 
     // hàm setUp chạy trước mỗi method 
     @BeforeEach
