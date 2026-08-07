@@ -64,3 +64,36 @@ export async function unhideBookApi(id: number): Promise<void> {
     method: "PATCH",
   });
 }
+
+export interface UpdateBookRequestDto {
+  title: string;
+  author: string;
+  isbn: string;
+  description?: string;
+  coverImageUrl?: string;
+  publisher?: string;
+  publishedYear: number;
+  shelfLocation?: string;
+  totalQuantity: number;
+  categoryId: number;
+}
+
+export async function updateBookApi(
+  id: number,
+  requestDto: UpdateBookRequestDto
+): Promise<BookResponseDto> {
+  return apiFetch<BookResponseDto>(`/api/librarians/books/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(requestDto),
+  });
+}
+
+export async function replenishBookStockApi(
+  id: number,
+  quantityToAdd: number
+): Promise<BookResponseDto> {
+  return apiFetch<BookResponseDto>(`/api/librarians/books/${id}/replenish`, {
+    method: "POST",
+    body: JSON.stringify({ quantityToAdd }),
+  });
+}

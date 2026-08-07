@@ -301,4 +301,13 @@ public class Book {
 
        
     }
+
+    public void replenishStock(int quantityToAdd) {
+        if (quantityToAdd <= 0) {
+            throw new InvalidBookDataException("Số lượng nhập kho phải lớn hơn 0");
+        }
+        this.totalQuantity += quantityToAdd;
+        this.availableQuantity += quantityToAdd;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

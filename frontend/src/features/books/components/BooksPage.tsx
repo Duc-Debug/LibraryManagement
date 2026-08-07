@@ -6,9 +6,13 @@ import {
   deleteBookApi,
   hideBookApi,
   unhideBookApi,
+  updateBookApi,
+  replenishBookStockApi,
   BookResponseDto,
   PageResult,
+  UpdateBookRequestDto,
 } from '@/api/bookApi';
+import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
 import { Search, Plus, Eye, EyeOff, Trash2, X, Edit3, PackagePlus, AlertTriangle, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddBookModal } from './AddBookModal';
@@ -34,6 +38,32 @@ export function BooksPage() {
   const [selectedBook, setSelectedBook] = useState<BookResponseDto | null>(null);
   const [bookToDelete, setBookToDelete] = useState<BookResponseDto | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // States cho modal chỉnh sửa sách
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingBookId, setEditingBookId] = useState<number | null>(null);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [editForm, setEditForm] = useState<Omit<UpdateBookRequestDto, 'publishedYear' | 'totalQuantity' | 'categoryId'> & {
+    publishedYear: number | "";
+    totalQuantity: number | "";
+    categoryId: number | "";
+  }>({
+    title: "",
+    author: "",
+    isbn: "",
+    description: "",
+    coverImageUrl: "",
+    publisher: "",
+    publishedYear: new Date().getFullYear(),
+    shelfLocation: "",
+    totalQuantity: 0,
+    categoryId: 0,
+  });
+
+  // States cho modal nhập kho
+  const [showReplenishModal, setShowReplenishModal] = useState(false);
+  const [replenishBook, setReplenishBook] = useState<BookResponseDto | null>(null);
+  const [replenishQuantity, setReplenishQuantity] = useState<number | "">(1);
 
   // Debounce 300ms cho Live Search
   useEffect(() => {
@@ -97,6 +127,106 @@ export function BooksPage() {
       }
     } catch (err: any) {
       setError(err.message || 'Thao tác ẩn/hiện sách thất bại.');
+    }
+  };
+
+  // Mở modal và nạp dữ liệu cũ của sách vào form
+  const handleOpenEditModal = async (book: BookResponseDto) => {
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      // 1. Tải danh mục thể loại để hiển thị dropdown
+      const cats = await fetchCategoriesApi();
+      setCategories(cats);
+
+      // 2. Điền thông tin cũ của sách vào form
+      setEditingBookId(book.bookId);
+      setEditForm({
+        title: book.title,
+        author: book.author,
+        isbn: book.isbn,
+        description: book.description || "",
+        coverImageUrl: book.coverImageUrl || "",
+        publisher: book.publisher || "",
+        publishedYear: book.publishedYear || new Date().getFullYear(),
+        shelfLocation: book.shelfLocation || "",
+        totalQuantity: book.totalQuantity,
+        categoryId: book.categoryId || 0,
+      });
+
+      // 3. Mở modal chỉnh sửa, đóng modal chi tiết
+      setIsEditing(true);
+      setSelectedBook(null); 
+    } catch (err: any) {
+      setError(err.message || "Không thể nạp dữ liệu chỉnh sửa.");
+    }
+  };
+
+  // Lắng nghe thay đổi dữ liệu trên Form
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({
+      ...prev,
+      [name]: name === "totalQuantity" || name === "categoryId" || name === "publishedYear" 
+        ? (value === "" ? "" : Number(value))
+        : value,
+    }));
+  };
+
+  // Submit Form gửi lên Backend
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBookId) return;
+
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const payload: UpdateBookRequestDto = {
+        title: editForm.title,
+        author: editForm.author,
+        isbn: editForm.isbn,
+        description: editForm.description,
+        coverImageUrl: editForm.coverImageUrl,
+        publisher: editForm.publisher,
+        publishedYear: Number(editForm.publishedYear) || 0,
+        shelfLocation: editForm.shelfLocation,
+        totalQuantity: Number(editForm.totalQuantity) || 0,
+        categoryId: Number(editForm.categoryId) || 0,
+      };
+      await updateBookApi(editingBookId, payload);
+      setSuccessMessage(`Đã cập nhật sách "${editForm.title}" thành công.`);
+      setIsEditing(false); // Đóng modal
+      loadBooks();        // Tải lại danh sách sách
+    } catch (err: any) {
+      setError(err.message || "Cập nhật sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Submit Nhập kho
+  const handleReplenishSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replenishBook) return;
+
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const qty = Number(replenishQuantity) || 0;
+      await replenishBookStockApi(replenishBook.bookId, qty);
+      setSuccessMessage(`Đã nhập kho thêm ${qty} cuốn sách "${replenishBook.title}" thành công.`);
+      setShowReplenishModal(false);
+      loadBooks();
+    } catch (err: any) {
+      setError(err.message || 'Cập nhật số lượng nhập kho thất bại.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -390,7 +520,7 @@ export function BooksPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => alert("Chức năng Sửa thông tin đang được team phát triển!")}
+                  onClick={() => handleOpenEditModal(selectedBook)}
                   className="text-xs"
                 >
                   <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Sửa sách
@@ -399,7 +529,12 @@ export function BooksPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => alert("Chức năng Nhập kho (+Số lượng) đang được team phát triển!")}
+                  onClick={() => {
+                    setReplenishBook(selectedBook);
+                    setReplenishQuantity(1);
+                    setShowReplenishModal(true);
+                    setSelectedBook(null);
+                  }}
                   className="text-xs"
                 >
                   <PackagePlus className="w-3.5 h-3.5 mr-1.5" /> Nhập kho
@@ -421,6 +556,228 @@ export function BooksPage() {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Sửa Sách */}
+      {isEditing && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-card rounded-xl border border-border max-w-lg w-full p-6 shadow-xl space-y-4 animate-in fade-in zoom-in-95 duration-150 my-8">
+            <div className="flex justify-between items-center border-b border-border pb-3">
+              <h2 className="text-xl font-bold text-foreground">✏️ Chỉnh Sửa Thông Tin Sách</h2>
+              <button onClick={() => setIsEditing(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4 text-sm max-h-[65vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block">Tên Sách <span className="text-destructive">*</span></label>
+                  <input
+                    type="text"
+                    name="title"
+                    required
+                    value={editForm.title}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block">Tác Giả <span className="text-destructive">*</span></label>
+                  <input
+                    type="text"
+                    name="author"
+                    required
+                    value={editForm.author}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block">Mã ISBN <span className="text-destructive">*</span></label>
+                  <input
+                    type="text"
+                    name="isbn"
+                    required
+                    value={editForm.isbn}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block">Thể Loại <span className="text-destructive">*</span></label>
+                  <select
+                    name="categoryId"
+                    required
+                    value={editForm.categoryId}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value={0}>Chọn thể loại...</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block">Nhà Xuất Bản</label>
+                  <input
+                    type="text"
+                    name="publisher"
+                    value={editForm.publisher}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block">Năm Xuất Bản <span className="text-destructive">*</span></label>
+                  <input
+                    type="number"
+                    name="publishedYear"
+                    required
+                    value={editForm.publishedYear}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block">Vị Trí Kệ</label>
+                  <input
+                    type="text"
+                    name="shelfLocation"
+                    value={editForm.shelfLocation}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block">Tổng Số Lượng <span className="text-destructive">*</span></label>
+                  <input
+                    type="number"
+                    name="totalQuantity"
+                    min={0}
+                    required
+                    value={editForm.totalQuantity}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block">Ảnh Bìa (URL)</label>
+                  <input
+                    type="text"
+                    name="coverImageUrl"
+                    value={editForm.coverImageUrl}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Mô Tả</label>
+                <textarea
+                  name="description"
+                  rows={3}
+                  value={editForm.description}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-border flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {loading ? "Đang cập nhật..." : "Lưu Thay Đổi"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Nhập Kho (+Số lượng) */}
+      {showReplenishModal && replenishBook && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-xl border border-border max-w-md w-full p-6 shadow-xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-center border-b border-border pb-3">
+              <h2 className="text-xl font-bold text-foreground">📦 Nhập Kho Sách</h2>
+              <button
+                onClick={() => setShowReplenishModal(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Bạn đang thực hiện bổ sung số lượng cho cuốn sách:</p>
+              <div className="p-3 bg-muted/40 rounded-lg border border-border">
+                <span className="font-bold text-foreground block text-sm">{replenishBook.title}</span>
+                <span className="text-xs text-muted-foreground block mt-0.5">Tác giả: {replenishBook.author}</span>
+                <div className="flex gap-4 mt-2 text-xs">
+                  <span>Tổng số lượng hiện tại: <strong className="text-foreground">{replenishBook.totalQuantity}</strong></span>
+                  <span>Sẵn có hiện tại: <strong className="text-primary">{replenishBook.availableQuantity}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleReplenishSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Số lượng nhập thêm <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  required
+                  value={replenishQuantity}
+                  onChange={(e) => setReplenishQuantity(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <span className="text-xs text-muted-foreground block">Nhập số lượng sách thực tế bổ sung vào kho (phải từ 1 trở lên).</span>
+              </div>
+
+              <div className="pt-3 border-t border-border flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowReplenishModal(false)}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {loading ? "Đang xử lý..." : "Xác nhận Nhập kho"}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}
