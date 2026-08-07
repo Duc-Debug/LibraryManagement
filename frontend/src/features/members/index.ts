@@ -2,6 +2,8 @@
 
 export { MembersPage } from './components/MembersPage';
 export { AddMemberModal } from './components/AddMemberModal';
+export { EditMemberModal } from './components/EditMemberModal';
+export { MemberHistoryModal } from './components/MemberHistoryModal';
 
 export { getMembers, mockMembers } from './api/getMembers';
 
