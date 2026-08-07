@@ -29,8 +29,7 @@ class BookDeletionPolicyTest {
                 1L,
                 true,
                 LocalDateTime.now(),
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
     }
 
     @Test
@@ -54,13 +53,11 @@ class BookDeletionPolicyTest {
         // Act & Assert
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> BookDeletionPolicy.validateCanDeleteOrHide(book, hasActiveBorrowSlips)
-        );
+                () -> BookDeletionPolicy.validateCanDeleteOrHide(book, hasActiveBorrowSlips));
 
         // Kiểm tra thông điệp lỗi nghiệp vụ A2.4
         assertEquals(
                 "Không thể xóa hoặc ẩn sách 'Lập trình Java DDD' (ID: 1) vì sách đang nằm trong phiếu mượn chưa hoàn trả (Đang mượn hoặc Quá hạn).",
-                exception.getMessage()
-        );
+                exception.getMessage());
     }
 }

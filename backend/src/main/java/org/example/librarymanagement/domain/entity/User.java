@@ -3,6 +3,7 @@ package org.example.librarymanagement.domain.entity;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;
@@ -22,32 +23,28 @@ public class User {
 
     private final Set<Role> roles = new LinkedHashSet<>();
 
-    public User(
+    // 1. Static Factory Method dùng khi Tạo Mới User
+    public static User create(
             String username,
             String passwordHash,
             String fullName,
             String email,
-            String phone
-    ) {
-        this.username = requireNotBlank(username, "Username must not be blank");
-        this.passwordHash = requireNotBlank(
+            String phone) {
+        return new User(
+                null,
+                username,
                 passwordHash,
-                "Password hash must not be blank"
-        );
-        this.fullName = requireNotBlank(
                 fullName,
-                "Full name must not be blank"
-        );
-
-        this.email = normalizeNullable(email);
-        this.phone = normalizeNullable(phone);
-        this.enabled = true;
-
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
+                email,
+                phone,
+                true,
+                null,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                Collections.emptySet());
     }
 
+    // 2. Full-Args Constructor dùng khi Reconstitute từ Database
     public User(
             Long id,
             String username,
@@ -59,26 +56,11 @@ public class User {
             LocalDateTime passwordChangedAt,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            Set<Role> roles
-    ) {
-        if (id == null) {
-            throw new DomainException("User id must not be null");
-        }
-
+            Set<Role> roles) {
         this.id = id;
-        this.username = requireNotBlank(
-                username,
-                "Username must not be blank"
-        );
-        this.passwordHash = requireNotBlank(
-                passwordHash,
-                "Password hash must not be blank"
-        );
-        this.fullName = requireNotBlank(
-                fullName,
-                "Full name must not be blank"
-        );
-
+        this.username = requireNotBlank(username, "Username must not be blank");
+        this.passwordHash = requireNotBlank(passwordHash, "Password hash must not be blank");
+        this.fullName = requireNotBlank(fullName, "Full name must not be blank");
         this.email = normalizeNullable(email);
         this.phone = normalizeNullable(phone);
         this.enabled = enabled;
@@ -90,6 +72,8 @@ public class User {
             this.roles.addAll(roles);
         }
     }
+
+    // ==================== DOMAIN BUSINESS BEHAVIORS ====================
 
     public void ensureCanLogin() {
         if (!enabled) {
@@ -114,17 +98,21 @@ public class User {
     public void changePassword(String newPasswordHash) {
         String validatedPasswordHash = requireNotBlank(
                 newPasswordHash,
-                "New password hash must not be blank"
-        );
+                "New password hash must not be blank");
 
         if (validatedPasswordHash.equals(passwordHash)) {
-            throw new DomainException(
-                    "New password must be different from current password"
-            );
+            throw new DomainException("New password must be different from current password");
         }
 
-        passwordHash = validatedPasswordHash;
-        passwordChangedAt = LocalDateTime.now();
+        this.passwordHash = validatedPasswordHash;
+        this.passwordChangedAt = LocalDateTime.now();
+        touch();
+    }
+
+    public void updateProfile(String fullName, String email, String phone) {
+        this.fullName = requireNotBlank(fullName, "Full name must not be blank");
+        this.email = normalizeNullable(email);
+        this.phone = normalizeNullable(phone);
         touch();
     }
 
@@ -138,16 +126,6 @@ public class User {
         }
     }
 
-    public void updateProfile(String fullName, String email, String phone) {
-        this.fullName = fullName;
-        this.email = email;
-        this.phone = phone;
-
-    }
-
-    /**
-     * Kích hoạt hoặc mở khóa tài khoản.
-     */
     public void removeRole(Role role) {
         if (role != null && roles.remove(role)) {
             touch();
@@ -160,23 +138,19 @@ public class User {
         }
 
         return roles.stream()
-                .anyMatch(role
-                        -> role.getName().equalsIgnoreCase(roleName.trim())
-                );
+                .anyMatch(role -> role.getName().equalsIgnoreCase(roleName.trim()));
     }
+
+    // ==================== HELPER VALIDATIONS ====================
 
     private void touch() {
-        updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    private static String requireNotBlank(
-            String value,
-            String errorMessage
-    ) {
+    private static String requireNotBlank(String value, String errorMessage) {
         if (isBlank(value)) {
             throw new DomainException(errorMessage);
         }
-
         return value.trim();
     }
 
@@ -187,6 +161,8 @@ public class User {
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
+
+    // ==================== GETTERS ONLY (NO PUBLIC SETTERS) ====================
 
     public Long getId() {
         return id;
@@ -230,5 +206,20 @@ public class User {
 
     public Set<Role> getRoles() {
         return Collections.unmodifiableSet(roles);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) || Objects.equals(username, user.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? Objects.hash(id) : Objects.hash(username);
     }
 }

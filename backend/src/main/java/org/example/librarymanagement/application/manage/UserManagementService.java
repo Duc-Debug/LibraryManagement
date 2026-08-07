@@ -33,8 +33,7 @@ public class UserManagementService implements ManageUserUseCase {
             LoadRolePort loadRolePort,
             SaveUserPort saveUserPort,
             EncodePasswordPort encodePasswordPort,
-            GetAuthenticatedUserPort getAuthenticatedUserPort
-    ) {
+            GetAuthenticatedUserPort getAuthenticatedUserPort) {
         this.findUserPort = findUserPort;
         this.loadRolePort = loadRolePort;
         this.saveUserPort = saveUserPort;
@@ -44,19 +43,34 @@ public class UserManagementService implements ManageUserUseCase {
 
     @Override
     public UserResult createUser(CreateUserCommand command) {
+        if (command == null) {
+            throw new IllegalArgumentException("Create user command must not be null");
+        }
+
+        // 1. Phân quyền Admin
         verifyAdminAccess();
 
+        // 2. Kiểm tra trùng lặp Username qua Domain Policy
         boolean isUsernameExisted = findUserPort.existsByUsername(command.username());
         UniqueUsernamePolicy.validateUsernameForCreate(isUsernameExisted, command.username());
 
+        // 3. Tải Role từ Outbound Port
         Role role = loadRolePort.findByName(command.roleName())
-                .orElseThrow(() -> new DomainException("Hệ thống không tồn tại quyền: " + command.roleName()));
+                .orElseThrow(() -> new DomainException("Role not found: " + command.roleName()));
 
+        // 4. Mã hóa mật khẩu qua Password Encoder Port
         String encodedPassword = encodePasswordPort.encode(command.rawPassword());
 
-        User newUser = new User(command.username(), encodedPassword, command.fullName(), command.email(), command.phone());
+        // 5. Khởi tạo Domain Entity bằng Static Factory Method
+        User newUser = User.create(
+                command.username(),
+                encodedPassword,
+                command.fullName(),
+                command.email(),
+                command.phone());
         newUser.addRole(role);
 
+        // 6. Lưu xuống DB qua Outbound Port & Map sang Result DTO
         User savedUser = saveUserPort.save(newUser);
         return mapToResult(savedUser);
     }
@@ -126,6 +140,7 @@ public class UserManagementService implements ManageUserUseCase {
 
     private UserResult mapToResult(User user) {
         Set<String> roleNames = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-        return new UserResult(user.getId(), user.getUsername(), user.getFullName(), user.getEmail(), user.getPhone(), user.isEnabled(), roleNames, user.getCreatedAt(), user.getUpdatedAt());
+        return new UserResult(user.getId(), user.getUsername(), user.getFullName(), user.getEmail(), user.getPhone(),
+                user.isEnabled(), roleNames, user.getCreatedAt(), user.getUpdatedAt());
     }
 }

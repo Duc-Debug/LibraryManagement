@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.example.librarymanagement.domain.entity.Readers;
+import org.example.librarymanagement.domain.entity.Reader;
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.enums.CardStatus;
@@ -204,7 +204,7 @@ class ReaderManagementServiceTest {
         when(getAuthenticatedUserPort.getCurrentUser())
                 .thenReturn(admin);
 
-        Readers reader = existingReader(
+        Reader reader = existingReader(
                 1L,
                 2L,
                 true
@@ -296,7 +296,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers existingReader =
+        Reader existingReader =
                 existingReader(
                         10L,
                         1L,
@@ -423,7 +423,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers existingReader =
+        Reader existingReader =
                 existingReader(
                         10L,
                         2L,
@@ -474,7 +474,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers existingReader =
+        Reader existingReader =
                 existingReader(
                         10L,
                         1L,
@@ -526,7 +526,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers reader = existingReader(
+        Reader reader = existingReader(
                 10L,
                 1L,
                 true
@@ -567,7 +567,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers reader = existingReader(
+        Reader reader = existingReader(
                 10L,
                 1L,
                 true
@@ -634,7 +634,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers reader = existingReader(
+        Reader reader = existingReader(
                 10L,
                 2L,
                 true
@@ -659,7 +659,7 @@ class ReaderManagementServiceTest {
                 .save(any());
     }
 
-    private Readers existingReader(
+    private Reader existingReader(
             Long id,
             Long creatorId,
             boolean active
@@ -680,7 +680,7 @@ class ReaderManagementServiceTest {
                         0
                 );
 
-        return Readers.builder()
+        return Reader.builder()
                 .id(id)
                 .cardNumber("RD-2026-" + id)
                 .name("Original Reader")
@@ -734,9 +734,9 @@ class ReaderManagementServiceTest {
         User mockOwner = mockUser(creatorId, "owner", "LIBRARIAN");
         when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(mockOwner);
 
-        Readers existingReader = existingReader(readerId, creatorId, true);
+        Reader existingReader = existingReader(readerId, creatorId, true);
         when(readerRepositoryPort.findById(readerId)).thenReturn(Optional.of(existingReader));
-        when(readerRepositoryPort.save(any(Readers.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(readerRepositoryPort.save(any(Reader.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ChangeCardStatusCommand command = new ChangeCardStatusCommand(readerId, CardStatus.LOCKED);
 
@@ -758,7 +758,7 @@ class ReaderManagementServiceTest {
         User mockUser = mockUser(99L, "unauthorized", "LIBRARIAN");
         when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(mockUser);
 
-        Readers existingReader = existingReader(readerId, creatorId, true);
+        Reader existingReader = existingReader(readerId, creatorId, true);
         when(readerRepositoryPort.findById(readerId)).thenReturn(Optional.of(existingReader));
 
         ChangeCardStatusCommand command = new ChangeCardStatusCommand(readerId, CardStatus.LOCKED);

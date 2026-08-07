@@ -1,11 +1,11 @@
 package org.example.librarymanagement.domain.policies;
 
-import org.example.librarymanagement.domain.entity.Readers;
+import org.example.librarymanagement.domain.entity.Reader;
 import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class BorrowSlipCreationPolicy {
-    public static void validateCanBorrow(Readers reader) {
+    public static void validateCanBorrow(Reader reader) {
         if (!reader.isActive()) {
             throw new DomainException("Độc giả đã bị xóa hoạt động, không thể lập phiếu mượn.");
         }
