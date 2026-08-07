@@ -4,11 +4,14 @@ import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
 import org.example.librarymanagement.port.dtos.reader.UpdateReaderCommand;
+import org.example.librarymanagement.port.dtos.reader.ChangeCardStatusCommand;
+import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -93,5 +96,14 @@ public ResponseEntity<ReaderResponse> updateReader(
     return ResponseEntity.ok(
             ReaderResponse.fromResult(result)
     );
+}
+
+@PatchMapping("/{readerId}/status")
+public ResponseEntity<ReaderResponse> changeCardStatus(
+        @PathVariable Long readerId,
+        @RequestParam CardStatus status) {
+    ChangeCardStatusCommand command = new ChangeCardStatusCommand(readerId, status);
+    ReaderResult result = readerManagementUseCase.changeCardStatus(command);
+    return ResponseEntity.ok(ReaderResponse.fromResult(result));
 }
 }

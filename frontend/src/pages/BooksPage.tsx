@@ -5,9 +5,12 @@ import {
   hideBookApi,
   unhideBookApi,
   deleteBookApi,
+  updateBookApi,
   BookResponseDto,
   PageResult,
+  UpdateBookRequestDto,
 } from "@/api/bookApi";
+import { fetchCategoriesApi, CategoryResponse } from "@/api/categoryApi";
 import { IconSearch, IconX } from "@/components/icons";
 
 export default function BooksPage() {
@@ -31,6 +34,23 @@ export default function BooksPage() {
   const [selectedBook, setSelectedBook] = useState<BookResponseDto | null>(null);
   const [bookToDelete, setBookToDelete] = useState<BookResponseDto | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // States cho modal chỉnh sửa sách
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingBookId, setEditingBookId] = useState<number | null>(null);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [editForm, setEditForm] = useState<UpdateBookRequestDto>({
+    title: "",
+    author: "",
+    isbn: "",
+    description: "",
+    coverImageUrl: "",
+    publisher: "",
+    publishedYear: new Date().getFullYear(),
+    shelfLocation: "",
+    totalQuantity: 0,
+    categoryId: 0,
+  });
 
   // Debounce search input (300ms delay)
   useEffect(() => {
@@ -109,6 +129,72 @@ export default function BooksPage() {
       setBookToDelete(null);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  // Mở modal và nạp dữ liệu cũ của sách vào form
+  const handleOpenEditModal = async (book: BookResponseDto) => {
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      // 1. Tải danh mục thể loại để hiển thị dropdown
+      const cats = await fetchCategoriesApi();
+      setCategories(cats);
+
+      // 2. Điền thông tin cũ của sách vào form
+      setEditingBookId(book.bookId);
+      setEditForm({
+        title: book.title,
+        author: book.author,
+        isbn: book.isbn,
+        description: book.description || "",
+        coverImageUrl: book.coverImageUrl || "",
+        publisher: book.publisher || "",
+        publishedYear: book.publishedYear || new Date().getFullYear(),
+        shelfLocation: book.shelfLocation || "",
+        totalQuantity: book.totalQuantity,
+        categoryId: book.categoryId || 0,
+      });
+
+      // 3. Mở modal chỉnh sửa, đóng modal chi tiết
+      setIsEditing(true);
+      setSelectedBook(null); 
+    } catch (err: any) {
+      setError(err.message || "Không thể nạp dữ liệu chỉnh sửa.");
+    }
+  };
+
+  // Lắng nghe thay đổi dữ liệu trên Form
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({
+      ...prev,
+      [name]: name === "totalQuantity" || name === "categoryId" || name === "publishedYear" 
+        ? Number(value) 
+        : value,
+    }));
+  };
+
+  // Submit Form gửi lên Backend
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBookId) return;
+
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      await updateBookApi(editingBookId, editForm);
+      setSuccessMessage(`Đã cập nhật sách "${editForm.title}" thành công.`);
+      setIsEditing(false); // Đóng modal
+      loadBooks();        // Tải lại danh sách sách
+    } catch (err: any) {
+      setError(err.message || "Cập nhật sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -389,7 +475,7 @@ export default function BooksPage() {
                 </button>
 
                 <button
-                  onClick={() => alert("Chức năng Sửa thông tin đang được team phát triển!")}
+                  onClick={() => handleOpenEditModal(selectedBook)}
                   className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
                 >
                   ✏️ Sửa sách
@@ -419,6 +505,168 @@ export default function BooksPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Sửa Sách */}
+      {isEditing && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150 my-8">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900">✏️ Chỉnh Sửa Thông Tin Sách</h2>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition"
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="py-4 space-y-4 text-sm max-h-[65vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600 block">Tên Sách <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    name="title"
+                    required
+                    value={editForm.title}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600 block">Tác Giả <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    name="author"
+                    required
+                    value={editForm.author}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600 block">Mã ISBN <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    name="isbn"
+                    required
+                    value={editForm.isbn}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600 block">Thể Loại <span className="text-red-500">*</span></label>
+                  <select
+                    name="categoryId"
+                    required
+                    value={editForm.categoryId}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value={0}>Chọn thể loại...</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600 block">Nhà Xuất Bản</label>
+                  <input
+                    type="text"
+                    name="publisher"
+                    value={editForm.publisher}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600 block">Năm Xuất Bản <span className="text-red-500">*</span></label>
+                  <input
+                    type="number"
+                    name="publishedYear"
+                    required
+                    value={editForm.publishedYear}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600 block">Vị Trí Kệ</label>
+                  <input
+                    type="text"
+                    name="shelfLocation"
+                    value={editForm.shelfLocation}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600 block">Tổng Số Lượng <span className="text-red-500">*</span></label>
+                  <input
+                    type="number"
+                    name="totalQuantity"
+                    min={0}
+                    required
+                    value={editForm.totalQuantity}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600 block">Ảnh Bìa (URL)</label>
+                  <input
+                    type="text"
+                    name="coverImageUrl"
+                    value={editForm.coverImageUrl}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-600 block">Mô Tả</label>
+                <textarea
+                  name="description"
+                  rows={3}
+                  value={editForm.description}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none animate-none"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition disabled:opacity-50"
+                >
+                  {loading ? "Đang cập nhật..." : "Lưu Thay Đổi"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

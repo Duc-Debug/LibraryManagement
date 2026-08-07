@@ -3,6 +3,7 @@ package org.example.librarymanagement.infrastructure.web.exception;
 import java.util.stream.Collectors;
 
 import org.example.librarymanagement.application.auth.InvalidCredentialsException;
+import org.example.librarymanagement.domain.exceptions.AccessDeniedException;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.ReaderAccessDeniedException;
 import org.example.librarymanagement.domain.exceptions.ReaderAlreadyExistsException;
@@ -104,6 +105,18 @@ public ResponseEntity<ErrorResponse> handleReaderAccessDenied(
             .status(HttpStatus.FORBIDDEN)
             .body(ErrorResponse.of(
                     "READER_ACCESS_DENIED",
+                    exception.getMessage()
+            ));
+}
+
+@ExceptionHandler(AccessDeniedException.class)
+public ResponseEntity<ErrorResponse> handleAccessDenied(
+        AccessDeniedException exception
+) {
+    return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse.of(
+                    "ACCESS_DENIED",
                     exception.getMessage()
             ));
 }
