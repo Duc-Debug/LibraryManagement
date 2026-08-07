@@ -20,9 +20,6 @@ import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPo
 import org.example.librarymanagement.port.outbound.manage.LoadRolePort;
 import org.example.librarymanagement.port.outbound.manage.SaveUserPort;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
 public class UserManagementService implements ManageUserUseCase {
 
     private final FindUserPort findUserPort;
@@ -30,6 +27,20 @@ public class UserManagementService implements ManageUserUseCase {
     private final SaveUserPort saveUserPort;
     private final EncodePasswordPort encodePasswordPort;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
+
+    public UserManagementService(
+            FindUserPort findUserPort,
+            LoadRolePort loadRolePort,
+            SaveUserPort saveUserPort,
+            EncodePasswordPort encodePasswordPort,
+            GetAuthenticatedUserPort getAuthenticatedUserPort
+    ) {
+        this.findUserPort = findUserPort;
+        this.loadRolePort = loadRolePort;
+        this.saveUserPort = saveUserPort;
+        this.encodePasswordPort = encodePasswordPort;
+        this.getAuthenticatedUserPort = getAuthenticatedUserPort;
+    }
 
     @Override
     public UserResult createUser(CreateUserCommand command) {

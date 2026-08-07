@@ -260,16 +260,16 @@ public class Book {
 
                         //validation du lieu co ban
                         if (title == null || title.trim().isEmpty()) {
-                            throw new IllegalArgumentException("Title cannot be null or empty.");
+                            throw new InvalidBookDataException("Title cannot be null or empty.");
                         }
                         if( newIsbn != null && !newIsbn.trim().isEmpty() && newIsbn.length() != 13) {
-                            throw new IllegalArgumentException("ISBN must be 13 characters long.");
+                            throw new InvalidBookDataException("ISBN must be 13 characters long.");
                         }
                         if(categoryId == null) {
-                            throw new IllegalArgumentException("Category ID cannot be null.");
+                            throw new InvalidBookDataException("Category ID cannot be null.");
                         }
                         if(publishedYear != null && (publishedYear < 0 || publishedYear > currentYear)) {
-                            throw new IllegalArgumentException("Published year must be a valid year.");
+                            throw new InvalidBookDataException("Published year must be a valid year.");
                         }
 
                        

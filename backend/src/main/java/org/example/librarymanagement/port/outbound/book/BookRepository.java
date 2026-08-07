@@ -1,4 +1,4 @@
-package org.example.librarymanagement.port.outbound.manage;
+package org.example.librarymanagement.port.outbound.book;
 
 import java.util.Optional;
 

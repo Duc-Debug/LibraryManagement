@@ -1,7 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.reader;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.example.librarymanagement.domain.entity.Readers;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;

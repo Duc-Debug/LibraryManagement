@@ -21,5 +21,6 @@ public interface BookJpaRepository extends JpaRepository<BookJpaEntity, Long> {
     Page<BookJpaEntity> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
             String title, String author, String isbn, Pageable pageable
     );
-            boolean existsByIsbnAndIdNot(String isbn, Long id);
+    boolean existsByIsbn(String isbn);
+    boolean existsByIsbnAndIdNot(String isbn, Long id);
 }
