@@ -1,7 +1,7 @@
 package org.example.librarymanagement.domain.policies;
 
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.AccessDeniedException;
 
 /**
  * 
@@ -16,7 +16,7 @@ public class AuthorizationAccessPolicy {
      */
     public static void validateAdminAccess(User user) {
         if (user == null || !user.hasRole(ROLE_ADMIN)) {
-            throw new DomainException("Truy cập trái phép bị chặn (403): Chức năng này yêu cầu quyền Quản trị viên (Admin).");
+            throw new AccessDeniedException("Truy cập trái phép bị chặn (403): Chức năng này yêu cầu quyền Quản trị viên (Admin).");
         }
     }
 
@@ -25,7 +25,7 @@ public class AuthorizationAccessPolicy {
      */
     public static void validateStaffAccess(User user) {
         if (user == null || (!user.hasRole(ROLE_ADMIN) && !user.hasRole(ROLE_LIBRARIAN))) {
-            throw new DomainException("Truy cập bị từ chối: Bạn không có quyền thao tác nghiệp vụ thư viện.");
+            throw new AccessDeniedException("Truy cập bị từ chối: Bạn không có quyền thao tác nghiệp vụ thư viện.");
         }
     }
 }

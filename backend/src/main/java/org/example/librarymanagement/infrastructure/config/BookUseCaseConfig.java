@@ -5,6 +5,7 @@ import org.example.librarymanagement.application.book.GetBooksService;
 import org.example.librarymanagement.application.book.UpdateBookService;
 import org.example.librarymanagement.application.book.ReplenishBookStockService;
 import org.example.librarymanagement.infrastructure.transaction.book.TransactionalDeleteBookUseCase;
+import org.example.librarymanagement.infrastructure.transaction.book.TransactionalReplenishBookStockUseCase;
 import org.example.librarymanagement.port.inbound.book.DeleteBookUseCase;
 import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
@@ -49,6 +50,7 @@ public class BookUseCaseConfig {
             BookRepository bookRepository,
             GetAuthenticatedUserPort getAuthenticatedUserPort
     ) {
-        return new ReplenishBookStockService(bookRepository, getAuthenticatedUserPort);
+        ReplenishBookStockUseCase service = new ReplenishBookStockService(bookRepository, getAuthenticatedUserPort);
+        return new TransactionalReplenishBookStockUseCase(service);
     }
 }

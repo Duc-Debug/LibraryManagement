@@ -9,6 +9,7 @@ import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
+import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
 import org.example.librarymanagement.port.inbound.book.BookResult;
 import org.example.librarymanagement.port.inbound.book.ReplenishBookStockCommand;
 import org.example.librarymanagement.port.outbound.book.BookRepository;
@@ -64,7 +65,7 @@ public class ReplenishBookStockServiceTest {
                 LocalDateTime.now()
         );
 
-        when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.findByIdForUpdate(bookId)).thenReturn(Optional.of(existingBook));
         when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ReplenishBookStockCommand command = new ReplenishBookStockCommand(bookId, 5);
@@ -106,7 +107,7 @@ public class ReplenishBookStockServiceTest {
                 LocalDateTime.now()
         );
 
-        when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.findByIdForUpdate(bookId)).thenReturn(Optional.of(existingBook));
 
         ReplenishBookStockCommand command = new ReplenishBookStockCommand(bookId, 0);
 
@@ -124,12 +125,12 @@ public class ReplenishBookStockServiceTest {
         User mockLibrarian = createMockUser("LIBRARIAN");
         when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(mockLibrarian);
 
-        when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
+        when(bookRepository.findByIdForUpdate(bookId)).thenReturn(Optional.empty());
 
         ReplenishBookStockCommand command = new ReplenishBookStockCommand(bookId, 5);
 
         // Act & Assert
-        assertThrows(DomainException.class, () -> {
+        assertThrows(BookNotFoundException.class, () -> {
             replenishBookStockService.replenishStock(command);
         });
     }

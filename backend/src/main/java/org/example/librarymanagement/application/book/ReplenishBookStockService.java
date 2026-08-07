@@ -3,6 +3,7 @@ package org.example.librarymanagement.application.book;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
 import org.example.librarymanagement.port.inbound.book.BookResult;
@@ -25,8 +26,8 @@ public class ReplenishBookStockService implements ReplenishBookStockUseCase {
     public BookResult replenishStock(ReplenishBookStockCommand command) {
         verifyStaffAccess();
 
-        Book book = bookRepository.findById(command.bookId())
-                .orElseThrow(() -> new DomainException("Not found: Book with ID " + command.bookId() + " does not exist."));
+        Book book = bookRepository.findByIdForUpdate(command.bookId())
+                .orElseThrow(() -> new BookNotFoundException(command.bookId()));
 
         book.replenishStock(command.quantityToAdd());
 
@@ -37,17 +38,12 @@ public class ReplenishBookStockService implements ReplenishBookStockUseCase {
 
     private void verifyStaffAccess() {
         User currentUser = getAuthenticatedUserPort.getCurrentUser();
-        
-        boolean isAuthorized = currentUser.hasRole("LIBRARIAN") 
-                            || currentUser.hasRole("ADMIN")
-                            || currentUser.hasRole("ROLE_STAFF") 
-                            || currentUser.hasRole("ROLE_ADMIN");
-
-        if (!isAuthorized) {
-            throw new DomainException("Error Security: User does not have permission to perform this action.");
+        if (currentUser == null) {
+            throw new org.example.librarymanagement.domain.exceptions.UnauthenticatedException("Error Security: User is unauthenticated.");
         }
-
+        // Kiểm tra trạng thái tài khoản hoạt động
         AccountLockPolicy.validateAccountActive(currentUser);
+        // Ủy quyền kiểm tra vai trò thủ thư/admin cho Domain Policy tập trung
         AuthorizationAccessPolicy.validateStaffAccess(currentUser);
     }
 

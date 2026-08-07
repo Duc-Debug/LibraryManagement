@@ -70,22 +70,22 @@ public ReaderManagementService(
 }
     @Override
     public ReaderResult createReader(CreateReaderCommand command) {
-        // 1. Kiểm tra Email đã tồn tại chưa
-        if (readerRepositoryPort.existsByEmail(command.email())) {
-            throw ReaderAlreadyExistsException.withEmail(command.email());
-        }
-
-        // 2. Kiểm tra Số điện thoại đã tồn tại chưa
-        if (readerRepositoryPort.existsByPhoneNumber(command.phoneNumber())) {
-            throw ReaderAlreadyExistsException.withPhoneNumber(command.phoneNumber());
-        }
-
-        // 3. Lấy thông tin Thủ thư đang đăng nhập
+        // 1. Lấy thông tin và xác thực người dùng đang đăng nhập trước tiên
         User currentUser = getAuthenticatedUserPort.getCurrentUser();
         if (currentUser == null) {
             throw org.example.librarymanagement.domain.exceptions.UnauthenticatedException.defaultMessage();
         }
         Long creatorId = currentUser.getId();
+
+        // 2. Kiểm tra Email đã tồn tại chưa
+        if (readerRepositoryPort.existsByEmail(command.email())) {
+            throw ReaderAlreadyExistsException.withEmail(command.email());
+        }
+
+        // 3. Kiểm tra Số điện thoại đã tồn tại chưa
+        if (readerRepositoryPort.existsByPhoneNumber(command.phoneNumber())) {
+            throw ReaderAlreadyExistsException.withPhoneNumber(command.phoneNumber());
+        }
 
         // 4. Sinh Mã thẻ qua Outbound Port (CardNumberGeneratorPort)
         String cardNumber = cardNumberGeneratorPort.generateNextCardNumber();
@@ -165,6 +165,12 @@ if (checkActiveReaderBorrowPort
 public ReaderResult updateReader(
         UpdateReaderCommand command
 ) {
+    User currentUser = getAuthenticatedUserPort.getCurrentUser();
+
+    if (currentUser == null) {
+        throw UnauthenticatedException.defaultMessage();
+    }
+
     if (command == null) {
         throw new IllegalArgumentException(
                 "Update reader command must not be null."
@@ -175,12 +181,6 @@ public ReaderResult updateReader(
         throw new IllegalArgumentException(
                 "Reader id must not be null."
         );
-    }
-
-    User currentUser = getAuthenticatedUserPort.getCurrentUser();
-
-    if (currentUser == null) {
-        throw UnauthenticatedException.defaultMessage();
     }
 
     Readers reader = readerRepositoryPort
@@ -282,14 +282,14 @@ public PageResult<ReaderResult> getAllReaders(
 
 @Override
 public ReaderResult changeCardStatus(ChangeCardStatusCommand command) {
+    User currentUser = requireCurrentUser();
+
     if (command == null) {
         throw new IllegalArgumentException("Command must not be null.");
     }
     if (command.readerId() == null || command.newStatus() == null) {
         throw new IllegalArgumentException("Reader ID and new status must not be null.");
     }
-
-    User currentUser = requireCurrentUser();
     Readers reader = readerRepositoryPort.findById(command.readerId())
             .orElseThrow(() -> ReaderNotFoundException.withId(command.readerId()));
 

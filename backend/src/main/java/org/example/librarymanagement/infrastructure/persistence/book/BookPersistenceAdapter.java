@@ -76,6 +76,12 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
     }
 
     @Override
+    public Optional<Book> findByIdForUpdate(Long bookId) {
+        return bookJpaRepository.findByIdForUpdate(bookId)
+                .map(bookPersistenceMapper::toDomain);
+    }
+
+    @Override
     public boolean existsById(Long id) {
         return bookJpaRepository.existsById(id);
     }
