@@ -95,11 +95,17 @@ public class CreateBookService implements CreateBookUseCase {
                 book.getTitle(),
                 book.getAuthor(),
                 book.getIsbn(),
+                book.getDescription(),
                 book.getCoverImageUrl(),
+                book.getPublisher(),
+                book.getPublishedYear(),
+                book.getShelfLocation(),
                 book.getTotalQuantity(),
                 book.getAvailableQuantity(),
                 book.getCategoryId(),
-                book.isActive()
+                book.isActive(),
+                book.getCreatedAt(),
+                book.getUpdatedAt()
         );
     }
 }

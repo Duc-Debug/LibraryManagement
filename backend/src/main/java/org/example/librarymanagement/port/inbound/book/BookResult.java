@@ -1,14 +1,21 @@
 package org.example.librarymanagement.port.inbound.book;
 
+import java.time.LocalDateTime;
+
 public record BookResult(
-        Long id,
-        String title,
-        String author,
-        String isbn,
-        String coverImageUrl,
-        int totalQuantity,
-        int availableQuantity,
-        Long categoryId,
-        boolean active
-) {
-}
+    Long bookId,
+    String title,
+    String author,
+    String isbn,
+    String description,
+    String coverImageUrl,
+    String publisher,
+    Short publishedYear,
+    String shelfLocation,
+    int totalQuantity,
+    int availableQuantity,
+    Long categoryId,
+    boolean active,
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
+) {}

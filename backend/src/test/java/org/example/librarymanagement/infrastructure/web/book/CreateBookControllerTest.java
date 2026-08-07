@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.example.librarymanagement.infrastructure.file.FileStorageService;
@@ -50,11 +51,17 @@ class CreateBookControllerTest {
                 "Clean Code",
                 "Robert Martin",
                 "9780132350884",
+                "Description",
                 "/uploads/books/image.jpg",
+                "Publisher",
+                (short) 2008,
+                "A1",
                 10,
                 10,
                 1L,
-                true
+                true,
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
     }
 
