@@ -6,36 +6,37 @@ import org.example.librarymanagement.application.auth.InvalidCredentialsExceptio
 import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptionHandler;
 import org.example.librarymanagement.port.dtos.auth.LoginCommand;
 import org.example.librarymanagement.port.dtos.auth.LoginResult;
-import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
 import org.example.librarymanagement.port.dtos.auth.LogoutCommand;
+import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-class LoginControllerTest {
+class AuthControllerTest {
 
     private LoginUseCase loginUseCase;
-    private MockMvc mockMvc;
     private LogoutUseCase logoutUseCase;
+    private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         loginUseCase = mock(LoginUseCase.class);
-    logoutUseCase = mock(LogoutUseCase.class);
+        logoutUseCase = mock(LogoutUseCase.class);
 
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
@@ -119,35 +120,36 @@ class LoginControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
     }
+
     @Test
-void missingAuthorizationHeaderReturnsBadRequest() throws Exception {
-    mockMvc.perform(post("/api/auth/logout"))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("INVALID_AUTHORIZATION_HEADER"));
-}
+    void missingAuthorizationHeaderReturnsBadRequest() throws Exception {
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_AUTHORIZATION_HEADER"));
+    }
 
-@Test
-void nonBearerAuthorizationHeaderReturnsBadRequest() throws Exception {
-    mockMvc.perform(post("/api/auth/logout")
-                    .header("Authorization", "Basic abc"))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("INVALID_AUTHORIZATION_HEADER"));
-}
+    @Test
+    void nonBearerAuthorizationHeaderReturnsBadRequest() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Basic abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_AUTHORIZATION_HEADER"));
+    }
 
-@Test
-void emptyBearerTokenReturnsBadRequest() throws Exception {
-    mockMvc.perform(post("/api/auth/logout")
-                    .header("Authorization", "Bearer "))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("INVALID_AUTHORIZATION_HEADER"));
-}
+    @Test
+    void emptyBearerTokenReturnsBadRequest() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Bearer "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_AUTHORIZATION_HEADER"));
+    }
 
-@Test
-void validBearerHeaderCallsLogoutUseCaseAndReturnsNoContent() throws Exception {
-    mockMvc.perform(post("/api/auth/logout")
-                    .header("Authorization", "Bearer raw-jwt"))
-            .andExpect(status().isNoContent());
+    @Test
+    void validBearerHeaderCallsLogoutUseCaseAndReturnsNoContent() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Bearer raw-jwt"))
+                .andExpect(status().isNoContent());
 
-    verify(logoutUseCase).logout(new LogoutCommand("raw-jwt"));
-}
+        verify(logoutUseCase).logout(new LogoutCommand("raw-jwt"));
+    }
 }

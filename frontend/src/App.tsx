@@ -1,10 +1,11 @@
 import { useState } from "react";
 import type { Page, Book, Member, BorrowRecord, UserAccount } from "@/types";
-import { INITIAL_BOOKS, INITIAL_MEMBERS, INITIAL_BORROW_RECORDS, INITIAL_USER_ACCOUNTS } from "@/data/initialData";
+import { INITIAL_MEMBERS, INITIAL_BORROW_RECORDS, INITIAL_USER_ACCOUNTS } from "@/data/initialData";
 import Sidebar from "@/components/Sidebar";
 import LoginPage from "@/pages/LoginPage";
 import Dashboard from "@/pages/Dashboard";
 import BooksPage from "@/pages/BooksPage";
+import CategoriesPage from "@/pages/CategoriesPage";
 import MembersPage from "@/pages/MembersPage";
 import BorrowPage from "@/pages/BorrowPage";
 import ReturnPage from "@/pages/ReturnPage";
@@ -14,11 +15,11 @@ import { logout as logoutRequest } from "@/api/authApi";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(() => {
-    return Boolean(localStorage.getItem("accessToken"));
+    return Boolean(typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
   });
 
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
-    const savedUser = localStorage.getItem("currentUser");
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("currentUser") : null;
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
@@ -45,7 +46,7 @@ export default function App() {
 
   // Shared state
   const [accounts, setAccounts] = useState<UserAccount[]>(INITIAL_USER_ACCOUNTS);
-  const [books, setBooks] = useState<Book[]>(INITIAL_BOOKS);
+  const [books, setBooks] = useState<Book[]>([]);
   const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
   const [records, setRecords] = useState<BorrowRecord[]>(INITIAL_BORROW_RECORDS);
 
@@ -104,9 +105,11 @@ export default function App() {
       case "dashboard":
         return <Dashboard books={books} members={members} records={records} />;
       case "books":
-        return <BooksPage books={books} setBooks={setBooks} />;
+        return <BooksPage />;
+      case "categories":
+        return <CategoriesPage />;
       case "members":
-        return <MembersPage members={members} setMembers={setMembers} />;
+        return <MembersPage />;
       case "borrow":
         return (
           <BorrowPage
@@ -162,4 +165,3 @@ export default function App() {
     </div>
   );
 }
-

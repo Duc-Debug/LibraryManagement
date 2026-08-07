@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Dashboard } from '@/features/dashboard';
 import { BooksPage } from '@/features/books';
 import type { Book } from '@/features/books';
+import { CategoriesPage } from '@/features/categories/components/CategoriesPage';
 import { MembersPage } from '@/features/members';
 import { BorrowingPage } from '@/features/borrowing';
 import { ReturnsPage } from '@/features/returns';
@@ -13,13 +14,22 @@ import { AccountsPage, mockUserAccounts } from '@/features/accounts';
 import type { UserAccount } from '@/features/accounts';
 import { logout } from '@/api/authApi';
 import SettingsPage from '@/pages/SettingsPage';
-import {
-  ReaderHome,
-  BookDetails,
-  ReaderProfilePage,
-  mockReaderProfiles,
-  mockReaderBorrows,
-} from '@/features/reader';
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    
+    // Giải mã Base64 payload của JWT
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.exp) return false;
+    
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp < now;
+  } catch (e) {
+    return true; // Token không hợp lệ
+  }
+}
 
 export default function Page() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
@@ -32,7 +42,14 @@ export default function Page() {
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     const savedUser = localStorage.getItem('currentUser');
-    if (token && savedUser) {
+
+    // Kiểm tra chủ động: Nếu token đã hết hạn, xóa session ngay khi khởi động
+    if (token && isTokenExpired(token)) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('tokenType');
+      localStorage.removeItem('currentUser');
+      setCurrentUser(null);
+    } else if (token && savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
         const roles = parsed.roles ?? [];
@@ -56,7 +73,7 @@ export default function Page() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const pageParam = urlParams.get('page');
-      if (pageParam && ['dashboard', 'books', 'members', 'borrowing', 'returns', 'accounts', 'settings'].includes(pageParam)) {
+      if (pageParam && ['dashboard', 'books', 'categories', 'members', 'borrowing', 'returns', 'accounts', 'settings'].includes(pageParam)) {
         setCurrentPage(pageParam);
       }
 
@@ -137,6 +154,8 @@ export default function Page() {
         return <Dashboard />;
       case 'books':
         return <BooksPage />;
+      case 'categories':
+        return <CategoriesPage />;
       case 'members':
         return <MembersPage />;
       case 'borrowing':

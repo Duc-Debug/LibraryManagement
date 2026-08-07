@@ -14,7 +14,7 @@ export function Dashboard() {
   const borrowingBooks = mockBorrowRecords.filter(r => r.status === 'borrowing').length;
   const overdueBooks = mockBorrowRecords.filter(r => r.status === 'overdue').length;
 
-  const MetricCard = ({ title, value, subtitle, icon: Icon, bgColor }: any) => (
+  const MetricCard = ({ title, value, subtitle, icon: Icon, bgColor, iconColor }: any) => (
     <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
@@ -23,7 +23,7 @@ export function Dashboard() {
           {subtitle && <p className="text-xs text-muted-foreground mt-2">{subtitle}</p>}
         </div>
         <div className={`${bgColor} rounded-lg p-3`}>
-          <Icon className="w-6 h-6" />
+          <Icon className={`w-6 h-6 ${iconColor}`} />
         </div>
       </div>
     </div>
@@ -44,28 +44,32 @@ export function Dashboard() {
           value={totalBooks}
           subtitle={`${availableBooks} bản sẵn có`}
           icon={BookMarked}
-          bgColor="bg-blue-100"
+          bgColor="bg-blue-100 dark:bg-blue-950/30"
+          iconColor="text-blue-600 dark:text-blue-400"
         />
         <MetricCard
           title="Thành viên"
           value={totalMembers}
           subtitle={`${activeMembers} đang hoạt động`}
           icon={Users}
-          bgColor="bg-green-100"
+          bgColor="bg-green-100 dark:bg-green-950/30"
+          iconColor="text-green-600 dark:text-green-400"
         />
         <MetricCard
           title="Đang mượn"
           value={borrowingBooks}
           subtitle="Lượt mượn hiện tại"
           icon={TrendingUp}
-          bgColor="bg-amber-100"
+          bgColor="bg-amber-100 dark:bg-amber-950/30"
+          iconColor="text-amber-600 dark:text-amber-400"
         />
         <MetricCard
           title="Quá hạn"
           value={overdueBooks}
           subtitle="Cảnh báo"
           icon={AlertTriangle}
-          bgColor="bg-red-100"
+          bgColor="bg-red-100 dark:bg-red-950/30"
+          iconColor="text-red-600 dark:text-red-400"
         />
       </div>
 

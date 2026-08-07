@@ -9,7 +9,6 @@ import org.example.librarymanagement.port.outbound.auth.AccessTokenRevocationPor
 import org.example.librarymanagement.port.outbound.auth.AccessTokenVerifierPort;
 import org.example.librarymanagement.port.outbound.auth.token.AccessTokenVerificationResult;
 import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,8 +38,7 @@ class LogoutServiceTest {
     private LogoutService logoutService;
 
     @Test
-    @DisplayName("Thành công: token hợp lệ thì revoke và trả về success")
-    void logout_WithValidToken_ShouldReturnSuccessResult() {
+    void logoutRevokesValidToken() {
         String validToken = "valid.jwt.token.here";
         LogoutCommand command = new LogoutCommand(validToken);
         Instant expiresAt = Instant.now().plusSeconds(3600);
@@ -65,8 +63,7 @@ class LogoutServiceTest {
     }
 
     @Test
-    @DisplayName("Thất bại: token null thì ném ValidationException")
-    void logout_WithNullToken_ShouldThrowValidationException() {
+    void logoutRejectsNullToken() {
         LogoutCommand command = new LogoutCommand(null);
 
         assertThrows(ValidationException.class, () -> logoutService.logout(command));
@@ -77,8 +74,7 @@ class LogoutServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"", "   ", "\t", "\n"})
-    @DisplayName("Thất bại: token rỗng hoặc chỉ chứa khoảng trắng")
-    void logout_WithEmptyOrBlankToken_ShouldThrowValidationException(String invalidToken) {
+    void logoutRejectsBlankToken(String invalidToken) {
         LogoutCommand command = new LogoutCommand(invalidToken);
 
         assertThrows(ValidationException.class, () -> logoutService.logout(command));
@@ -88,8 +84,7 @@ class LogoutServiceTest {
     }
 
     @Test
-    @DisplayName("Thất bại: token không hợp lệ thì không revoke")
-    void logout_WithRejectedToken_ShouldReturnFailureResult() {
+    void logoutDoesNotRevokeRejectedToken() {
         String token = "expired.jwt.token";
         LogoutCommand command = new LogoutCommand(token);
 
@@ -97,6 +92,7 @@ class LogoutServiceTest {
                 .thenReturn(new AccessTokenVerificationResult.Rejected("Expired"));
 
         logoutService.logout(command);
+
         verify(accessTokenRevocationPort, never()).revoke(anyString(), any(Instant.class));
     }
 }
