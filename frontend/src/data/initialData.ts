@@ -7,11 +7,7 @@ export const INITIAL_USER_ACCOUNTS: UserAccount[] = [
   { id: "U004", username: "user2", password: "user456", fullName: "Lê Thị Mai", role: "thu_thu", active: false },
 ];
 
-export const INITIAL_BOOKS: Book[] = [
-  { id: "B001", title: "Sapiens: Lược Sử Loài Người", author: "Yuval Noah Harari", genre: "Lịch sử", total: 5, available: 3 },
-  { id: "B002", title: "Tuổi Trẻ Đáng Giá Bao Nhiêu", author: "Rosie Nguyễn", genre: "Kỹ năng sống", total: 10, available: 8 },
-  { id: "B003", title: "Đắc Nhân Tâm", author: "Dale Carnegie", genre: "Tâm lý", total: 14, available: 4 },
-];
+export const INITIAL_BOOKS: Book[] = [];
 
 export const INITIAL_MEMBERS: Member[] = [
   { id: "M001", name: "Nguyễn Văn An", email: "an.nguyen@example.com", phone: "0901234567", active: true },

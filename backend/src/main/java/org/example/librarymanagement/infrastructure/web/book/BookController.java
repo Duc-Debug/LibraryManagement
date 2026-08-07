@@ -3,9 +3,8 @@ package org.example.librarymanagement.infrastructure.web.book;
 
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.infrastructure.file.FileStorageService;
-import org.example.librarymanagement.port.inbound.managebook.CreateBookCommand;
-import org.example.librarymanagement.port.inbound.managebook.ManageBookUseCase;
-
+import org.example.librarymanagement.port.inbound.book.CreateBookCommand;
+import org.example.librarymanagement.port.inbound.book.CreateBookUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
@@ -22,14 +21,14 @@ import java.util.List;
 public class BookController {
 
 
-    private final ManageBookUseCase manageBookUseCase;
+    private final CreateBookUseCase manageBookUseCase;
 
     private final FileStorageService fileStorageService;
 
 
 
     public BookController(
-            ManageBookUseCase manageBookUseCase,
+            CreateBookUseCase manageBookUseCase,
             FileStorageService fileStorageService
     ) {
 

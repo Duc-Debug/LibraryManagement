@@ -1,11 +1,12 @@
 package org.example.librarymanagement.infrastructure.web.auth;
 
+import jakarta.validation.Valid;
 import org.example.librarymanagement.infrastructure.web.auth.dtos.LoginRequest;
 import org.example.librarymanagement.infrastructure.web.auth.dtos.LoginResponse;
 import org.example.librarymanagement.port.dtos.auth.LoginCommand;
 import org.example.librarymanagement.port.dtos.auth.LoginResult;
-import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
 import org.example.librarymanagement.port.dtos.auth.LogoutCommand;
+import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
 import org.example.librarymanagement.port.inbound.auth.LogoutUseCase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private final LoginUseCase loginUseCase;
     private final LogoutUseCase logoutUseCase;
@@ -54,39 +55,38 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-  @PostMapping("/logout")
-public ResponseEntity<Void> logout(
-        @RequestHeader(
-                value = "Authorization",
-                required = false
-        ) String authorizationHeader
-) {
-    String token = extractBearerToken(authorizationHeader);
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @RequestHeader(
+                    value = "Authorization",
+                    required = false
+            ) String authorizationHeader
+    ) {
+        String token = extractBearerToken(authorizationHeader);
+        LogoutCommand command = new LogoutCommand(token);
 
-    LogoutCommand command = new LogoutCommand(token);
+        logoutUseCase.logout(command);
 
-    logoutUseCase.logout(command);
-
-    return ResponseEntity.noContent().build();
-}
-private String extractBearerToken(String authorizationHeader) {
-    if (authorizationHeader == null
-            || !authorizationHeader.startsWith("Bearer ")) {
-        throw new InvalidAuthorizationHeaderException(
-                "Invalid Authorization header. Expected format: 'Bearer <token>'"
-        );
+        return ResponseEntity.noContent().build();
     }
 
-    String token = authorizationHeader
-            .substring(7)
-            .trim();
+    private String extractBearerToken(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
+            throw new InvalidAuthorizationHeaderException(
+                    "Invalid Authorization header. Expected format: 'Bearer <token>'"
+            );
+        }
 
-    if (token.isBlank()) {
-        throw new InvalidAuthorizationHeaderException(
-                "Bearer token cannot be empty."
-        );
+        String token = authorizationHeader
+                .substring(BEARER_PREFIX.length())
+                .trim();
+
+        if (token.isBlank()) {
+            throw new InvalidAuthorizationHeaderException(
+                    "Bearer token cannot be empty."
+            );
+        }
+
+        return token;
     }
-
-    return token;
-}
 }
