@@ -4,10 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
+import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.port.inbound.common.PageResult;
-import org.example.librarymanagement.port.outbound.book.LoadBookPort;
-import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
 import org.example.librarymanagement.port.outbound.book.FindBookPort;
+import org.example.librarymanagement.port.outbound.book.LoadBookPort;
+import org.example.librarymanagement.port.outbound.book.SaveBookPort;
+import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,8 +21,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class BookPersistenceAdapter implements 
         LoadBookPort, 
-        org.example.librarymanagement.port.outbound.book.SaveBookPort,
         CheckActiveBorrowPort, 
+        SaveBookPort,
         FindBookPort {
 
     private final BookJpaRepository repository;
@@ -40,9 +44,14 @@ public class BookPersistenceAdapter implements
 
     @Override
     public Book save(Book book) {
-        BookJpaEntity entity = mapper.toJpaEntity(book);
-        BookJpaEntity saved = repository.save(entity);
-        return mapper.toDomain(saved);
+        try {
+            BookJpaEntity entity = mapper.toJpaEntity(book);
+            BookJpaEntity saved = repository.save(entity);
+            return mapper.toDomain(saved);
+        } catch (DataIntegrityViolationException e) {
+            // Bắt lỗi an toàn khi ISBN trùng lặp từ DB
+            throw new DomainException("Không thể lưu sách: ISBN đã tồn tại hoặc vi phạm ràng buộc dữ liệu.");
+        }
     }
 
     @Override
@@ -93,6 +102,14 @@ public class BookPersistenceAdapter implements
     }
 
     @Override
+    public List<Book> findAll(int page, int size) {
+        return repository.findAll(PageRequest.of(page, size))
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+    
+    // Backup hàm findAll không phân trang phòng trường hợp team còn sử dụng ở đâu đó
     public List<Book> findAll() {
         return repository.findAll()
                 .stream()

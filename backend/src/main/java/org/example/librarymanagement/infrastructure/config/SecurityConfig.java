@@ -19,10 +19,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -51,7 +52,7 @@ public class SecurityConfig {
             HttpSecurity http,
             AccessTokenAuthenticationFilter accessTokenAuthenticationFilter,
             CorsConfigurationSource corsConfigurationSource,
-            ObjectMapper objectMapper // Inject ObjectMapper vào đây để dùng cho Exception Handling
+            ObjectMapper objectMapper // Spring Boot sẽ tự động inject ObjectMapper mặc định của ứng dụng
     ) throws Exception {
 
         return http
@@ -74,12 +75,14 @@ public class SecurityConfig {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json;charset=UTF-8");
                             ErrorResponse error = ErrorResponse.of("UNAUTHORIZED", "Truy cập trái phép bị chặn (401): Vui lòng đăng nhập để truy cập tài nguyên này.");
+                            // Sử dụng auto-configured ObjectMapper để đảm bảo JSON contract đồng nhất
                             response.getWriter().write(objectMapper.writeValueAsString(error));
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json;charset=UTF-8");
                             ErrorResponse error = ErrorResponse.of("ACCESS_DENIED", "Truy cập trái phép bị chặn (403): Bạn không có quyền truy cập tài nguyên này.");
+                            // Sử dụng auto-configured ObjectMapper để đảm bảo JSON contract đồng nhất
                             response.getWriter().write(objectMapper.writeValueAsString(error));
                         })
                 )

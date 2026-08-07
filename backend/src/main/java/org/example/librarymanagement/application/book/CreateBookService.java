@@ -3,11 +3,15 @@ package org.example.librarymanagement.application.book;
 import java.util.List;
 
 import org.example.librarymanagement.domain.entity.Book;
-import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.DuplicateResourceException;
+import org.example.librarymanagement.domain.exceptions.ResourceNotFoundException;
+import org.example.librarymanagement.domain.exceptions.ValidationException;
+import org.example.librarymanagement.port.inbound.book.BookResult;
 import org.example.librarymanagement.port.inbound.book.CreateBookCommand;
 import org.example.librarymanagement.port.inbound.book.CreateBookUseCase;
 import org.example.librarymanagement.port.outbound.book.FindBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
+import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,45 +19,55 @@ public class CreateBookService implements CreateBookUseCase {
 
     private final FindBookPort findBookPort;
     private final SaveBookPort saveBookPort;
+    private final CategoryRepositoryPort categoryRepositoryPort; // Dùng đúng port chứa findById của team
 
-    public CreateBookService(FindBookPort findBookPort, SaveBookPort saveBookPort) {
+    public CreateBookService(
+            FindBookPort findBookPort, 
+            SaveBookPort saveBookPort, 
+            CategoryRepositoryPort categoryRepositoryPort
+    ) {
         this.findBookPort = findBookPort;
         this.saveBookPort = saveBookPort;
+        this.categoryRepositoryPort = categoryRepositoryPort;
     }
 
     @Override
-    public Book createBook(CreateBookCommand command) {
+    public BookResult createBook(CreateBookCommand command) {
 
-        // 1. Validate dữ liệu đầu vào
         if (command.title() == null || command.title().isBlank()) {
-            throw new DomainException("Tên sách không được để trống");
+            throw new ValidationException("Tên sách không được để trống");
         }
         if (command.author() == null || command.author().isBlank()) {
-            throw new DomainException("Tác giả không được để trống");
+            throw new ValidationException("Tác giả không được để trống");
         }
         if (command.isbn() == null || command.isbn().isBlank()) {
-            throw new DomainException("ISBN không được để trống");
+            throw new ValidationException("ISBN không được để trống");
         }
         if (command.categoryId() == null) {
-            throw new DomainException("Thể loại không được để trống");
+            throw new ValidationException("Thể loại không được để trống");
         }
         if (command.totalQuantity() <= 0) {
-            throw new DomainException("Số lượng sách phải lớn hơn 0");
+            throw new ValidationException("Số lượng sách phải lớn hơn 0");
         }
         if (command.coverImageUrl() == null || command.coverImageUrl().isBlank()) {
-            throw new DomainException("Ảnh bìa không được để trống");
+            throw new ValidationException("Ảnh bìa không được để trống");
         }
 
-        // 2. Kiểm tra ISBN trùng
-        if (findBookPort.existsByIsbn(command.isbn())) {
-            throw new DomainException("ISBN đã tồn tại");
+        String normalizedIsbn = command.isbn().trim().toUpperCase().replace("-", "");
+
+        if (findBookPort.existsByIsbn(normalizedIsbn)) {
+            throw new DuplicateResourceException("Sách với ISBN " + normalizedIsbn + " đã tồn tại.");
         }
 
-        // 3. Tạo Book domain (Ép kiểu an toàn Integer sang Short cho publishedYear)
+        // Tận dụng hàm findById của team an toàn tuyệt đối
+        if (categoryRepositoryPort.findById(command.categoryId()).isEmpty()) {
+            throw new ResourceNotFoundException("Thể loại với ID " + command.categoryId() + " không tồn tại.");
+        }
+
         Book book = Book.create(
                 command.title(),
                 command.author(),
-                command.isbn(),
+                normalizedIsbn, 
                 command.description(),
                 command.coverImageUrl(),
                 command.publisher(),
@@ -63,12 +77,29 @@ public class CreateBookService implements CreateBookUseCase {
                 command.categoryId()
         );
 
-        // 4. Save DB
-        return saveBookPort.save(book);
+        Book savedBook = saveBookPort.save(book);
+        return toResultModel(savedBook);
     }
 
     @Override
-    public List<Book> getAllBooks() {
-        return findBookPort.findAll();
+    public List<BookResult> getAllBooks(int page, int size) {
+        return findBookPort.findAll(page, size)
+                .stream()
+                .map(this::toResultModel)
+                .toList();
+    }
+
+    private BookResult toResultModel(Book book) {
+        return new BookResult(
+                book.getBookId(), 
+                book.getTitle(),
+                book.getAuthor(),
+                book.getIsbn(),
+                book.getCoverImageUrl(),
+                book.getTotalQuantity(),
+                book.getAvailableQuantity(),
+                book.getCategoryId(),
+                book.isActive()
+        );
     }
 }

@@ -83,6 +83,7 @@ public class Book {
     }
 
     // ==================== DOMAIN BEHAVIORS & INVARIANTS ====================
+
     private void validateNotBlank(String value, String errorMessage) {
         if (value == null || value.trim().isEmpty()) {
             throw new InvalidBookDataException(errorMessage);

@@ -36,7 +36,10 @@ public class BookPersistenceMapper {
         }
         BookJpaEntity entity = new BookJpaEntity();
         updateJpaEntity(domain, entity);
+        
+        // Vẫn dùng getBookId() cho khớp với thiết kế Rich Domain hiện tại
         entity.setId(domain.getBookId());
+        
         return entity;
     }
 
