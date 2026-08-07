@@ -29,7 +29,7 @@ public class ReplenishBookStockService implements ReplenishBookStockUseCase {
         Book book = bookRepository.findByIdForUpdate(command.bookId())
                 .orElseThrow(() -> new BookNotFoundException(command.bookId()));
 
-        book.replenishStock(command.quantityToAdd());
+        book.restock(command.quantityToAdd());
 
         Book updatedBook = bookRepository.save(book);
 
@@ -49,7 +49,7 @@ public class ReplenishBookStockService implements ReplenishBookStockUseCase {
 
     private BookResult mapToResult(Book book) {
         return new BookResult(
-                book.getBookId(),
+                book.getId(),
                 book.getTitle(),
                 book.getAuthor(),
                 book.getIsbn(),

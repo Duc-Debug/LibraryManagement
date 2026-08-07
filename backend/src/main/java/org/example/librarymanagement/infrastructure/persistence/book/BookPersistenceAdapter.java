@@ -39,7 +39,7 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
         BookJpaEntity entity;
 
         // 1. Trường hợp TẠO MỚI (bookId == null): Tạo mới hoàn toàn JPA Entity
-        if (book.getBookId() == null) {
+        if (book.getId() == null) {
             entity = create(book);
         } 
         // 2. Trường hợp CẬP NHẬT (bookId != null): Tìm Entity cũ và cập nhật thông tin
@@ -56,7 +56,7 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
     }
 
     private BookJpaEntity update(Book book) {
-        BookJpaEntity entity = bookJpaRepository.findById(book.getBookId())
+        BookJpaEntity entity = bookJpaRepository.findById(book.getId())
                 .orElseGet(() -> bookPersistenceMapper.toJpaEntity(book));
         
         // Chỉ cập nhật các trường thông tin đối với trường hợp Update

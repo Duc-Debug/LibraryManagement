@@ -33,7 +33,7 @@ public class BookPersistenceMapper {
         }
         BookJpaEntity entity = new BookJpaEntity();
         updateJpaEntity(domain, entity);
-        entity.setId(domain.getBookId());
+        entity.setId(domain.getId());
         return entity;
     }
 

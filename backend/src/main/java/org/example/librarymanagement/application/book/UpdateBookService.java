@@ -33,7 +33,7 @@ public class UpdateBookService implements UpdateBookUseCase {
             throw new DomainException("Duplicate ISBN: The ISBN " + command.isbn() + " is already used by another book.");
         }
 
-        book.updateInfor(command.title(), command.author(), command.isbn(), command.description(),
+        book.updateDetails(command.title(), command.author(), command.isbn(), command.description(),
                 command.coverImageUrl(), command.publisher(), command.publishedYear(),
                 command.shelfLocation(), command.totalQuantity(), 
                 command.categoryId());
@@ -61,7 +61,7 @@ public class UpdateBookService implements UpdateBookUseCase {
 
     private BookResult mapToResult(Book book) {
         return new BookResult(
-                book.getBookId(),
+                book.getId(),
                 book.getTitle(),
                 book.getAuthor(),
                 book.getIsbn(),

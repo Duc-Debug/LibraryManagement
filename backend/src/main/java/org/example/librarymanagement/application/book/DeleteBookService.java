@@ -60,7 +60,7 @@ public class DeleteBookService implements DeleteBookUseCase {
     }
 
     private void validateBookForDeletion(Book book) {
-        boolean hasActiveBorrowSlips = checkActiveBorrowPort.hasActiveBorrowSlips(book.getBookId());
+        boolean hasActiveBorrowSlips = checkActiveBorrowPort.hasActiveBorrowSlips(book.getId());
         BookDeletionPolicy.validateCanDeleteOrHide(book, hasActiveBorrowSlips);
     }
 }

@@ -15,7 +15,7 @@ public class BookDeletionPolicy {
         }
 
         if (hasActiveBorrowSlips) {
-            throw new BookHasActiveBorrowException(book.getBookId(), book.getTitle());
+            throw new BookHasActiveBorrowException(book.getId(), book.getTitle());
         }
     }
 

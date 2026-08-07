@@ -72,7 +72,7 @@ public class GetBooksService implements GetBooksUseCase {
 
     private BookResponseDto mapToResponseDto(Book book, String categoryName) {
         return new BookResponseDto(
-                book.getBookId(),
+                book.getId(),
                 book.getTitle(),
                 book.getAuthor(),
                 book.getIsbn(),
