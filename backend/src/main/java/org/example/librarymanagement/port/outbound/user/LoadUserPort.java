@@ -1,4 +1,4 @@
-package org.example.librarymanagement.port.outbound.auth;
+package org.example.librarymanagement.port.outbound.user;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.User;

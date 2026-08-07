@@ -1,4 +1,4 @@
-package org.example.librarymanagement.port.outbound.manage;
+package org.example.librarymanagement.port.outbound.user;
 
 import java.util.List;
 import java.util.Optional;

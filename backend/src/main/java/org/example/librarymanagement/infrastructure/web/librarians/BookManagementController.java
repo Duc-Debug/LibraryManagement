@@ -1,14 +1,14 @@
 package org.example.librarymanagement.infrastructure.web.librarians;
 
-import org.example.librarymanagement.port.inbound.book.BookResponseDto;
-import org.example.librarymanagement.port.inbound.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.BookResponseDto;
+import org.example.librarymanagement.port.dtos.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.ReplenishBookStockCommand;
+import org.example.librarymanagement.port.dtos.book.UpdateBookCommand;
 import org.example.librarymanagement.port.inbound.book.DeleteBookUseCase;
 import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
-import org.example.librarymanagement.port.inbound.book.UpdateBookCommand;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
-import org.example.librarymanagement.port.inbound.book.ReplenishBookStockCommand;
 import org.example.librarymanagement.port.inbound.book.ReplenishBookStockUseCase;
-import org.example.librarymanagement.port.inbound.common.PageResult;
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.infrastructure.web.librarians.dto.UpdateBookRequest;
 import org.example.librarymanagement.infrastructure.web.librarians.dto.ReplenishStockRequest;
 import org.springframework.http.ResponseEntity;

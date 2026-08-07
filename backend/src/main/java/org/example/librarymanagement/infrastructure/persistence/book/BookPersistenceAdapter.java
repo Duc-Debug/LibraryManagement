@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
-import org.example.librarymanagement.port.inbound.common.PageResult;
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
-import org.example.librarymanagement.port.outbound.book.BookRepository;
+import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, CheckActiveBorrowPort, BookRepository {
+public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, CheckActiveBorrowPort, BookRepositoryPort {
 
     private final BookJpaRepository bookJpaRepository;
     private final BookPersistenceMapper bookPersistenceMapper;

@@ -1,4 +1,4 @@
-package org.example.librarymanagement.port.inbound.manage;
+package org.example.librarymanagement.port.dtos.user;
 
 public record UpdateUserCommand(
         Long userId,

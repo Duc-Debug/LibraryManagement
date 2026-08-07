@@ -7,10 +7,10 @@ import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.port.dtos.auth.UpdateProfileCommand;
+import org.example.librarymanagement.port.dtos.user.UserResult;
 import org.example.librarymanagement.port.inbound.auth.ProfileUseCase;
-import org.example.librarymanagement.port.inbound.manage.UserResult;
-import org.example.librarymanagement.port.outbound.manage.FindUserPort;
-import org.example.librarymanagement.port.outbound.manage.SaveUserPort;
+import org.example.librarymanagement.port.outbound.user.FindUserPort;
+import org.example.librarymanagement.port.outbound.user.SaveUserPort;
 
 public class ProfileService implements ProfileUseCase {
 

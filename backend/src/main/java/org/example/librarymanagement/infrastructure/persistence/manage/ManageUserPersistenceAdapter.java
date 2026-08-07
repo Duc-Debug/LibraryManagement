@@ -11,8 +11,8 @@ import org.example.librarymanagement.infrastructure.persistence.user.RoleJpaEnti
 import org.example.librarymanagement.infrastructure.persistence.user.UserJpaEntity;
 import org.example.librarymanagement.infrastructure.persistence.user.UserJpaRepository;
 import org.example.librarymanagement.infrastructure.persistence.user.UserPersistenceMapper;
-import org.example.librarymanagement.port.outbound.manage.FindUserPort;
-import org.example.librarymanagement.port.outbound.manage.SaveUserPort;
+import org.example.librarymanagement.port.outbound.user.FindUserPort;
+import org.example.librarymanagement.port.outbound.user.SaveUserPort;
 import org.springframework.stereotype.Component;
 
 @Component

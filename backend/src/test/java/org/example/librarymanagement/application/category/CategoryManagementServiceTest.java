@@ -22,9 +22,9 @@ import org.example.librarymanagement.application.category.exception.CategoryNotF
 import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
 import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.domain.entity.Category;
-import org.example.librarymanagement.port.inbound.category.CategoryResult;
-import org.example.librarymanagement.port.inbound.category.CreateCategoryCommand;
-import org.example.librarymanagement.port.inbound.category.UpdateCategoryCommand;
+import org.example.librarymanagement.port.dtos.category.CategoryResult;
+import org.example.librarymanagement.port.dtos.category.CreateCategoryCommand;
+import org.example.librarymanagement.port.dtos.category.UpdateCategoryCommand;
 import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;
 import org.example.librarymanagement.port.outbound.category.CategoryUsagePort;
 import org.junit.jupiter.api.BeforeEach;

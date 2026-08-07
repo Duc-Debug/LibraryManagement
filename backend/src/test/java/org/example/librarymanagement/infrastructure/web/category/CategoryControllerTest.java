@@ -21,10 +21,10 @@ import org.example.librarymanagement.application.category.exception.CategoryNotF
 import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
 import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptionHandler;
+import org.example.librarymanagement.port.dtos.category.CategoryResult;
+import org.example.librarymanagement.port.dtos.category.CreateCategoryCommand;
+import org.example.librarymanagement.port.dtos.category.UpdateCategoryCommand;
 import org.example.librarymanagement.port.inbound.category.CategoryManagementUseCase;
-import org.example.librarymanagement.port.inbound.category.CategoryResult;
-import org.example.librarymanagement.port.inbound.category.CreateCategoryCommand;
-import org.example.librarymanagement.port.inbound.category.UpdateCategoryCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;

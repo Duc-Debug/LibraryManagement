@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
-import org.example.librarymanagement.port.inbound.book.BookResponseDto;
+import org.example.librarymanagement.port.dtos.book.BookResponseDto;
 import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
-import org.example.librarymanagement.port.inbound.common.PageResult;
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.category.LoadCategoryPort;
 
@@ -33,7 +33,7 @@ public class GetBooksService implements GetBooksUseCase {
         PageResult<Book> domainPageResult = loadBookPort.findAll(pageNumber, pageSize, searchKeyword);
 
         // 1. Batch resolving category names (Chống N+1 Query)
-        Set<Long> categoryIds = domainPageResult.getItems().stream()
+        Set<Long> categoryIds = domainPageResult.content().stream()
                 .map(Book::getCategoryId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -41,16 +41,16 @@ public class GetBooksService implements GetBooksUseCase {
         Map<Long, String> categoryNameMap = loadCategoryPort.findCategoryNamesByIds(categoryIds);
 
         // 2. Map sang BookResponseDto
-        List<BookResponseDto> dtoList = domainPageResult.getItems().stream()
+        List<BookResponseDto> dtoList = domainPageResult.content().stream()
                 .map(book -> mapToResponseDto(book, categoryNameMap.get(book.getCategoryId())))
                 .toList();
 
         return new PageResult<>(
                 dtoList,
-                domainPageResult.getPage(),
-                domainPageResult.getSize(),
-                domainPageResult.getTotalElements(),
-                domainPageResult.getTotalPages());
+                domainPageResult.page(),
+                domainPageResult.size(),
+                domainPageResult.totalElements(),
+                domainPageResult.totalPages());
     }
 
     @Override

@@ -4,8 +4,8 @@ import org.example.librarymanagement.application.auth.InvalidCredentialsExceptio
 import org.example.librarymanagement.infrastructure.security.UserPrincipal;
 import org.example.librarymanagement.infrastructure.web.auth.dtos.UpdateProfileRequest;
 import org.example.librarymanagement.port.dtos.auth.UpdateProfileCommand;
+import org.example.librarymanagement.port.dtos.user.UserResult;
 import org.example.librarymanagement.port.inbound.auth.ProfileUseCase;
-import org.example.librarymanagement.port.inbound.manage.UserResult;
 import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

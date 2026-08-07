@@ -7,10 +7,11 @@ import java.util.Set;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.port.inbound.book.BookResult;
-import org.example.librarymanagement.port.inbound.book.UpdateBookCommand;
-import org.example.librarymanagement.port.outbound.book.BookRepository;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
+import org.example.librarymanagement.port.dtos.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.UpdateBookCommand;
+import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
+import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.when;
 
 public class UpdateBookServiceTest {
  
-    private BookRepository bookRepository;
+    private BookRepositoryPort bookRepository;
     private GetAuthenticatedUserPort getAuthenticatedUserPort;
 
     // đối tượng cần test
@@ -34,7 +35,7 @@ public class UpdateBookServiceTest {
     // hàm setUp chạy trước mỗi method 
     @BeforeEach
     void setUp() {
-        bookRepository = mock(BookRepository.class);
+        bookRepository = mock(BookRepositoryPort.class);
         getAuthenticatedUserPort = mock(GetAuthenticatedUserPort.class);
 
         // khởi tạo Service cần test

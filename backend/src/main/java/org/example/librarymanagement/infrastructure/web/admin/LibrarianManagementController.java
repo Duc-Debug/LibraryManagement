@@ -2,10 +2,10 @@ package org.example.librarymanagement.infrastructure.web.admin;
 
 import java.util.List;
 
-import org.example.librarymanagement.port.inbound.manage.CreateUserCommand;
-import org.example.librarymanagement.port.inbound.manage.ManageUserUseCase;
-import org.example.librarymanagement.port.inbound.manage.UpdateUserCommand;
-import org.example.librarymanagement.port.inbound.manage.UserResult;
+import org.example.librarymanagement.port.dtos.user.CreateUserCommand;
+import org.example.librarymanagement.port.dtos.user.UpdateUserCommand;
+import org.example.librarymanagement.port.dtos.user.UserResult;
+import org.example.librarymanagement.port.inbound.user.ManageUserUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;

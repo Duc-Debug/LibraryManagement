@@ -1,4 +1,4 @@
-package org.example.librarymanagement.port.inbound.book;
+package org.example.librarymanagement.port.dtos.book;
 
 public record ReplenishBookStockCommand(
         Long bookId,

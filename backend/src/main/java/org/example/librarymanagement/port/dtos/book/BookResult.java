@@ -1,8 +1,8 @@
-package org.example.librarymanagement.port.inbound.book;
+package org.example.librarymanagement.port.dtos.book;
 
 import java.time.LocalDateTime;
 
-public record BookResponseDto(
+public record BookResult(
     Long bookId,
     String title,
     String author,
@@ -15,7 +15,7 @@ public record BookResponseDto(
     int totalQuantity,
     int availableQuantity,
     Long categoryId,
-    String categoryName,
     boolean active,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 ) {}

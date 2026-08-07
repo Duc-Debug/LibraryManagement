@@ -6,18 +6,18 @@ import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
-import org.example.librarymanagement.port.inbound.book.BookResult;
-import org.example.librarymanagement.port.inbound.book.ReplenishBookStockCommand;
+import org.example.librarymanagement.port.dtos.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.ReplenishBookStockCommand;
 import org.example.librarymanagement.port.inbound.book.ReplenishBookStockUseCase;
-import org.example.librarymanagement.port.outbound.book.BookRepository;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
+import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
+import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
 public class ReplenishBookStockService implements ReplenishBookStockUseCase {
 
-    private final BookRepository bookRepository;
+    private final BookRepositoryPort bookRepository;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
 
-    public ReplenishBookStockService(BookRepository bookRepository, GetAuthenticatedUserPort getAuthenticatedUserPort) {
+    public ReplenishBookStockService(BookRepositoryPort bookRepository, GetAuthenticatedUserPort getAuthenticatedUserPort) {
         this.bookRepository = bookRepository;
         this.getAuthenticatedUserPort = getAuthenticatedUserPort;
     }

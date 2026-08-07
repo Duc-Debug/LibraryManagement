@@ -1,4 +1,4 @@
-package org.example.librarymanagement.port.outbound.admin;
+package org.example.librarymanagement.port.outbound.user;
 
 public interface EncodePasswordPort {
 

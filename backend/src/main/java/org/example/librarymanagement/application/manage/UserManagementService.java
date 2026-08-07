@@ -10,15 +10,15 @@ import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
 import org.example.librarymanagement.domain.policies.UniqueUsernamePolicy;
-import org.example.librarymanagement.port.inbound.manage.CreateUserCommand;
-import org.example.librarymanagement.port.inbound.manage.ManageUserUseCase;
-import org.example.librarymanagement.port.inbound.manage.UpdateUserCommand;
-import org.example.librarymanagement.port.inbound.manage.UserResult;
-import org.example.librarymanagement.port.outbound.admin.EncodePasswordPort;
-import org.example.librarymanagement.port.outbound.manage.FindUserPort;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
-import org.example.librarymanagement.port.outbound.manage.LoadRolePort;
-import org.example.librarymanagement.port.outbound.manage.SaveUserPort;
+import org.example.librarymanagement.port.dtos.user.CreateUserCommand;
+import org.example.librarymanagement.port.dtos.user.UpdateUserCommand;
+import org.example.librarymanagement.port.dtos.user.UserResult;
+import org.example.librarymanagement.port.inbound.user.ManageUserUseCase;
+import org.example.librarymanagement.port.outbound.user.EncodePasswordPort;
+import org.example.librarymanagement.port.outbound.user.FindUserPort;
+import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
+import org.example.librarymanagement.port.outbound.user.LoadRolePort;
+import org.example.librarymanagement.port.outbound.user.SaveUserPort;
 
 public class UserManagementService implements ManageUserUseCase {
 

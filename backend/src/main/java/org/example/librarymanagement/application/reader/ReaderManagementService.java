@@ -22,11 +22,11 @@ import org.example.librarymanagement.port.dtos.reader.UpdateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ChangeCardStatusCommand;
 import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveReaderBorrowPort;
-import org.example.librarymanagement.port.outbound.manage.FindUserPort;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderSearchCriteria;
+import org.example.librarymanagement.port.outbound.user.FindUserPort;
+import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
 public class ReaderManagementService implements ReaderManagementUseCase {
 

@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
 
-public interface BookRepository {
+public interface BookRepositoryPort {
     Optional<Book> findById(Long id);
     Optional<Book> findByIdForUpdate(Long id);
     boolean existsById(Long id);

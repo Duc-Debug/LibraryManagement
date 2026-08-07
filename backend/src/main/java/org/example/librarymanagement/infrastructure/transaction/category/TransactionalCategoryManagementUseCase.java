@@ -3,10 +3,10 @@ package org.example.librarymanagement.infrastructure.transaction.category;
 import java.util.List;
 import java.util.Objects;
 
+import org.example.librarymanagement.port.dtos.category.CategoryResult;
+import org.example.librarymanagement.port.dtos.category.CreateCategoryCommand;
+import org.example.librarymanagement.port.dtos.category.UpdateCategoryCommand;
 import org.example.librarymanagement.port.inbound.category.CategoryManagementUseCase;
-import org.example.librarymanagement.port.inbound.category.CategoryResult;
-import org.example.librarymanagement.port.inbound.category.CreateCategoryCommand;
-import org.example.librarymanagement.port.inbound.category.UpdateCategoryCommand;
 import org.springframework.transaction.annotation.Transactional;
 
 public class TransactionalCategoryManagementUseCase

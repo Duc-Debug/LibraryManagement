@@ -1,4 +1,4 @@
-package org.example.librarymanagement.port.outbound.book;
+package org.example.librarymanagement.port.dtos.book;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 

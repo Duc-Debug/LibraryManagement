@@ -5,18 +5,18 @@ import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
-import org.example.librarymanagement.port.inbound.book.BookResult;
-import org.example.librarymanagement.port.inbound.book.UpdateBookCommand;
+import org.example.librarymanagement.port.dtos.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.UpdateBookCommand;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
-import org.example.librarymanagement.port.outbound.book.BookRepository;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
+import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
+import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
 public class UpdateBookService implements UpdateBookUseCase {
   
-    private final BookRepository bookRepository;
+    private final BookRepositoryPort bookRepository;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
 
-    public UpdateBookService(BookRepository bookRepository, GetAuthenticatedUserPort getAuthenticatedUserPort) {
+    public UpdateBookService(BookRepositoryPort bookRepository, GetAuthenticatedUserPort getAuthenticatedUserPort) {
         this.bookRepository = bookRepository;
         this.getAuthenticatedUserPort = getAuthenticatedUserPort;
     }

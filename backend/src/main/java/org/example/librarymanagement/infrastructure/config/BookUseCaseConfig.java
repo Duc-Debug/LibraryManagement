@@ -10,12 +10,12 @@ import org.example.librarymanagement.port.inbound.book.DeleteBookUseCase;
 import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
 import org.example.librarymanagement.port.inbound.book.ReplenishBookStockUseCase;
-import org.example.librarymanagement.port.outbound.book.BookRepository;
+import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
 import org.example.librarymanagement.port.outbound.category.LoadCategoryPort;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
+import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -39,7 +39,7 @@ public class BookUseCaseConfig {
 
     @Bean
     public UpdateBookUseCase updateBookUseCase(
-            BookRepository bookRepository,
+            BookRepositoryPort bookRepository,
             GetAuthenticatedUserPort getAuthenticatedUserPort
     ) {
         return new UpdateBookService(bookRepository, getAuthenticatedUserPort);
@@ -47,7 +47,7 @@ public class BookUseCaseConfig {
 
     @Bean
     public ReplenishBookStockUseCase replenishBookStockUseCase(
-            BookRepository bookRepository,
+            BookRepositoryPort bookRepository,
             GetAuthenticatedUserPort getAuthenticatedUserPort
     ) {
         ReplenishBookStockUseCase service = new ReplenishBookStockService(bookRepository, getAuthenticatedUserPort);

@@ -9,8 +9,8 @@ import java.util.Set;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
-import org.example.librarymanagement.port.inbound.book.BookResponseDto;
-import org.example.librarymanagement.port.inbound.common.PageResult;
+import org.example.librarymanagement.port.dtos.book.BookResponseDto;
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.category.LoadCategoryPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,11 +79,11 @@ class GetBooksServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(2, result.getItems().size());
-        assertEquals("Clean Code", result.getItems().get(0).title());
-        assertEquals("Công nghệ & Phần mềm", result.getItems().get(0).categoryName());
-        assertEquals(8, result.getItems().get(0).availableQuantity());
-        assertEquals(10, result.getItems().get(0).totalQuantity());
+        assertEquals(2, result.content().size());
+        assertEquals("Clean Code", result.content().get(0).title());
+        assertEquals("Công nghệ & Phần mềm", result.content().get(0).categoryName());
+        assertEquals(8, result.content().get(0).availableQuantity());
+        assertEquals(10, result.content().get(0).totalQuantity());
         verify(loadBookPort).findAll(0, 10, "Clean");
         verify(loadCategoryPort).findCategoryNamesByIds(Set.of(1L));
     }
