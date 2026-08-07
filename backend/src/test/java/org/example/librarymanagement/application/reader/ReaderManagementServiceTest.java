@@ -24,10 +24,13 @@ import org.example.librarymanagement.port.outbound.manage.FindUserPort;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
+import org.example.librarymanagement.port.outbound.reader.ReaderSearchCriteria;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -206,7 +209,7 @@ class ReaderManagementServiceTest {
                 true
         );
 
-        when(readerRepositoryPort.findAll(0, 10))
+        when(readerRepositoryPort.search(any(ReaderSearchCriteria.class)))
                 .thenReturn(
                         PageResult.of(
                                 List.of(reader),
@@ -225,8 +228,60 @@ class ReaderManagementServiceTest {
                 result.content().size()
         );
 
+        ArgumentCaptor<ReaderSearchCriteria> criteriaCaptor =
+                ArgumentCaptor.forClass(ReaderSearchCriteria.class);
+
         verify(readerRepositoryPort)
-                .findAll(0, 10);
+                .search(criteriaCaptor.capture());
+
+        ReaderSearchCriteria criteria = criteriaCaptor.getValue();
+        assertNull(criteria.createdByUserId());
+        assertNull(criteria.keyword());
+        assertNull(criteria.status());
+        assertEquals(0, criteria.page());
+        assertEquals(10, criteria.size());
+    }
+
+    @Test
+    @DisplayName(
+            "Throws UnauthenticatedException before validating pagination"
+    )
+    void getAllReaders_UnauthenticatedWithInvalidPage_ThrowsUnauthenticated() {
+        when(getAuthenticatedUserPort.getCurrentUser())
+                .thenReturn(null);
+
+        assertThrows(
+                UnauthenticatedException.class,
+                () -> readerManagementService
+                        .getAllReaders(-1, 10)
+        );
+
+        verify(readerRepositoryPort, never())
+                .search(any(ReaderSearchCriteria.class));
+    }
+
+    @Test
+    @DisplayName(
+            "Throws IllegalArgumentException for invalid page after authentication"
+    )
+    void getAllReaders_AuthenticatedWithInvalidPage_ThrowsValidationError() {
+        User admin = mockUser(
+                1L,
+                "admin",
+                "ADMIN"
+        );
+
+        when(getAuthenticatedUserPort.getCurrentUser())
+                .thenReturn(admin);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> readerManagementService
+                        .getAllReaders(-1, 10)
+        );
+
+        verify(readerRepositoryPort, never())
+                .search(any(ReaderSearchCriteria.class));
     }
 
     @Test

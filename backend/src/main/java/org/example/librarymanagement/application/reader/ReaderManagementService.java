@@ -25,6 +25,7 @@ import org.example.librarymanagement.port.outbound.manage.FindUserPort;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
+import org.example.librarymanagement.port.outbound.reader.ReaderSearchCriteria;
 
 
 public class ReaderManagementService implements ReaderManagementUseCase {
@@ -241,50 +242,29 @@ public ReaderResult updateReader(
 
     return mapToResult(updatedReader);
 }
-   @Override
-public List<ReaderResult> getAllReaders() {
-    User currentUser = getAuthenticatedUserPort.getCurrentUser();
-
-    if (currentUser == null) {
-        throw UnauthenticatedException.defaultMessage();
-    }
-
-   boolean isAdmin = isAdmin(currentUser);
-
-    List<Readers> readersList = isAdmin
-            ? readerRepositoryPort.findAll()
-            : readerRepositoryPort.findByCreatedByUserId(
-                    currentUser.getId()
-            );
-
-    return readersList.stream()
-            .map(this::mapToResult)
-            .collect(Collectors.toList());
-}
-
 @Override
 public PageResult<ReaderResult> getAllReaders(
         int page,
         int size
 ) {
-    User currentUser = getAuthenticatedUserPort.getCurrentUser();
+    User currentUser = requireCurrentUser();
 
-    if (currentUser == null) {
-        throw UnauthenticatedException.defaultMessage();
-    }
+    validatePagination(
+            page,
+            size
+    );
 
-    boolean isAdmin = currentUser.getRoles() != null
-            && currentUser.getRoles().stream()
-            .anyMatch(role ->
-                    "ADMIN".equalsIgnoreCase(role.getName())
-            );
+    Long createdByUserId = scopedCreatedByUserId(currentUser);
 
-    PageResult<Readers> domainPage = isAdmin
-            ? readerRepositoryPort.findAll(page, size)
-            : readerRepositoryPort.findByCreatedByUserId(
-                    currentUser.getId(),
-                    page,
-                    size
+    PageResult<Readers> domainPage =
+            readerRepositoryPort.search(
+                    new ReaderSearchCriteria(
+                            null,
+                            null,
+                            createdByUserId,
+                            page,
+                            size
+                    )
             );
 
     List<ReaderResult> content = domainPage.content().stream()
@@ -298,6 +278,48 @@ public PageResult<ReaderResult> getAllReaders(
             domainPage.totalElements()
     );
 }
+
+private void validatePagination(
+        int page,
+        int size
+) {
+    if (page < 0) {
+        throw new IllegalArgumentException(
+                "Page must be greater than or equal to 0."
+        );
+    }
+
+    if (size <= 0) {
+        throw new IllegalArgumentException(
+                "Size must be greater than 0."
+        );
+    }
+
+    if (size > ReaderSearchCriteria.MAX_PAGE_SIZE) {
+        throw new IllegalArgumentException(
+                "Size must not exceed "
+                        + ReaderSearchCriteria.MAX_PAGE_SIZE
+                        + "."
+        );
+    }
+}
+
+private User requireCurrentUser() {
+    User currentUser = getAuthenticatedUserPort.getCurrentUser();
+
+    if (currentUser == null) {
+        throw UnauthenticatedException.defaultMessage();
+    }
+
+    return currentUser;
+}
+
+private Long scopedCreatedByUserId(User currentUser) {
+    return isAdmin(currentUser)
+            ? null
+            : currentUser.getId();
+}
+
 private boolean isAdmin(User user) {
     return user.getRoles() != null
             && user.getRoles().stream()

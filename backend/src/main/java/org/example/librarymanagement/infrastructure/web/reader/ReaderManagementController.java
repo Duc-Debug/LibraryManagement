@@ -1,7 +1,5 @@
 package org.example.librarymanagement.infrastructure.web.reader;
 
-import java.util.List;
-
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
@@ -51,46 +49,30 @@ public ResponseEntity<Void> deleteReader(
 }
    
     @GetMapping
-public ResponseEntity<?> getAllReaders(
-        @RequestParam(required = false) Integer page,
-        @RequestParam(required = false) Integer size
-) {
-    if (page != null || size != null) {
-        if (page == null || size == null) {
-            throw new IllegalArgumentException(
-                    "Page and size must be provided together."
-            );
-        }
-
+    public ResponseEntity<PageResult<ReaderResponse>> getAllReaders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
         PageResult<ReaderResult> resultPage =
                 readerManagementUseCase.getAllReaders(
                         page,
                         size
                 );
 
-        List<ReaderResponse> content =
+        var content =
                 resultPage.content().stream()
                         .map(ReaderResponse::fromResult)
                         .toList();
 
-        PageResult<ReaderResponse> responsePage =
+        return ResponseEntity.ok(
                 PageResult.of(
                         content,
                         resultPage.page(),
                         resultPage.size(),
                         resultPage.totalElements()
-                );
-
-        return ResponseEntity.ok(responsePage);
+                )
+        );
     }
-
-    List<ReaderResponse> response =
-            readerManagementUseCase.getAllReaders().stream()
-                    .map(ReaderResponse::fromResult)
-                    .toList();
-
-    return ResponseEntity.ok(response);
-}
     
     @PutMapping("/{readerId}")
 public ResponseEntity<ReaderResponse> updateReader(

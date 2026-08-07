@@ -1,7 +1,5 @@
 package org.example.librarymanagement.port.inbound.reader;
 
-import java.util.List;
-
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
@@ -13,7 +11,6 @@ public interface ReaderManagementUseCase {
 
     ReaderResult updateReader(UpdateReaderCommand command);
 
-    List<ReaderResult> getAllReaders();
     void deleteReader(Long readerId);
 
     PageResult<ReaderResult> getAllReaders(int page, int size);

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 
 class ReaderPersistenceAdapterTest {
 
@@ -87,7 +89,10 @@ class ReaderPersistenceAdapterTest {
         Readers domain = reader("RD-202", "Active Reader");
         PageImpl<ReaderJpaEntity> page = new PageImpl<>(List.of(entity), PageRequest.of(0, 10), 1);
 
-        when(readerJpaRepository.findByIsActiveTrue(PageRequest.of(0, 10))).thenReturn(page);
+        when(readerJpaRepository.findAll(
+                anyReaderSpecification(),
+                eq(PageRequest.of(0, 10))
+        )).thenReturn(page);
         when(readerPersistenceMapper.toDomain(entity)).thenReturn(domain);
 
         PageResult<Readers> pageResult = adapter.findAll(0, 10);
@@ -95,7 +100,10 @@ class ReaderPersistenceAdapterTest {
         assertEquals(1, pageResult.content().size());
         assertEquals(1, pageResult.totalElements());
         assertEquals("RD-202", pageResult.content().get(0).getCardNumber());
-        verify(readerJpaRepository).findByIsActiveTrue(PageRequest.of(0, 10));
+        verify(readerJpaRepository).findAll(
+                anyReaderSpecification(),
+                eq(PageRequest.of(0, 10))
+        );
     }
 
     @Test
@@ -121,14 +129,25 @@ class ReaderPersistenceAdapterTest {
         Readers domain = reader("RD-300", "Bob");
         PageImpl<ReaderJpaEntity> page = new PageImpl<>(List.of(entity), PageRequest.of(0, 10), 1);
 
-        when(readerJpaRepository.findByCreatedByUserIdAndIsActiveTrue(1L, PageRequest.of(0, 10))).thenReturn(page);
+        when(readerJpaRepository.findAll(
+                anyReaderSpecification(),
+                eq(PageRequest.of(0, 10))
+        )).thenReturn(page);
         when(readerPersistenceMapper.toDomain(entity)).thenReturn(domain);
 
         PageResult<Readers> pageResult = adapter.findByCreatedByUserId(1L, 0, 10);
 
         assertEquals(1, pageResult.content().size());
         assertEquals("RD-300", pageResult.content().get(0).getCardNumber());
-        verify(readerJpaRepository).findByCreatedByUserIdAndIsActiveTrue(1L, PageRequest.of(0, 10));
+        verify(readerJpaRepository).findAll(
+                anyReaderSpecification(),
+                eq(PageRequest.of(0, 10))
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private Specification<ReaderJpaEntity> anyReaderSpecification() {
+        return any(Specification.class);
     }
 
     private Readers reader(String cardNumber, String name) {

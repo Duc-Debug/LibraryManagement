@@ -93,4 +93,25 @@ class ReaderManagementControllerTest {
 
         verify(readerManagementUseCase).getAllReaders(0, 10);
     }
+
+    @Test
+    @DisplayName("GET /api/v1/readers without query params returns default paginated response")
+    void getAllReaders_DefaultPagination_ReturnsPageResult() throws Exception {
+        ReaderResult mockResult = new ReaderResult(
+                1L, "RD-260805-1001", "Nguyen Van A", "nva@gmail.com", "0987654321", "Ha Noi",
+                CardStatus.ACTIVE, null, null, "Thu thu 1"
+        );
+
+        PageResult<ReaderResult> pageResult = PageResult.of(List.of(mockResult), 0, 20, 1);
+        when(readerManagementUseCase.getAllReaders(0, 20)).thenReturn(pageResult);
+
+        mockMvc.perform(get("/api/v1/readers"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].cardNumber").value("RD-260805-1001"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        verify(readerManagementUseCase).getAllReaders(0, 20);
+    }
 }
