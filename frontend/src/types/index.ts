@@ -1,4 +1,4 @@
-export type Page = "login" | "dashboard" | "books" | "members" | "borrow" | "return" | "accounts" | "settings";
+export type Page = "login" | "dashboard" | "books" | "categories" | "members" | "borrow" | "return" | "accounts" | "settings";
 
 export type UserRole = "admin" | "thu_thu";
 
@@ -11,6 +11,15 @@ export interface UserAccount {
   phone?: string;
   role: UserRole;
   active: boolean;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  description?: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type BorrowStatus = "borrowing" | "overdue" | "returned";
