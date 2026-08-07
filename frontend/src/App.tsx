@@ -1,10 +1,11 @@
 import { useState } from "react";
 import type { Page, Book, Member, BorrowRecord, UserAccount } from "@/types";
-import { INITIAL_BOOKS, INITIAL_MEMBERS, INITIAL_BORROW_RECORDS, INITIAL_USER_ACCOUNTS } from "@/data/initialData";
+import { INITIAL_MEMBERS, INITIAL_BORROW_RECORDS, INITIAL_USER_ACCOUNTS } from "@/data/initialData";
 import Sidebar from "@/components/Sidebar";
 import LoginPage from "@/pages/LoginPage";
 import Dashboard from "@/pages/Dashboard";
 import BooksPage from "@/pages/BooksPage";
+import CategoriesPage from "@/pages/CategoriesPage";
 import MembersPage from "@/pages/MembersPage";
 import BorrowPage from "@/pages/BorrowPage";
 import ReturnPage from "@/pages/ReturnPage";
@@ -105,6 +106,8 @@ export default function App() {
         return <Dashboard books={books} members={members} records={records} />;
       case "books":
         return <BooksPage />;
+      case "categories":
+        return <CategoriesPage />;
       case "members":
         return <MembersPage />;
       case "borrow":
@@ -162,4 +165,3 @@ export default function App() {
     </div>
   );
 }
-

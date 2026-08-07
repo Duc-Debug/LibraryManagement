@@ -36,9 +36,18 @@ function IconUser({ size = 20, className = "" }: { size?: number; className?: st
   );
 }
 
+function IconFolder({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
 const ALL_NAV_ITEMS: { id: Page; label: string; icon: ReactNode; adminOnly?: boolean }[] = [
   { id: "dashboard", label: "Bảng điều khiển", icon: <IconGrid /> },
   { id: "books", label: "Quản lý Sách", icon: <IconBook /> },
+  { id: "categories", label: "Thể loại sách", icon: <IconFolder /> },
   { id: "members", label: "Thành viên", icon: <IconUsers /> },
   { id: "borrow", label: "Mượn sách", icon: <IconArrowIn /> },
   { id: "return", label: "Trả sách", icon: <IconRefresh /> },
