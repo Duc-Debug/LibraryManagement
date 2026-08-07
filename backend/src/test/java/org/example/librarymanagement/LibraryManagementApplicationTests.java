@@ -1,21 +1,14 @@
 package org.example.librarymanagement;
 
+import org.springframework.test.context.ActiveProfiles;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:library_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false",
-        "spring.datasource.driver-class-name=org.h2.Driver",
-        "spring.datasource.username=sa",
-        "spring.datasource.password=",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "security.jwt.secret=MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=",
-        "security.jwt.access-token-expiration-ms=3600000"
-})
+@SpringBootTest
+@ActiveProfiles("test")
 class LibraryManagementApplicationTests {
 
     @Test
     void contextLoads() {
     }
-
 }
