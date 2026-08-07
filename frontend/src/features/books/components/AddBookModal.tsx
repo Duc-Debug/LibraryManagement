@@ -1,27 +1,52 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Book } from '../types/book.types';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { fetchCategoriesApi } from '@/api/categoryApi';
 
 interface AddBookModalProps {
   onClose: () => void;
   onSave: (book: Omit<Book, 'id'>) => void;
 }
 
-const CATEGORIES = ['Kinh tế', 'Lịch sử', 'Tâm lý học', 'Chiến lược', 'Tiểu thuyết', 'Công nghệ', 'Khác'];
-
 export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
   const [formData, setFormData] = useState({
     title: '',
     author: '',
-    category: 'Kinh tế',
+    category: '',
     publishYear: new Date().getFullYear(),
     isbn: '',
     totalCopies: 1,
     availableCopies: 1,
   });
+
+  // Nạp danh sách thể loại từ DB
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const data = await fetchCategoriesApi();
+        // Lọc các thể loại đang hoạt động (active = true)
+        const activeNames = data.filter((c) => c.active).map((c) => c.name);
+        setCategories(activeNames);
+        if (activeNames.length > 0) {
+          setFormData((prev) => ({
+            ...prev,
+            category: activeNames[0],
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    }
+    loadCategories();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -33,7 +58,7 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.title && formData.author && formData.isbn) {
+    if (formData.title && formData.author && formData.isbn && formData.category) {
       onSave(formData);
     }
   };
@@ -87,13 +112,20 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                disabled={loadingCategories}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
               >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
+                {loadingCategories ? (
+                  <option value="">Đang tải...</option>
+                ) : categories.length === 0 ? (
+                  <option value="">Chưa có thể loại</option>
+                ) : (
+                  categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 

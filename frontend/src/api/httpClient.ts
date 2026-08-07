@@ -38,6 +38,15 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
   if (!response.ok) {
+    // Nếu token hết hạn hoặc không hợp lệ (401) -> Tự động xóa session và redirect về trang login
+    if (response.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("tokenType");
+        localStorage.removeItem("currentUser");
+        window.location.href = "/";
+      }
+    }
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || `Request failed with status ${response.status}`);
   }
