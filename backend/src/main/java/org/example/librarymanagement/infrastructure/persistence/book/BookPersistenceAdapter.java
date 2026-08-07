@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.port.inbound.common.PageResult;
+import org.example.librarymanagement.port.outbound.book.BookRepository;
 import org.example.librarymanagement.port.outbound.book.FindBookPort;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
@@ -22,7 +23,8 @@ public class BookPersistenceAdapter implements
         LoadBookPort, 
         CheckActiveBorrowPort, 
         SaveBookPort,
-        FindBookPort {
+        FindBookPort,
+        BookRepository {
 
     private final BookJpaRepository repository;
     private final BookPersistenceMapper mapper;
@@ -110,6 +112,16 @@ public class BookPersistenceAdapter implements
     @Override
     public boolean existsByIsbn(String isbn) {
         return repository.existsByIsbnIgnoreCase(isbn.trim());
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return repository.existsById(id);
+    }
+
+    @Override
+    public boolean existsByIsbnAndIdNot(String isbn, Long id) {
+        return repository.existsByIsbnAndIdNot(isbn, id);
     }
 
     @Override
