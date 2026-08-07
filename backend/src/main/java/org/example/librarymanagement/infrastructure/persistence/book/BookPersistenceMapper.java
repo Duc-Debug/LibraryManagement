@@ -7,10 +7,8 @@ import org.springframework.stereotype.Component;
 public class BookPersistenceMapper {
 
     public Book toDomain(BookJpaEntity entity) {
-        if (entity == null) {
+        if (entity == null)
             return null;
-        }
-
         return new Book(
                 entity.getId(),
                 entity.getTitle(),
@@ -19,17 +17,14 @@ public class BookPersistenceMapper {
                 entity.getDescription(),
                 entity.getCoverImageUrl(),
                 entity.getPublisher(),
-                entity.getPublishedYear() == null
-                        ? null
-                        : entity.getPublishedYear().intValue(),
+                entity.getPublishedYear(),
                 entity.getShelfLocation(),
                 entity.getTotalQuantity(),
                 entity.getAvailableQuantity(),
                 entity.getCategoryId(),
                 entity.isActive(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
-        );
+                entity.getUpdatedAt());
     }
 
     public BookJpaEntity toJpaEntity(Book domain) {

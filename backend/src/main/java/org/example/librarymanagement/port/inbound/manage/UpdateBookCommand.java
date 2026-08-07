@@ -1,7 +1,4 @@
 package org.example.librarymanagement.port.inbound.manage;
-
-import java.util.UUID;
-
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -19,7 +16,7 @@ public record UpdateBookCommand(
         String coverImageUrl,
         String publisher,
         @NotNull(message = "Published year cannot be null")
-        Integer publishedYear,
+        Short publishedYear,
 
         String shelfLocation,
         @Min(value = 0, message = "Total quantity cannot be negative")

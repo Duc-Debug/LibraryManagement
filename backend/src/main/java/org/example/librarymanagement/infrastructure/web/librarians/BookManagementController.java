@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
-@RestController
+@RestController("librarianBookManagementController")
 @RequestMapping("/api/librarians/books")
 @RequiredArgsConstructor
 public class BookManagementController {

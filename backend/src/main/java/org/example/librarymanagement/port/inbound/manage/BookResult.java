@@ -10,7 +10,7 @@ public record BookResult(
     String description,
     String coverImageUrl,
     String publisher,
-    Integer publishedYear,
+    Short publishedYear,
     String shelfLocation,
     int totalQuantity,
     int availableQuantity,

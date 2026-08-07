@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;
-import org.example.librarymanagement.domain.policies.UniqueIsbnPolicy;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 
 public class Book {
@@ -253,7 +252,7 @@ public class Book {
     }
 
     public void updateInfor(String title, String author, String newIsbn, String description, 
-                     String coverImageUrl, String publisher, Integer publishedYear, 
+                     String coverImageUrl, String publisher, Short publishedYear, 
                      String shelfLocation, int newTotalQuantity,  
                      Long categoryId) {
 

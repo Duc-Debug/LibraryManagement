@@ -1,17 +1,8 @@
 package org.example.librarymanagement.application.manage;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
-
 
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.entity.Role;
@@ -20,11 +11,17 @@ import org.example.librarymanagement.port.inbound.manage.BookResult;
 import org.example.librarymanagement.port.inbound.manage.UpdateBookCommand;
 import org.example.librarymanagement.port.outbound.manage.BookRepository;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 public class BookManagementServiceTest {
  
     private BookRepository bookRepository;
@@ -61,11 +58,11 @@ public class BookManagementServiceTest {
                 bookId,
                 "Lập Trình Java Căn Bản",     // Title cũ
                 "Nguyễn Văn A",               // Author cũ
-                "978-604-1-00000-1",          // ISBN cũ
+                "9786041000001",          // ISBN cũ
                 "Mô tả sách cũ",              // Description
                 "http://image.com/old.jpg",   // CoverUrl
                 "NXB Giáo Dục",               // Publisher
-                2020,                         // PublishedYear
+                (short) 2020,                         // PublishedYear
                 "Kệ A1-01",                    // ShelfLocation
                 10,                           // TotalQuantity (Tổng số lượng: 10)
                 10,                           // AvailableQuantity (Có sẵn: 10)
@@ -94,11 +91,11 @@ public class BookManagementServiceTest {
                 bookId,
                 "Lập Trình Java Nâng Cao",    // Title mới
                 "Nguyễn Văn B",               // Author mới
-                "978-604-1-00000-2",          // ISBN mới
+                "9786041000002",          // ISBN mới
                 "Mô tả sách mới",              // Description mới
                 "http://image.com/new.jpg",   // CoverUrl mới
                 "NXB Khoa Học",               // Publisher mới
-                2024,                         // PublishedYear mới
+                (short) 2024,                         // PublishedYear mới
                 "Kệ A1-02",                    // ShelfLocation mới
                 15,                           // TotalQuantity mới (Tổng số lượng: 15)
                 categoryId
@@ -113,17 +110,18 @@ public class BookManagementServiceTest {
 
         // so sánh dữ liệu thực tế thu được với dữ liệu kỳ vọng
         assertEquals(bookId, result.bookId());
-         assertEquals("Lập Trình Java Nâng Cao (Tái Bản)", result.title());
-        assertEquals("Nguyễn Văn A (Hiệu đính)", result.author());
-        assertEquals("978-604-1-99999-9", result.isbn());
-        assertEquals(2024, result.publishedYear());
-        assertEquals("Kệ B2-10", result.shelfLocation());
+          assertEquals("Lập Trình Java Nâng Cao", result.title());
+            assertEquals("Nguyễn Văn B", result.author());
+              assertEquals("9786041000002", result.isbn());
+ assertEquals("Kệ A1-02", result.shelfLocation());
+    assertEquals((short) 2024, result.publishedYear());
         assertEquals(15, result.totalQuantity());
-        assertEquals(15, result.availableQuantity()); // 10 cũ + (15 mới - 10 cũ) = 15
+        assertEquals(15, result.availableQuantity()); 
+
         //Xác nhận rằng lệnh lưu DB (save) đã được gọi đúng 1 lần với dữ liệu mới
         verify(bookRepository, times(1)).save(argThat(savedBook ->
-                savedBook.getTitle().equals("Lập Trình Java Nâng Cao (Tái Bản)") &&
-                savedBook.getAuthor().equals("Nguyễn Văn A (Hiệu đính)") &&
+                savedBook.getTitle().equals("Lập Trình Java Nâng Cao") &&
+               savedBook.getAuthor().equals("Nguyễn Văn B") &&
                 savedBook.getTotalQuantity() == 15));
 
         
