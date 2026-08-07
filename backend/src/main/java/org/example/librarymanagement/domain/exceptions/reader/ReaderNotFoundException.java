@@ -1,4 +1,6 @@
-package org.example.librarymanagement.domain.exceptions;
+package org.example.librarymanagement.domain.exceptions.reader;
+
+import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class ReaderNotFoundException extends DomainException {
 
@@ -8,7 +10,6 @@ public class ReaderNotFoundException extends DomainException {
 
     public static ReaderNotFoundException withId(Long readerId) {
         return new ReaderNotFoundException(
-                "Reader not found with id: " + readerId
-        );
+                "Reader not found with id: " + readerId);
     }
 }

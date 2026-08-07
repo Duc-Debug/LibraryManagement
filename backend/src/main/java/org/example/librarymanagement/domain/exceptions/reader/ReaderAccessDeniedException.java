@@ -1,4 +1,6 @@
-package org.example.librarymanagement.domain.exceptions;
+package org.example.librarymanagement.domain.exceptions.reader;
+
+import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class ReaderAccessDeniedException extends DomainException {
 

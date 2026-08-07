@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
 import org.example.librarymanagement.domain.entity.Reader;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.enums.CardStatus;
-import org.example.librarymanagement.domain.exceptions.ReaderAccessDeniedException;
-import org.example.librarymanagement.domain.exceptions.ReaderAlreadyExistsException;
-import org.example.librarymanagement.domain.exceptions.ReaderHasActiveBorrowException;
-import org.example.librarymanagement.domain.exceptions.ReaderNotFoundException;
-import org.example.librarymanagement.domain.exceptions.UnauthenticatedException;
+import org.example.librarymanagement.domain.exceptions.reader.ReaderAccessDeniedException;
+import org.example.librarymanagement.domain.exceptions.reader.ReaderAlreadyExistsException;
+import org.example.librarymanagement.domain.exceptions.reader.ReaderHasActiveBorrowException;
+import org.example.librarymanagement.domain.exceptions.reader.ReaderNotFoundException;
+import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
@@ -68,7 +68,7 @@ public class ReaderManagementService implements ReaderManagementUseCase {
                 // 1. Lấy thông tin và xác thực người dùng đang đăng nhập trước tiên
                 User currentUser = getAuthenticatedUserPort.getCurrentUser();
                 if (currentUser == null) {
-                        throw org.example.librarymanagement.domain.exceptions.UnauthenticatedException.defaultMessage();
+                        throw org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException.defaultMessage();
                 }
                 Long creatorId = currentUser.getId();
 

@@ -39,7 +39,7 @@ public class ReplenishBookStockService implements ReplenishBookStockUseCase {
     private void verifyStaffAccess() {
         User currentUser = getAuthenticatedUserPort.getCurrentUser();
         if (currentUser == null) {
-            throw new org.example.librarymanagement.domain.exceptions.UnauthenticatedException("Error Security: User is unauthenticated.");
+            throw new org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException("Error Security: User is unauthenticated.");
         }
         // Kiểm tra trạng thái tài khoản hoạt động
         AccountLockPolicy.validateAccountActive(currentUser);
