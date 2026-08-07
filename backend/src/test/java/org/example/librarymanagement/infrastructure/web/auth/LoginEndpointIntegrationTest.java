@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Set;
 
+import org.example.librarymanagement.LibraryManagementApplication;
 import org.example.librarymanagement.infrastructure.persistence.user.UserJpaEntity;
 import org.example.librarymanagement.infrastructure.persistence.user.UserJpaRepository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(
+        classes = LibraryManagementApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ActiveProfiles("test")

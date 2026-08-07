@@ -1,14 +1,14 @@
 package org.example.librarymanagement;
 
-import org.springframework.test.context.ActiveProfiles;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
+@SpringBootTest(classes = LibraryManagementApplication.class)
 @ActiveProfiles("test")
 class LibraryManagementApplicationTests {
 
     @Test
     void contextLoads() {
     }
-}
+}
