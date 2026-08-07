@@ -2,6 +2,7 @@ package org.example.librarymanagement.domain.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.domain.exceptions.DomainException;
@@ -52,11 +53,6 @@ public class Readers {
         }
     }
 
-    private static void validateNotBlank(String value, String errorMessage) {
-        if (value == null || value.isBlank()) {
-            throw new DomainException(errorMessage);
-        }
-    }
 
     // Tái cấu trúc Constructor cũ để tương thích (tùy chọn)
     public Readers(Long id, String cardNumber, String name, String email, String phoneNumber, String address, CardStatus cardStatus, LocalDate cardIssuedAt, LocalDate cardExpiryAt, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive, Long createdByUserId) {
@@ -75,7 +71,51 @@ public class Readers {
                 .isActive(isActive)
                 .createdByUserId(createdByUserId));
     }
+public void updateInformation(
+        String name,
+        String email,
+        String phoneNumber,
+        String address,
+        LocalDateTime updatedAt
+) {
+    validateNotBlank(
+            name,
+            "Reader name must not be blank."
+    );
 
+    validateNotBlank(
+            email,
+            "Email must not be blank."
+    );
+
+    validateNotBlank(
+            phoneNumber,
+            "Phone number must not be blank."
+    );
+
+    validateNotBlank(
+            address,
+            "Address must not be blank."
+    );
+
+    if (updatedAt == null) {
+        throw new DomainException(
+                "Updated time must not be null."
+        );
+    }
+
+    if (!isActive) {
+        throw new DomainException(
+                "Cannot update an inactive reader."
+        );
+    }
+
+    this.name = normalize(name);
+    this.email = normalizeEmail(email);
+    this.phoneNumber = normalize(phoneNumber);
+    this.address = normalize(address);
+    this.updatedAt = updatedAt;
+}
     public static Builder builder() {
         return new Builder();
     }
@@ -164,6 +204,23 @@ public class Readers {
             return new Readers(this);
         }
     }
+    public void deactivate(LocalDateTime updatedAt) {
+    if (updatedAt == null) {
+        throw new DomainException(
+                "Updated time must not be null."
+        );
+    }
+
+    if (!isActive) {
+        throw new DomainException(
+                "Reader is already inactive."
+        );
+    }
+
+    this.isActive = false;
+    this.updatedAt = updatedAt;
+}
+
 
     public Long getCreatedByUserId() {
         return createdByUserId;
@@ -216,4 +273,20 @@ public class Readers {
     public boolean isActive() {
         return isActive;
     }
+    private static void validateNotBlank(
+        String value,
+        String message
+) {
+    if (value == null || value.isBlank()) {
+        throw new DomainException(message);
+    }
+}
+
+private static String normalize(String value) {
+    return value.trim();
+}
+
+private static String normalizeEmail(String email) {
+    return email.trim().toLowerCase(Locale.ROOT);
+}
 }

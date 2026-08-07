@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.example.librarymanagement.domain.enums.CardStatus;
 
-public record CreateReaderResult(
+public record ReaderResult(
         Long id,
         String cardNumber,
         String name,
