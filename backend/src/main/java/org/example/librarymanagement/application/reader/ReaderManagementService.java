@@ -19,6 +19,7 @@ import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
 import org.example.librarymanagement.port.dtos.reader.UpdateReaderCommand;
+import org.example.librarymanagement.port.dtos.reader.ChangeCardStatusCommand;
 import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveReaderBorrowPort;
 import org.example.librarymanagement.port.outbound.manage.FindUserPort;
@@ -277,6 +278,33 @@ public PageResult<ReaderResult> getAllReaders(
             domainPage.size(),
             domainPage.totalElements()
     );
+}
+
+@Override
+public ReaderResult changeCardStatus(ChangeCardStatusCommand command) {
+    if (command == null) {
+        throw new IllegalArgumentException("Command must not be null.");
+    }
+    if (command.readerId() == null || command.newStatus() == null) {
+        throw new IllegalArgumentException("Reader ID and new status must not be null.");
+    }
+
+    User currentUser = requireCurrentUser();
+    Readers reader = readerRepositoryPort.findById(command.readerId())
+            .orElseThrow(() -> ReaderNotFoundException.withId(command.readerId()));
+
+    boolean isAdmin = isAdmin(currentUser);
+    boolean isOwner = currentUser.getId() != null
+            && currentUser.getId().equals(reader.getCreatedByUserId());
+
+    if (!isAdmin && !isOwner) {
+        throw ReaderAccessDeniedException.forReader(reader.getId());
+    }
+
+    reader.changeCardStatus(command.newStatus(), LocalDateTime.now());
+    Readers updatedReader = readerRepositoryPort.save(reader);
+
+    return mapToResult(updatedReader);
 }
 
 private void validatePagination(

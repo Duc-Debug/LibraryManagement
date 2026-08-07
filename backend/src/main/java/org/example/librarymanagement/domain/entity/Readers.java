@@ -289,4 +289,18 @@ private static String normalize(String value) {
 private static String normalizeEmail(String email) {
     return email.trim().toLowerCase(Locale.ROOT);
 }
+
+public void changeCardStatus(CardStatus newStatus, LocalDateTime updatedAt) {
+    if (newStatus == null) {
+        throw new DomainException("Trạng thái thẻ mới không được null");
+    }
+    if (updatedAt == null) {
+        throw new DomainException("Thời gian cập nhật không được null");
+    }
+    if (!isActive) {
+        throw new DomainException("Không thể cập nhật trạng thái thẻ của độc giả đã bị xóa");
+    }
+    this.cardStatus = newStatus;
+    this.updatedAt = updatedAt;
+}
 }
