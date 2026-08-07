@@ -1,8 +1,7 @@
--- Flyway Script: Quản lý thay đổi Schema DB độc lập, an toàn và có phiên bản rõ ràng
-
--- Nới lỏng/dọn dẹp các cột cũ nếu đã tồn tại
-ALTER TABLE readers MODIFY COLUMN card_number VARCHAR(50) NULL;
-ALTER TABLE readers MODIFY COLUMN name VARCHAR(100) NULL;
-
--- Đảm bảo có cột created_by_user_id
-ALTER TABLE readers ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT NULL;
+-- The readers table follows the original schema in database/BangDB.pdf:
+-- card_code, full_name, email, phone, address, card_status,
+-- card_issued_at, card_expiry_date, active, created_at, updated_at.
+--
+-- Keep this baseline migration intentionally empty. ReaderManagement maps to
+-- the original columns and must not add created_by_user_id, phone_number,
+-- is_active, or card_expiry_at to readers.

@@ -11,7 +11,6 @@ import org.example.librarymanagement.domain.exceptions.UnauthenticatedException;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderResult;
-import org.example.librarymanagement.port.outbound.manage.FindUserPort;
 import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
@@ -32,7 +31,6 @@ class ReaderManagementServiceTest {
     private ReaderRepositoryPort readerRepositoryPort;
     private GetAuthenticatedUserPort getAuthenticatedUserPort;
     private CardNumberGeneratorPort cardNumberGeneratorPort;
-    private FindUserPort findUserPort;
 
     private ReaderManagementService readerManagementService;
 
@@ -41,13 +39,11 @@ class ReaderManagementServiceTest {
         readerRepositoryPort = mock(ReaderRepositoryPort.class);
         getAuthenticatedUserPort = mock(GetAuthenticatedUserPort.class);
         cardNumberGeneratorPort = mock(CardNumberGeneratorPort.class);
-        findUserPort = mock(FindUserPort.class);
 
         readerManagementService = new ReaderManagementService(
                 readerRepositoryPort,
                 getAuthenticatedUserPort,
-                cardNumberGeneratorPort,
-                findUserPort
+                cardNumberGeneratorPort
         );
     }
 

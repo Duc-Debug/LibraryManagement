@@ -24,7 +24,6 @@ public class ReaderPersistenceMapper {
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .isActive(entity.isActive())
-                .createdByUserId(entity.getCreatedByUserId())
                 .build();
     }
 
@@ -48,8 +47,7 @@ public class ReaderPersistenceMapper {
                 domain.getCardExpiryAt(),
                 domain.getCreatedAt(),
                 domain.getUpdatedAt(),
-                domain.isActive(),
-                domain.getCreatedByUserId()
+                domain.isActive()
         );
     }
 }

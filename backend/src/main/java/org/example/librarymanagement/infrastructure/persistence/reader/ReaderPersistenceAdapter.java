@@ -1,7 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.reader;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.example.librarymanagement.domain.entity.Readers;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
@@ -58,33 +57,9 @@ public class ReaderPersistenceAdapter implements ReaderRepositoryPort {
     }
 
     @Override
-    public java.util.List<Readers> findByCreatedByUserId(Long createdByUserId) {
-        return readerJpaRepository.findByCreatedByUserId(createdByUserId).stream()
-                .map(readerPersistenceMapper::toDomain)
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    @Override
     public org.example.librarymanagement.port.dtos.common.PageResult<Readers> findAll(int page, int size) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
         org.springframework.data.domain.Page<ReaderJpaEntity> jpaPage = readerJpaRepository.findAll(pageable);
-
-        java.util.List<Readers> content = jpaPage.getContent().stream()
-                .map(readerPersistenceMapper::toDomain)
-                .collect(java.util.stream.Collectors.toList());
-
-        return org.example.librarymanagement.port.dtos.common.PageResult.of(
-                content,
-                jpaPage.getNumber(),
-                jpaPage.getSize(),
-                jpaPage.getTotalElements()
-        );
-    }
-
-    @Override
-    public org.example.librarymanagement.port.dtos.common.PageResult<Readers> findByCreatedByUserId(Long createdByUserId, int page, int size) {
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        org.springframework.data.domain.Page<ReaderJpaEntity> jpaPage = readerJpaRepository.findByCreatedByUserId(createdByUserId, pageable);
 
         java.util.List<Readers> content = jpaPage.getContent().stream()
                 .map(readerPersistenceMapper::toDomain)

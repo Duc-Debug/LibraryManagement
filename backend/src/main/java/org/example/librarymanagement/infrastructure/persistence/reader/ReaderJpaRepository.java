@@ -6,9 +6,6 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 @Repository
 public interface ReaderJpaRepository extends JpaRepository<ReaderJpaEntity, Long> {
 
@@ -19,8 +16,4 @@ public interface ReaderJpaRepository extends JpaRepository<ReaderJpaEntity, Long
     boolean existsByEmail(String email);
 
     boolean existsByPhoneNumber(String phoneNumber);
-
-    java.util.List<ReaderJpaEntity> findByCreatedByUserId(Long createdByUserId);
-
-    Page<ReaderJpaEntity> findByCreatedByUserId(Long createdByUserId, Pageable pageable);
 }

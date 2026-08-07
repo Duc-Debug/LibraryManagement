@@ -31,29 +31,29 @@ public class ReaderJpaEntity {
     @Column(name = "id", nullable = false, updatable = false)
     private Long id;
 
-    @Column(name = "card_code", nullable = false, unique = true, length = 50)
+    @Column(name = "card_code", nullable = false, unique = true, length = 30)
     private String cardNumber;
 
-    @Column(name = "full_name", nullable = false, length = 100)
+    @Column(name = "full_name", nullable = false, length = 150)
     private String name;
 
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "phone_number", nullable = false, unique = true, length = 20)
+    @Column(name = "phone", length = 20)
     private String phoneNumber;
 
-    @Column(name = "address", nullable = false, length = 255)
+    @Column(name = "address", length = 255)
     private String address;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "card_status", nullable = false, length = 20)
+    @Column(name = "card_status", length = 20)
     private CardStatus cardStatus;
 
-    @Column(name = "card_issued_at", nullable = false)
+    @Column(name = "card_issued_at")
     private LocalDate cardIssuedAt;
 
-    @Column(name = "card_expiry_at", nullable = false)
+    @Column(name = "card_expiry_date")
     private LocalDate cardExpiryAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -62,21 +62,12 @@ public class ReaderJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "active", nullable = false)
     private boolean isActive;
-
-    @Column(name = "created_by_user_id")
-    private Long createdByUserId;
 
     public ReaderJpaEntity(Long id, String cardNumber, String name, String email, String phoneNumber, String address,
             CardStatus cardStatus, LocalDate cardIssuedAt, LocalDate cardExpiryAt,
             LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive) {
-        this(id, cardNumber, name, email, phoneNumber, address, cardStatus, cardIssuedAt, cardExpiryAt, createdAt, updatedAt, isActive, null);
-    }
-
-    public ReaderJpaEntity(Long id, String cardNumber, String name, String email, String phoneNumber, String address,
-            CardStatus cardStatus, LocalDate cardIssuedAt, LocalDate cardExpiryAt,
-            LocalDateTime createdAt, LocalDateTime updatedAt, boolean isActive, Long createdByUserId) {
         this.id = id;
         this.cardNumber = cardNumber;
         this.name = name;
@@ -89,7 +80,6 @@ public class ReaderJpaEntity {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.isActive = isActive;
-        this.createdByUserId = createdByUserId;
     }
 
     @PrePersist

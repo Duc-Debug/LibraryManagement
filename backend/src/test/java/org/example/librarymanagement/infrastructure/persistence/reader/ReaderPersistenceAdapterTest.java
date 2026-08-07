@@ -64,15 +64,15 @@ class ReaderPersistenceAdapterTest {
 
     @Test
     @DisplayName("Phân trang bạn đọc theo Thủ thư tạo chính xác")
-    void findByCreatedByUserId_Paginated() {
+    void findAll_Paginated() {
         ReaderJpaEntity entity = new ReaderJpaEntity();
         Readers domain = Readers.builder().cardNumber("RD-300").name("Bob").email("bob@gmail.com").phoneNumber("0987654321").address("HN").cardStatus(CardStatus.ACTIVE).build();
         PageImpl<ReaderJpaEntity> page = new PageImpl<>(List.of(entity), PageRequest.of(0, 10), 1);
 
-        when(readerJpaRepository.findByCreatedByUserId(1L, PageRequest.of(0, 10))).thenReturn(page);
+        when(readerJpaRepository.findAll(PageRequest.of(0, 10))).thenReturn(page);
         when(readerPersistenceMapper.toDomain(entity)).thenReturn(domain);
 
-        PageResult<Readers> pageResult = adapter.findByCreatedByUserId(1L, 0, 10);
+        PageResult<Readers> pageResult = adapter.findAll(0, 10);
 
         assertEquals(1, pageResult.content().size());
         assertEquals("RD-300", pageResult.content().get(0).getCardNumber());

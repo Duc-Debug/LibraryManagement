@@ -54,9 +54,8 @@ public class UseCaseConfig {
     public CreateReaderUseCase createReaderUseCase(
             ReaderRepositoryPort readerRepositoryPort,
             GetAuthenticatedUserPort getAuthenticatedUserPort,
-            CardNumberGeneratorPort cardNumberGeneratorPort,
-            FindUserPort findUserPort) {
-        return new ReaderManagementService(readerRepositoryPort, getAuthenticatedUserPort, cardNumberGeneratorPort, findUserPort);
+            CardNumberGeneratorPort cardNumberGeneratorPort) {
+        return new ReaderManagementService(readerRepositoryPort, getAuthenticatedUserPort, cardNumberGeneratorPort);
     }
 }
 
