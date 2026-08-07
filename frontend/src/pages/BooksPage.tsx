@@ -117,7 +117,7 @@ export default function BooksPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quản lý Sách (UC A2.5)</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Quản lý Sách</h1>
           <p className="text-sm text-gray-500 mt-1">
             Nhấp vào từng dòng sách để xem thông tin chi tiết & thực hiện các thao tác quản lý
           </p>
@@ -151,7 +151,7 @@ export default function BooksPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm theo tên sách hoặc tác giả để tìm kiếm tự động (Live Search)..."
+          placeholder="Tìm theo tên sách hoặc tác giả để tìm kiếm tự động..."
           className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
         />
       </div>

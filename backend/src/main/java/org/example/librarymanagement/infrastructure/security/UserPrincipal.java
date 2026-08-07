@@ -1,20 +1,32 @@
 package org.example.librarymanagement.infrastructure.security;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import java.util.Collection;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-
-@Getter
-@AllArgsConstructor
 public class UserPrincipal implements UserDetails {
 
     private final Long id; // 👈 Chứa ID của User trong Database
     private final String username;
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
+
+    public UserPrincipal(
+            Long id,
+            String username,
+            String password,
+            Collection<? extends GrantedAuthority> authorities
+    ) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.authorities = authorities;
+    }
+
+    public Long getId() {
+        return id;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

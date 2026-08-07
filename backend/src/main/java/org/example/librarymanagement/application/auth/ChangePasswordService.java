@@ -8,13 +8,20 @@ import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
 import org.example.librarymanagement.port.outbound.auth.PasswordVerifierPort;
 import org.example.librarymanagement.port.outbound.auth.SaveUserPort;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
 public class ChangePasswordService implements ChangePasswordUseCase {
     private final LoadUserPort userRepositoryPort;
     private final SaveUserPort saveUserPort;
     private final PasswordVerifierPort passwordVerifierPort;
+
+    public ChangePasswordService(
+            LoadUserPort userRepositoryPort,
+            SaveUserPort saveUserPort,
+            PasswordVerifierPort passwordVerifierPort
+    ) {
+        this.userRepositoryPort = userRepositoryPort;
+        this.saveUserPort = saveUserPort;
+        this.passwordVerifierPort = passwordVerifierPort;
+    }
 
     @Override
     public ChangePasswordResult changePassword(ChangePasswordCommand command) {

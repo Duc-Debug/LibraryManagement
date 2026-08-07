@@ -18,4 +18,4 @@ public record BookResult(
     boolean active,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
-) {}
+) {}
