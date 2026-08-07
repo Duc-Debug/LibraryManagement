@@ -1,15 +1,17 @@
 package org.example.librarymanagement.domain.policies;
 
+import org.example.librarymanagement.domain.exceptions.DomainException;
+
 public class UniqueIsbnPolicy {
-    public void validateIsbnForCreate(boolean isIsbnExisted, String isbn) {
+    public static void validateIsbnForCreate(boolean isIsbnExisted, String isbn) {
         if (isIsbnExisted) {
-            throw new IllegalArgumentException("ISBN'" + isbn + "' is already in use.");
+            throw new DomainException("ISBN'" + isbn + "' is already in use.");
         }
     }
 
-    public void validateIsbnForUpdate(boolean isIsbnExisted, String isbn) {
+    public static void validateIsbnForUpdate(boolean isIsbnExisted, String isbn) {
         if (isIsbnExisted) {
-            throw new IllegalArgumentException("ISBN'" + isbn + "' is already in use.");
+            throw new DomainException("ISBN'" + isbn + "' is already in use.");
         }
     }
 }

@@ -68,7 +68,8 @@ public class ReaderManagementService implements ReaderManagementUseCase {
                 // 1. Lấy thông tin và xác thực người dùng đang đăng nhập trước tiên
                 User currentUser = getAuthenticatedUserPort.getCurrentUser();
                 if (currentUser == null) {
-                        throw org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException.defaultMessage();
+                        throw org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException
+                                        .defaultMessage();
                 }
                 Long creatorId = currentUser.getId();
 

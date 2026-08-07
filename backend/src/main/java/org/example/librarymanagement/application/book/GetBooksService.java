@@ -10,18 +10,23 @@ import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 import org.example.librarymanagement.port.dtos.book.BookResponseDto;
-import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
 import org.example.librarymanagement.port.dtos.common.PageResult;
+import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.category.LoadCategoryPort;
 
+/**
+ * Application Service: GetBooksService
+ * Pure Java 100% - Hexagonal Architecture Implementation
+ */
 public class GetBooksService implements GetBooksUseCase {
+
     private final LoadBookPort loadBookPort;
     private final LoadCategoryPort loadCategoryPort;
 
     public GetBooksService(LoadBookPort loadBookPort, LoadCategoryPort loadCategoryPort) {
-        this.loadBookPort = Objects.requireNonNull(loadBookPort, "LoadBookPort must be not null");
-        this.loadCategoryPort = Objects.requireNonNull(loadCategoryPort, "LoadCategoryPort must be not null");
+        this.loadBookPort = Objects.requireNonNull(loadBookPort, "LoadBookPort must not be null");
+        this.loadCategoryPort = Objects.requireNonNull(loadCategoryPort, "LoadCategoryPort must not be null");
     }
 
     @Override
@@ -45,18 +50,18 @@ public class GetBooksService implements GetBooksUseCase {
                 .map(book -> mapToResponseDto(book, categoryNameMap.get(book.getCategoryId())))
                 .toList();
 
-        return new PageResult<>(
+        return PageResult.of(
                 dtoList,
                 domainPageResult.page(),
                 domainPageResult.size(),
-                domainPageResult.totalElements(),
-                domainPageResult.totalPages());
+                domainPageResult.totalElements()
+        );
     }
 
     @Override
     public BookResponseDto getBookById(Long bookId) {
         if (bookId == null || bookId <= 0) {
-            throw new InvalidBookDataException("ID sách không hợp lệ.");
+            throw new InvalidBookDataException("Invalid book ID");
         }
         Book book = loadBookPort.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
@@ -84,7 +89,7 @@ public class GetBooksService implements GetBooksUseCase {
                 book.getTotalQuantity(),
                 book.getAvailableQuantity(),
                 book.getCategoryId(),
-                categoryName != null ? categoryName : "Chưa phân loại",
+                categoryName != null ? categoryName : "Uncategorized",
                 book.isActive(),
                 book.getCreatedAt()
         );

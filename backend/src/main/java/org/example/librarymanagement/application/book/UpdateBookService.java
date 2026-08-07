@@ -1,42 +1,61 @@
 package org.example.librarymanagement.application.book;
 
+import java.util.Objects;
+
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
+import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
+import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
+import org.example.librarymanagement.domain.policies.UniqueIsbnPolicy;
 import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.dtos.book.UpdateBookCommand;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
+/**
+ * Application Service: UpdateBookService
+ * Pure Java 100% - Hexagonal Architecture Implementation
+ */
 public class UpdateBookService implements UpdateBookUseCase {
-  
+
     private final BookRepositoryPort bookRepository;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
 
     public UpdateBookService(BookRepositoryPort bookRepository, GetAuthenticatedUserPort getAuthenticatedUserPort) {
-        this.bookRepository = bookRepository;
-        this.getAuthenticatedUserPort = getAuthenticatedUserPort;
+        this.bookRepository = Objects.requireNonNull(bookRepository, "BookRepositoryPort must not be null");
+        this.getAuthenticatedUserPort = Objects.requireNonNull(getAuthenticatedUserPort, "GetAuthenticatedUserPort must not be null");
     }
 
     @Override
     public BookResult updateBook(UpdateBookCommand command) {
+        if (command == null) {
+            throw new InvalidBookDataException("Update book command must not be null");
+        }
+
         verifyStaffAccess();
 
         Book book = bookRepository.findById(command.bookId())
-                .orElseThrow(() -> new DomainException("Not found: Book with ID " + command.bookId() + " does not exist."));
+                .orElseThrow(() -> new BookNotFoundException(command.bookId()));
 
         boolean isIsbnExisted = bookRepository.existsByIsbnAndIdNot(command.isbn(), command.bookId());
-        if (isIsbnExisted) {
-            throw new DomainException("Duplicate ISBN: The ISBN " + command.isbn() + " is already used by another book.");
-        }
+        UniqueIsbnPolicy.validateIsbnForUpdate(isIsbnExisted, command.isbn());
 
-        book.updateDetails(command.title(), command.author(), command.isbn(), command.description(),
-                command.coverImageUrl(), command.publisher(), command.publishedYear(),
-                command.shelfLocation(), command.totalQuantity(), 
-                command.categoryId());
+        book.updateDetails(
+                command.title(),
+                command.author(),
+                command.isbn(),
+                command.description(),
+                command.coverImageUrl(),
+                command.publisher(),
+                command.publishedYear(),
+                command.shelfLocation(),
+                command.totalQuantity(),
+                command.categoryId()
+        );
 
         Book updatedBook = bookRepository.save(book);
 
@@ -45,16 +64,9 @@ public class UpdateBookService implements UpdateBookUseCase {
 
     private void verifyStaffAccess() {
         User currentUser = getAuthenticatedUserPort.getCurrentUser();
-        
-        boolean isAuthorized = currentUser.hasRole("LIBRARIAN") 
-                            || currentUser.hasRole("ADMIN")
-                            || currentUser.hasRole("ROLE_STAFF") 
-                            || currentUser.hasRole("ROLE_ADMIN");
-
-        if (!isAuthorized) {
-            throw new DomainException("Error Security: User does not have permission to perform this action.");
+        if (currentUser == null) {
+            throw new UnauthenticatedException("User is unauthenticated");
         }
-
         AccountLockPolicy.validateAccountActive(currentUser);
         AuthorizationAccessPolicy.validateStaffAccess(currentUser);
     }
