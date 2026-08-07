@@ -1,4 +1,4 @@
-package org.example.librarymanagement.application.category.exception;
+package org.example.librarymanagement.application.category.exceptions;
 
 import org.example.librarymanagement.application.shared.exception.ApplicationException;
 

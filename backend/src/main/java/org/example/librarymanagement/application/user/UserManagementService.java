@@ -1,4 +1,4 @@
-package org.example.librarymanagement.application.manage;
+package org.example.librarymanagement.application.user;
 
 import java.util.List;
 import java.util.Set;

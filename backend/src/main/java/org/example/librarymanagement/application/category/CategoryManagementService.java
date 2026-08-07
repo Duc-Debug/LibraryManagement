@@ -3,9 +3,9 @@ package org.example.librarymanagement.application.category;
 import java.util.List;
 import java.util.Objects;
 
-import org.example.librarymanagement.application.category.exception.CategoryInUseException;
-import org.example.librarymanagement.application.category.exception.CategoryNotFoundException;
-import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
+import org.example.librarymanagement.application.category.exceptions.CategoryInUseException;
+import org.example.librarymanagement.application.category.exceptions.CategoryNotFoundException;
+import org.example.librarymanagement.application.category.exceptions.DuplicateCategoryNameException;
 import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.domain.entity.Category;
 import org.example.librarymanagement.domain.exceptions.DomainException;

@@ -1,8 +1,8 @@
 package org.example.librarymanagement.infrastructure.config;
 
 import org.example.librarymanagement.application.auth.ProfileService;
-import org.example.librarymanagement.application.manage.UserManagementService;
 import org.example.librarymanagement.application.reader.ReaderManagementService;
+import org.example.librarymanagement.application.user.UserManagementService;
 import org.example.librarymanagement.port.inbound.auth.ProfileUseCase;
 import org.example.librarymanagement.port.inbound.reader.ReaderManagementUseCase;
 import org.example.librarymanagement.port.inbound.user.ManageUserUseCase;

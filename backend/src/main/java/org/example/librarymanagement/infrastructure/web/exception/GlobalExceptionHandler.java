@@ -2,7 +2,6 @@ package org.example.librarymanagement.infrastructure.web.exception;
 
 import java.util.stream.Collectors;
 
-import org.example.librarymanagement.application.auth.InvalidCredentialsException;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.book.BookHasActiveBorrowException;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
@@ -12,6 +11,7 @@ import org.example.librarymanagement.domain.exceptions.reader.ReaderAlreadyExist
 import org.example.librarymanagement.domain.exceptions.reader.ReaderHasActiveBorrowException;
 import org.example.librarymanagement.domain.exceptions.reader.ReaderNotFoundException;
 import org.example.librarymanagement.domain.exceptions.shared.AccessDeniedException;
+import org.example.librarymanagement.domain.exceptions.shared.InvalidCredentialsException;
 import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.infrastructure.web.auth.InvalidAuthorizationHeaderException;
 import org.example.librarymanagement.port.outbound.auth.token.InvalidAccessTokenException;

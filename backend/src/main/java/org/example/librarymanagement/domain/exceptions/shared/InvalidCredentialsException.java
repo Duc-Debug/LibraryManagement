@@ -1,4 +1,4 @@
-package org.example.librarymanagement.application.auth;
+package org.example.librarymanagement.domain.exceptions.shared;
 
 public class InvalidCredentialsException extends RuntimeException {
 

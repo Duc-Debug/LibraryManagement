@@ -1,6 +1,6 @@
 package org.example.librarymanagement.infrastructure.web.auth;
 
-import org.example.librarymanagement.application.auth.InvalidCredentialsException;
+import org.example.librarymanagement.domain.exceptions.shared.InvalidCredentialsException;
 import org.example.librarymanagement.infrastructure.security.UserPrincipal;
 import org.example.librarymanagement.infrastructure.web.auth.dtos.ChangePasswordRequest;
 import org.example.librarymanagement.port.dtos.auth.ChangePasswordCommand;

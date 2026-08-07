@@ -1,8 +1,8 @@
 package org.example.librarymanagement.infrastructure.web.category;
 
-import org.example.librarymanagement.application.category.exception.CategoryInUseException;
-import org.example.librarymanagement.application.category.exception.CategoryNotFoundException;
-import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
+import org.example.librarymanagement.application.category.exceptions.CategoryInUseException;
+import org.example.librarymanagement.application.category.exceptions.CategoryNotFoundException;
+import org.example.librarymanagement.application.category.exceptions.DuplicateCategoryNameException;
 import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.infrastructure.web.exception.ErrorResponse;
 import org.springframework.http.HttpStatus;
