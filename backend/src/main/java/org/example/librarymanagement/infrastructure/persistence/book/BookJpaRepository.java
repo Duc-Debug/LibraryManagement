@@ -24,7 +24,7 @@ public interface BookJpaRepository extends JpaRepository<BookJpaEntity, Long> {
         """, nativeQuery = true)
     int existsActiveBorrowByBookId(@Param("bookId") Long bookId);
 
-    Page<BookJpaEntity> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
+    Page<BookJpaEntity> searchBooks(
             String title, String author, String isbn, Pageable pageable
     );
 

@@ -1,6 +1,7 @@
 package org.example.librarymanagement.infrastructure.persistence.book;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
@@ -26,8 +27,8 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
             BookJpaRepository bookJpaRepository,
             BookPersistenceMapper bookPersistenceMapper
     ) {
-        this.bookJpaRepository = bookJpaRepository;
-        this.bookPersistenceMapper = bookPersistenceMapper;
+         this.bookJpaRepository = Objects.requireNonNull(bookJpaRepository, "BookJpaRepository must not be null");
+        this.bookPersistenceMapper = Objects.requireNonNull(bookPersistenceMapper, "BookPersistenceMapper must not be null");
     }
 
     @Override
@@ -38,11 +39,9 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
     public Book save(Book book) {
         BookJpaEntity entity;
 
-        // 1. Trường hợp TẠO MỚI (bookId == null): Tạo mới hoàn toàn JPA Entity
         if (book.getId() == null) {
             entity = create(book);
         } 
-        // 2. Trường hợp CẬP NHẬT (bookId != null): Tìm Entity cũ và cập nhật thông tin
         else {
             entity = update(book);
         }
@@ -59,7 +58,6 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
         BookJpaEntity entity = bookJpaRepository.findById(book.getId())
                 .orElseGet(() -> bookPersistenceMapper.toJpaEntity(book));
         
-        // Chỉ cập nhật các trường thông tin đối với trường hợp Update
         bookPersistenceMapper.updateJpaEntity(book, entity);
         return entity;
     }
@@ -103,7 +101,7 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
             jpaPage = bookJpaRepository.findAll(pageable);
         } else {
             String search = keyword.trim();
-            jpaPage = bookJpaRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
+            jpaPage = bookJpaRepository.searchBooks (
                     search, search, search, pageable
             );
         }
