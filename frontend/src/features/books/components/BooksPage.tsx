@@ -19,6 +19,7 @@ import { AddBookModal } from './AddBookModal';
 
 export function BooksPage() {
   const [booksPage, setBooksPage] = useState<PageResult<BookResponseDto>>({
+    content: [],
     items: [],
     page: 0,
     size: 10,

@@ -19,8 +19,8 @@ export interface BookResponseDto {
 }
 
 export interface PageResult<T> {
-  content: T[];
-  items: T[];
+  content?: T[];
+  items?: T[];
   page: number;
   size: number;
   totalElements: number;
