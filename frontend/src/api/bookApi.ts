@@ -19,6 +19,7 @@ export interface BookResponseDto {
 }
 
 export interface PageResult<T> {
+  content: T[];
   items: T[];
   page: number;
   size: number;
@@ -40,7 +41,16 @@ export async function fetchBooksApi(
     queryParams.append("keyword", keyword.trim());
   }
 
-  return apiFetch<PageResult<BookResponseDto>>(`/api/librarians/books?${queryParams.toString()}`);
+  const raw = await apiFetch<any>(`/api/librarians/books?${queryParams.toString()}`);
+  const list = raw?.content || raw?.items || [];
+  return {
+    content: list,
+    items: list,
+    page: raw?.page ?? 0,
+    size: raw?.size ?? 10,
+    totalElements: raw?.totalElements ?? 0,
+    totalPages: raw?.totalPages ?? 0,
+  };
 }
 
 export async function fetchBookByIdApi(id: number): Promise<BookResponseDto> {
