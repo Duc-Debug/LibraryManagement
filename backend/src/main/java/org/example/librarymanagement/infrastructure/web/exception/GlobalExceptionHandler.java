@@ -2,6 +2,7 @@ package org.example.librarymanagement.infrastructure.web.exception;
 
 import java.util.stream.Collectors;
 
+import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.book.BookHasActiveBorrowException;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
@@ -37,6 +38,13 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(ValidationException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("VALIDATION_ERROR", exception.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException exception) {
         String detailMessage = exception.getBindingResult().getFieldErrors().stream()
@@ -53,9 +61,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
+        String paramName = exception.getName();
+        String message = "categoryId".equalsIgnoreCase(paramName) ? "Category id must be a valid number" : "Parameter '" + paramName + "' must be a valid format";
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of("VALIDATION_ERROR", "Parameter '" + exception.getName() + "' must be a valid format"));
+                .body(ErrorResponse.of("VALIDATION_ERROR", message));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

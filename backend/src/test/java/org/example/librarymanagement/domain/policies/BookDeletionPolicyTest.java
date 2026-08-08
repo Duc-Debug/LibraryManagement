@@ -18,7 +18,7 @@ class BookDeletionPolicyTest {
                 id,
                 title,
                 "Robert C. Martin",
-                "978-0134494166",
+                "9780134494166",
                 "Mô tả sách",
                 "https://example.com/cover.jpg",
                 "NXB Tri Thức",
@@ -57,7 +57,7 @@ class BookDeletionPolicyTest {
 
         // Kiểm tra thông điệp lỗi nghiệp vụ A2.4
         assertEquals(
-                "Không thể xóa hoặc ẩn sách 'Lập trình Java DDD' (ID: 1) vì sách đang nằm trong phiếu mượn chưa hoàn trả (Đang mượn hoặc Quá hạn).",
+                "Cannot delete or deactivate book 'Lập trình Java DDD' (ID: 1) because it currently has active borrow slips (Borrowing or Overdue).",
                 exception.getMessage());
     }
 }

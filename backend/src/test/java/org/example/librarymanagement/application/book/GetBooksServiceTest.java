@@ -48,7 +48,7 @@ class GetBooksServiceTest {
                 id,
                 title,
                 "Robert C. Martin",
-                "978-0134494166",
+                "9780134494166",
                 "Clean Architecture Description",
                 "https://example.com/cover.jpg",
                 "Prentice Hall",

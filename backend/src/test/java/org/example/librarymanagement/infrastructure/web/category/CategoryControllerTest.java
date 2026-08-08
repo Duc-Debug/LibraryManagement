@@ -20,7 +20,6 @@ import org.example.librarymanagement.application.category.exceptions.CategoryInU
 import org.example.librarymanagement.application.category.exceptions.CategoryNotFoundException;
 import org.example.librarymanagement.application.category.exceptions.DuplicateCategoryNameException;
 import org.example.librarymanagement.application.shared.ValidationException;
-import org.example.librarymanagement.infrastructure.web.exception.CategoryExceptionHandler;
 import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptionHandler;
 import org.example.librarymanagement.port.dtos.category.CategoryResult;
 import org.example.librarymanagement.port.dtos.category.CreateCategoryCommand;
@@ -53,7 +52,6 @@ class CategoryControllerTest {
                         new CategoryWebMapper()
                 ))
                 .setControllerAdvice(
-                        new CategoryExceptionHandler(),
                         new GlobalExceptionHandler()
                 )
                 .setValidator(validator)

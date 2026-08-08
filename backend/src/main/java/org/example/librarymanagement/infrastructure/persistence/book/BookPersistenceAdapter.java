@@ -101,7 +101,7 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
             jpaPage = bookJpaRepository.findAll(pageable);
         } else {
             String search = keyword.trim();
-            jpaPage = bookJpaRepository.searchBooks (
+            jpaPage = bookJpaRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
                     search, search, search, pageable
             );
         }
