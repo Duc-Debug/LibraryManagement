@@ -1,6 +1,6 @@
 package org.example.librarymanagement.infrastructure.security;
 
-import org.example.librarymanagement.port.outbound.admin.EncodePasswordPort;
+import org.example.librarymanagement.port.outbound.user.EncodePasswordPort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 

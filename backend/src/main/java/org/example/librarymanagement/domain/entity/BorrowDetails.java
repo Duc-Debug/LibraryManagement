@@ -1,121 +1,119 @@
 package org.example.librarymanagement.domain.entity;
-import java.util.UUID;
+
 import java.time.LocalDateTime;
+import java.util.Objects;
+
 import org.example.librarymanagement.domain.exceptions.DomainException;
+
 public class BorrowDetails {
-    private UUID id;
-    private UUID borrowSlipId;
-    private UUID bookId;
+    private Long id;
+    private Long borrowSlipId;
+    private Long bookId;
     private LocalDateTime returnAt;
-    private UUID returnByUserId;
+    private Long returnByUserId;
     private String fineReason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public BorrowDetails() {}
+    public static BorrowDetails create(Long borrowSlipId, Long bookId) {
+        LocalDateTime now = LocalDateTime.now();
+        return new BorrowDetails(null, borrowSlipId, bookId, null, null, null, now, now);
+    }
 
-    public BorrowDetails(UUID id, UUID borrowSlipId, UUID bookId, LocalDateTime returnAt, UUID returnByUserId, String fineReason, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public BorrowDetails(Long id, Long borrowSlipId, Long bookId, LocalDateTime returnAt, Long returnByUserId,
+            String fineReason, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        validateRequiredIds(borrowSlipId, bookId);
+        validateReturnInformation(returnAt, returnByUserId, fineReason);
         this.id = id;
         this.borrowSlipId = borrowSlipId;
         this.bookId = bookId;
         this.returnAt = returnAt;
         this.returnByUserId = returnByUserId;
-        this.fineReason = fineReason;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.fineReason = normalizeNullable(fineReason);
+        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
+        this.updatedAt = updatedAt != null ? createdAt : LocalDateTime.now();
     }
 
-    public UUID getId() {
+    // ==================== DOMAIN BUSINESS BEHAVIORS ====================
+    /**
+     * Hành vi nghiệp vụ: Thực hiện Trả Sách
+     */
+
+    // ==================== HELPER VALIDATIONS ====================
+    private static void validateRequiredIds(Long borrowSlipId, Long bookId) {
+        if (borrowSlipId == null) {
+            throw new DomainException("Borrow slip ID must not be null");
+        }
+        if (bookId == null) {
+            throw new DomainException("Book ID must not be null");
+        }
+    }
+
+    private static void validateReturnInformation(
+            LocalDateTime returnAt,
+            Long returnByUserId,
+            String fineReason) {
+        if (returnAt != null && returnByUserId == null) {
+            throw new DomainException("Return by user ID must not be null when return date is set");
+        }
+        if (fineReason != null && fineReason.trim().length() > 255) {
+            throw new DomainException("Fine reason cannot exceed 255 characters");
+        }
+    }
+
+    private void touch() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    private static String normalizeNullable(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
+    }
+
+    // ==================== GETTERS ONLY (NO PUBLIC SETTERS) ====================
+    public Long getId() {
         return id;
     }
-    public void setId(UUID id) {
-        if(id == null) {
-            throw new DomainException("ID cannot be null");
-        }
-      this.id = id;
-    }
-    
-    public UUID getBorrowSlipId() {
+
+    public Long getBorrowSlipId() {
         return borrowSlipId;
     }
-    public void setBorrowSlipId(UUID borrowSlipId) {
-        if(borrowSlipId == null) {
-            throw new DomainException("Borrow slip ID cannot be null");
-        }
-        this.borrowSlipId = borrowSlipId;
-    }
 
-    public UUID getBookId() {
+    public Long getBookId() {
         return bookId;
-    }
-    public void setBookId(UUID bookId) {
-        if(bookId == null) {
-            throw new DomainException("Book ID cannot be null");
-        }
-        this.bookId = bookId;
     }
 
     public LocalDateTime getReturnAt() {
         return returnAt;
     }
-    public void setReturnAt(LocalDateTime returnAt) {
-        if( createdAt != null && returnAt != null && returnAt.isBefore(createdAt)) {
-            throw new DomainException("Return date cannot be before created date");
-        }
-        this.returnAt = returnAt;
-    }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-    public void setCreatedAt(LocalDateTime createdAt) {
-        if(createdAt == null) {
-            throw new DomainException("Created date cannot be null");
-        }
-        this.createdAt = createdAt;
-    }
 
-    public UUID getReturnByUserId() {
+    public Long getReturnByUserId() {
         return returnByUserId;
-    }
-    public void setReturnByUserId(UUID returnByUserId) {
-        if(returnAt != null && returnByUserId == null) {
-            throw new DomainException("Return by user ID cannot be null when return date is set");
-        }
-        this.returnByUserId = returnByUserId;
     }
 
     public String getFineReason() {
         return fineReason;
     }
-    public void setFineReason(String fineReason) {
-        if(fineReason == null) {
-            throw new DomainException("Fine reason cannot be null");
-        }
-        if(fineReason.length() > 255) {
-            throw new DomainException("Fine reason cannot exceed 255 characters");
-        }
-        if(fineReason.trim().isEmpty()) {
-            throw new DomainException("Fine reason cannot be empty");
-        }
-        this.fineReason = fineReason;
-
-
-   
-    }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        if(updatedAt != null && createdAt != null && updatedAt.isBefore(createdAt)) {
-            throw new DomainException("Updated date cannot be before created date");
-        }
-        this.updatedAt = updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        BorrowDetails details = (BorrowDetails) o;
+        return Objects.equals(id, details.id);
     }
 
-
-
-
-    
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

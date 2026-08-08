@@ -19,6 +19,7 @@ import { AddBookModal } from './AddBookModal';
 
 export function BooksPage() {
   const [booksPage, setBooksPage] = useState<PageResult<BookResponseDto>>({
+    content: [],
     items: [],
     page: 0,
     size: 10,
@@ -299,14 +300,14 @@ export function BooksPage() {
                     Đang nạp dữ liệu từ máy chủ...
                   </td>
                 </tr>
-              ) : booksPage.items.length === 0 ? (
+              ) : (booksPage?.items || booksPage?.content || []).length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-6 py-8 text-center text-muted-foreground">
                     Không tìm thấy cuốn sách nào trong Database.
                   </td>
                 </tr>
               ) : (
-                booksPage.items.map((book) => (
+                (booksPage?.items || booksPage?.content || []).map((book) => (
                   <tr
                     key={book.bookId}
                     className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"

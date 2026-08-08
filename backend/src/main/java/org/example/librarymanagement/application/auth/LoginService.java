@@ -6,14 +6,15 @@ import java.util.stream.Collectors;
 
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
+import org.example.librarymanagement.domain.exceptions.shared.InvalidCredentialsException;
 import org.example.librarymanagement.port.dtos.auth.LoginCommand;
 import org.example.librarymanagement.port.dtos.auth.LoginResult;
 import org.example.librarymanagement.port.inbound.auth.LoginUseCase;
 import org.example.librarymanagement.port.outbound.auth.AccessTokenIssuerPort;
-import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
 import org.example.librarymanagement.port.outbound.auth.PasswordVerifierPort;
 import org.example.librarymanagement.port.outbound.auth.token.AccessTokenPayload;
 import org.example.librarymanagement.port.outbound.auth.token.IssuedAccessToken;
+import org.example.librarymanagement.port.outbound.user.LoadUserPort;
 
 public class LoginService implements LoginUseCase {
 
@@ -64,9 +65,10 @@ public class LoginService implements LoginUseCase {
         }
 
         Set<String> roleNames = user.getRoles()
-                .stream()
-                .map(Role::getName)
-                .collect(Collectors.toUnmodifiableSet());
+        .stream()
+        .filter(Objects::nonNull)
+        .map(Role::getName)
+        .collect(Collectors.toUnmodifiableSet());
 
         AccessTokenPayload tokenPayload =
                 new AccessTokenPayload(

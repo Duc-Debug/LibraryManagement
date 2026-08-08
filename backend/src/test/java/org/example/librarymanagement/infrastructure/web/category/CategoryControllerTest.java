@@ -16,15 +16,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.example.librarymanagement.application.category.exception.CategoryInUseException;
-import org.example.librarymanagement.application.category.exception.CategoryNotFoundException;
-import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
+import org.example.librarymanagement.application.category.exceptions.CategoryInUseException;
+import org.example.librarymanagement.application.category.exceptions.CategoryNotFoundException;
+import org.example.librarymanagement.application.category.exceptions.DuplicateCategoryNameException;
 import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptionHandler;
+import org.example.librarymanagement.port.dtos.category.CategoryResult;
+import org.example.librarymanagement.port.dtos.category.CreateCategoryCommand;
+import org.example.librarymanagement.port.dtos.category.UpdateCategoryCommand;
 import org.example.librarymanagement.port.inbound.category.CategoryManagementUseCase;
-import org.example.librarymanagement.port.inbound.category.CategoryResult;
-import org.example.librarymanagement.port.inbound.category.CreateCategoryCommand;
-import org.example.librarymanagement.port.inbound.category.UpdateCategoryCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -52,7 +52,6 @@ class CategoryControllerTest {
                         new CategoryWebMapper()
                 ))
                 .setControllerAdvice(
-                        new CategoryExceptionHandler(),
                         new GlobalExceptionHandler()
                 )
                 .setValidator(validator)

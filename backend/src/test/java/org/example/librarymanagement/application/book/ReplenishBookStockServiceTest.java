@@ -10,10 +10,11 @@ import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
-import org.example.librarymanagement.port.inbound.book.BookResult;
-import org.example.librarymanagement.port.inbound.book.ReplenishBookStockCommand;
-import org.example.librarymanagement.port.outbound.book.BookRepository;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
+import org.example.librarymanagement.port.dtos.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.ReplenishBookStockCommand;
+import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
+import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,13 +29,13 @@ import static org.mockito.Mockito.when;
 
 public class ReplenishBookStockServiceTest {
 
-    private BookRepository bookRepository;
+    private BookRepositoryPort bookRepository;
     private GetAuthenticatedUserPort getAuthenticatedUserPort;
     private ReplenishBookStockService replenishBookStockService;
 
     @BeforeEach
     void setUp() {
-        bookRepository = mock(BookRepository.class);
+        bookRepository = mock(BookRepositoryPort.class);
         getAuthenticatedUserPort = mock(GetAuthenticatedUserPort.class);
         replenishBookStockService = new ReplenishBookStockService(bookRepository, getAuthenticatedUserPort);
     }

@@ -1,7 +1,7 @@
 package org.example.librarymanagement.port.outbound.book;
 import java.util.Optional;
 import org.example.librarymanagement.domain.entity.Book;
-import org.example.librarymanagement.port.inbound.common.PageResult;
+import org.example.librarymanagement.port.dtos.common.PageResult;
 
 public interface LoadBookPort {
     Optional<Book> findById(Long bookId);

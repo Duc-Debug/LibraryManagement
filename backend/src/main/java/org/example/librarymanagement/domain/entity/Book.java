@@ -3,11 +3,10 @@ package org.example.librarymanagement.domain.entity;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 
 public class Book {
-    private Long bookId;
+    private Long id;
     private String title;
     private String author;
     private String isbn;
@@ -34,8 +33,7 @@ public class Book {
             Short publishedYear,
             String shelfLocation,
             int totalQuantity,
-            Long categoryId
-    ) {
+            Long categoryId) {
         LocalDateTime now = LocalDateTime.now();
         return new Book(
                 null,
@@ -52,29 +50,29 @@ public class Book {
                 categoryId,
                 true,
                 now,
-                now
-        );
+                now);
     }
 
-    // 2. Full-Args Constructor dùng khi Re-constitute Entity từ Database (Persistence Mapper)
-    public Book(Long id, String title, String author, String isbn, String description, 
-                String coverImageUrl, String publisher, Short publishedYear, 
-                String shelfLocation, int totalQuantity, int availableQuantity, 
-                Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    // 2. Full-Args Constructor dùng khi Reconstitute Entity từ Database
+    public Book(Long id, String title, String author, String isbn, String description,
+            String coverImageUrl, String publisher, Short publishedYear,
+            String shelfLocation, int totalQuantity, int availableQuantity,
+            Long categoryId, boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
 
-        validateNotBlank(title, "Title must not be blank");
-        validateNotBlank(author, "Author must not be blank");
+        validateBasicInfo(title, author, categoryId);
+        validateIsbn(isbn);
+        validatePublishedYear(publishedYear);
         validateQuantities(totalQuantity, availableQuantity);
 
-        this.bookId = id;
-        this.title = title;
-        this.author = author;
-        this.isbn = isbn;
-        this.description = description;
-        this.coverImageUrl = coverImageUrl;
-        this.publisher = publisher;
+        this.id = id;
+        this.title = title.trim();
+        this.author = author != null ? author.trim() : null;
+        this.isbn = normalizeNullable(isbn);
+        this.description = normalizeNullable(description);
+        this.coverImageUrl = normalizeNullable(coverImageUrl);
+        this.publisher = normalizeNullable(publisher);
         this.publishedYear = publishedYear;
-        this.shelfLocation = shelfLocation;
+        this.shelfLocation = normalizeNullable(shelfLocation);
         this.totalQuantity = totalQuantity;
         this.availableQuantity = availableQuantity;
         this.categoryId = categoryId;
@@ -84,26 +82,7 @@ public class Book {
     }
 
     // ==================== DOMAIN BEHAVIORS & INVARIANTS ====================
-
-    private void validateNotBlank(String value, String errorMessage) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new InvalidBookDataException(errorMessage);
-        }
-    }
-
-    private void validateQuantities(int total, int available) {
-        if (total < 0) {
-            throw new InvalidBookDataException("Total quantity cannot be negative");
-        }
-        if (available < 0) {
-            throw new InvalidBookDataException("Available quantity cannot be negative");
-        }
-        if (available > total) {
-            throw new InvalidBookDataException("Available quantity cannot exceed total quantity");
-        }
-    }
-
-    public void updateInfo(
+    public void updateDetails(
             String title,
             String author,
             String isbn,
@@ -112,19 +91,29 @@ public class Book {
             String publisher,
             Short publishedYear,
             String shelfLocation,
-            Long categoryId
-    ) {
-        validateNotBlank(title, "Title must not be blank");
-        validateNotBlank(author, "Author must not be blank");
+            int newTotalQuantity,
+            Long categoryId) {
+        validateBasicInfo(title, author, categoryId);
+        validateIsbn(isbn);
+        validatePublishedYear(publishedYear);
 
-        this.title = title;
-        this.author = author;
-        this.isbn = isbn;
-        this.description = description;
-        this.coverImageUrl = coverImageUrl;
-        this.publisher = publisher;
+        int borrowedQuantity = this.totalQuantity - this.availableQuantity;
+        if (newTotalQuantity < borrowedQuantity) {
+            throw new InvalidBookDataException(
+                    "New total quantity (" + newTotalQuantity
+                            + ") cannot be less than currently borrowed books (" + borrowedQuantity + ").");
+        }
+
+        this.title = title.trim();
+        this.author = author != null ? author.trim() : null;
+        this.isbn = normalizeNullable(isbn);
+        this.description = normalizeNullable(description);
+        this.coverImageUrl = normalizeNullable(coverImageUrl);
+        this.publisher = publisher != null ? publisher.trim() : null;
         this.publishedYear = publishedYear;
-        this.shelfLocation = shelfLocation;
+        this.shelfLocation = normalizeNullable(shelfLocation);
+        this.totalQuantity = newTotalQuantity;
+        this.availableQuantity = newTotalQuantity - borrowedQuantity;
         this.categoryId = categoryId;
         touch();
     }
@@ -144,7 +133,7 @@ public class Book {
 
     public void decreaseAvailableQuantity() {
         if (!isAvailableForBorrow()) {
-            throw new InvalidBookDataException("Sách hiện không còn sẵn để mượn.");
+            throw new InvalidBookDataException("Book is currently not available for borrowing");
         }
         this.availableQuantity--;
         touch();
@@ -152,7 +141,7 @@ public class Book {
 
     public void increaseAvailableQuantity() {
         if (this.availableQuantity >= this.totalQuantity) {
-            throw new InvalidBookDataException("Số lượng có sẵn không thể vượt quá tổng số lượng.");
+            throw new InvalidBookDataException("Available quantity cannot exceed total quantity");
         }
         this.availableQuantity++;
         touch();
@@ -176,10 +165,67 @@ public class Book {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // ===================== HELPER VALIDATIONS ==================================
+    private static void validateNotBlank(String value, String errorMessage) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new InvalidBookDataException(errorMessage);
+        }
+    }
+
+    private static void validateBasicInfo(String title, String author, Long categoryId) {
+        validateNotBlank(title, "Book title must not be blank");
+        validateNotBlank(author, "Author name must not be blank");
+        if (categoryId == null) {
+            throw new InvalidBookDataException("Category ID must not be null");
+        }
+    }
+
+    private static void validateIsbn(String isbn) {
+        if (isbn == null || isbn.isBlank()) {
+            return;
+        }
+
+        String cleanIsbn = isbn.replaceAll("[\\s-]", "");
+
+        boolean isValidIsbn13 = cleanIsbn.matches("^(978|979)[0-9]{10}$");
+        boolean isValidIsbn10 = cleanIsbn.matches("^[0-9]{9}[0-9Xx]$");
+
+        if (!isValidIsbn13 && !isValidIsbn10) {
+            throw new InvalidBookDataException(
+                    "ISBN must be a valid 10-digit or 13-digit format (e.g. 9780134494166 or 013449416X)"
+            );
+        }
+    }
+
+    private static void validatePublishedYear(Short publishedYear) {
+        if (publishedYear != null) {
+            int currentYear = LocalDateTime.now().getYear();
+            if (publishedYear < 0 || publishedYear > currentYear) {
+                throw new InvalidBookDataException("Published year must be a valid year");
+            }
+        }
+    }
+
+    private static void validateQuantities(int total, int available) {
+        if (total < 0) {
+            throw new InvalidBookDataException("Total quantity cannot be negative");
+        }
+        if (available < 0) {
+            throw new InvalidBookDataException("Available quantity cannot be negative");
+        }
+        if (available > total) {
+            throw new InvalidBookDataException("Available quantity cannot exceed total quantity");
+        }
+    }
+
+    private static String normalizeNullable(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
+    }
+
     // ==================== GETTERS ONLY (NO DANGEROUS SETTERS) ====================
 
-    public Long getBookId() {
-        return bookId;
+    public Long getId() {
+        return id;
     }
 
     public String getTitle() {
@@ -240,74 +286,16 @@ public class Book {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Book book = (Book) o;
-        return Objects.equals(bookId, book.bookId);
+        return Objects.equals(id, book.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(bookId);
-    }
-
-    public void updateInfor(String title, String author, String newIsbn, String description, 
-                     String coverImageUrl, String publisher, Short publishedYear, 
-                     String shelfLocation, int newTotalQuantity,  
-                     Long categoryId) {
-
-                        int currentYear = LocalDateTime.now().getYear();
-
-                        //validation du lieu co ban
-                        if (title == null || title.trim().isEmpty()) {
-                            throw new InvalidBookDataException("Title cannot be null or empty.");
-                        }
-                        if( newIsbn != null && !newIsbn.trim().isEmpty() && newIsbn.length() != 13) {
-                            throw new InvalidBookDataException("ISBN must be 13 characters long.");
-                        }
-                        if(categoryId == null) {
-                            throw new InvalidBookDataException("Category ID cannot be null.");
-                        }
-                        if(publishedYear != null && (publishedYear < 0 || publishedYear > currentYear)) {
-                            throw new InvalidBookDataException("Published year must be a valid year.");
-                        }
-
-                       
-
-                        // validate khong cho phep availableQuantity > totalQuantity
-                        int borrowedQuantity = this.totalQuantity - this.availableQuantity;
-                        if (newTotalQuantity < borrowedQuantity) {
-                           throw new DomainException(
-                            "New total quantity(" + newTotalQuantity + ") cannot be less than the number of borrowed books (" + borrowedQuantity + ")."
-                           );
-                        }
-
-                        //update thong tin sach
-                        this.title = title.trim();
-                        this.author = author != null ? author.trim() : null;
-                        this.isbn = newIsbn;
-                        this.description = description != null ? description.trim() : null;
-                        this.coverImageUrl = coverImageUrl != null ? coverImageUrl.trim() : null;
-                        this.publisher = publisher != null ? publisher.trim() : null;
-                        this.publishedYear = publishedYear;
-                        this.shelfLocation = shelfLocation != null ? shelfLocation.trim() : null;
-                        this.totalQuantity = newTotalQuantity;
-                        this.availableQuantity = newTotalQuantity - borrowedQuantity;
-                        this.categoryId = categoryId;
-                        this.active = active;
-                        this.updatedAt = LocalDateTime.now();
-
-                    
-
-       
-    }
-
-    public void replenishStock(int quantityToAdd) {
-        if (quantityToAdd <= 0) {
-            throw new InvalidBookDataException("Số lượng nhập kho phải lớn hơn 0");
-        }
-        this.totalQuantity += quantityToAdd;
-        this.availableQuantity += quantityToAdd;
-        this.updatedAt = LocalDateTime.now();
+        return Objects.hash(id);
     }
 }

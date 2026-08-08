@@ -1,17 +1,17 @@
 package org.example.librarymanagement.infrastructure.persistence.reader;
 
-import org.example.librarymanagement.domain.entity.Readers;
+import org.example.librarymanagement.domain.entity.Reader;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ReaderPersistenceMapper {
 
-    public Readers toDomain(ReaderJpaEntity entity) {
+    public Reader toDomain(ReaderJpaEntity entity) {
         if (entity == null) {
             return null;
         }
 
-        return Readers.builder()
+        return Reader.builder()
                 .id(entity.getId())
                 .cardNumber(entity.getCardNumber())
                 .name(entity.getName())
@@ -31,7 +31,7 @@ public class ReaderPersistenceMapper {
     /**
      * Chuyển từ Domain Entity sang JPA Entity (DB)
      */
-    public ReaderJpaEntity toJpaEntity(Readers domain) {
+    public ReaderJpaEntity toJpaEntity(Reader domain) {
         if (domain == null) {
             return null;
         }

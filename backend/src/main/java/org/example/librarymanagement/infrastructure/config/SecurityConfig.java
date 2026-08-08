@@ -83,13 +83,13 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json;charset=UTF-8");
-                            ErrorResponse error = ErrorResponse.of("UNAUTHORIZED", "Truy cập trái phép bị chặn (401): Vui lòng đăng nhập để truy cập tài nguyên này.");
+                            ErrorResponse error = ErrorResponse.of("UNAUTHORIZED", "Unauthorized access (401): Please login to access this resource.");
                             response.getWriter().write(objectMapper.writeValueAsString(error));
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json;charset=UTF-8");
-                            ErrorResponse error = ErrorResponse.of("ACCESS_DENIED", "Truy cập trái phép bị chặn (403): Bạn không có quyền truy cập tài nguyên này.");
+                            ErrorResponse error = ErrorResponse.of("ACCESS_DENIED", "Access denied (403): You do not have permission to access this resource.");
                             response.getWriter().write(objectMapper.writeValueAsString(error));
                         })
                 )

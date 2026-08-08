@@ -1,5 +1,6 @@
 package org.example.librarymanagement.application.auth;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -7,10 +8,10 @@ import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.port.dtos.auth.UpdateProfileCommand;
+import org.example.librarymanagement.port.dtos.user.UserResult;
 import org.example.librarymanagement.port.inbound.auth.ProfileUseCase;
-import org.example.librarymanagement.port.inbound.manage.UserResult;
-import org.example.librarymanagement.port.outbound.manage.FindUserPort;
-import org.example.librarymanagement.port.outbound.manage.SaveUserPort;
+import org.example.librarymanagement.port.outbound.user.FindUserPort;
+import org.example.librarymanagement.port.outbound.user.SaveUserPort;
 
 public class ProfileService implements ProfileUseCase {
 
@@ -18,31 +19,31 @@ public class ProfileService implements ProfileUseCase {
     private final SaveUserPort saveUserPort;
 
     public ProfileService(FindUserPort findUserPort, SaveUserPort saveUserPort) {
-        this.findUserPort = findUserPort;
-        this.saveUserPort = saveUserPort;
+        this.findUserPort = Objects.requireNonNull(findUserPort, "Find user port must not be null");
+        this.saveUserPort = Objects.requireNonNull(saveUserPort, "Save user port must not be null");
     }
 
     @Override
     public UserResult getProfile(Long userId) {
         if (userId == null) {
-            throw new DomainException("ID người dùng không được để trống.");
+            throw new DomainException("User ID must not be null");
         }
         User user = findUserPort.findById(userId)
-                .orElseThrow(() -> new DomainException("Không tìm thấy thông tin người dùng."));
+                .orElseThrow(() -> new DomainException("User not found with ID: " + userId));
         return mapToResult(user);
     }
 
     @Override
     public UserResult updateProfile(Long userId, UpdateProfileCommand command) {
         if (userId == null) {
-            throw new DomainException("ID người dùng không được để trống.");
+            throw new DomainException("User ID must not be null");
         }
         if (command == null) {
-            throw new DomainException("Dữ liệu cập nhật không được để trống.");
+            throw new DomainException("Update profile command must not be null");
         }
 
         User user = findUserPort.findById(userId)
-                .orElseThrow(() -> new DomainException("Không tìm thấy thông tin người dùng."));
+                .orElseThrow(() -> new DomainException("User not found with ID: " + userId));
 
         user.updateProfile(command.fullName(), command.email(), command.phone());
         User updatedUser = saveUserPort.save(user);
@@ -50,7 +51,12 @@ public class ProfileService implements ProfileUseCase {
     }
 
     private UserResult mapToResult(User user) {
-        Set<String> roleNames = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+        Set<String> roleNames = user.getRoles()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+
         return new UserResult(
                 user.getId(),
                 user.getUsername(),

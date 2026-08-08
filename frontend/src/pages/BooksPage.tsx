@@ -15,6 +15,7 @@ import { IconSearch, IconX } from "@/components/icons";
 
 export default function BooksPage() {
   const [booksPage, setBooksPage] = useState<PageResult<BookResponseDto>>({
+    content: [],
     items: [],
     page: 0,
     size: 10,
@@ -266,14 +267,14 @@ export default function BooksPage() {
                     Đang nạp dữ liệu từ máy chủ...
                   </td>
                 </tr>
-              ) : booksPage.items.length === 0 ? (
+              ) : (booksPage?.items || booksPage?.content || []).length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-6 py-8 text-center text-gray-400">
                     Không tìm thấy cuốn sách nào trong Database.
                   </td>
                 </tr>
               ) : (
-                booksPage.items.map((b) => (
+                (booksPage?.items || booksPage?.content || []).map((b) => (
                   <tr
                     key={b.bookId}
                     className="hover:bg-gray-50/60 transition cursor-pointer"
