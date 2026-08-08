@@ -181,8 +181,19 @@ public class Book {
     }
 
     private static void validateIsbn(String isbn) {
-        if (isbn != null && !isbn.isBlank() && isbn.trim().length() != 13) {
-            throw new InvalidBookDataException("ISBN must be exactly 13 characters long");
+        if (isbn == null || isbn.isBlank()) {
+            return;
+        }
+
+        String cleanIsbn = isbn.replaceAll("[\\s-]", "");
+
+        boolean isValidIsbn13 = cleanIsbn.matches("^(978|979)[0-9]{10}$");
+        boolean isValidIsbn10 = cleanIsbn.matches("^[0-9]{9}[0-9Xx]$");
+
+        if (!isValidIsbn13 && !isValidIsbn10) {
+            throw new InvalidBookDataException(
+                    "ISBN must be a valid 10-digit or 13-digit format (e.g. 9780134494166 or 013449416X)"
+            );
         }
     }
 
