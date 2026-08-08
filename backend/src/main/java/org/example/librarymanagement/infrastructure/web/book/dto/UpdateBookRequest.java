@@ -1,4 +1,4 @@
-package org.example.librarymanagement.infrastructure.web.librarians.dto;
+package org.example.librarymanagement.infrastructure.web.book.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

@@ -1,5 +1,7 @@
-package org.example.librarymanagement.infrastructure.web.librarians;
+package org.example.librarymanagement.infrastructure.web.book;
 
+import org.example.librarymanagement.infrastructure.web.book.dto.ReplenishStockRequest;
+import org.example.librarymanagement.infrastructure.web.book.dto.UpdateBookRequest;
 import org.example.librarymanagement.port.dtos.book.BookResponseDto;
 import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.dtos.book.ReplenishBookStockCommand;
@@ -9,8 +11,6 @@ import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
 import org.example.librarymanagement.port.inbound.book.ReplenishBookStockUseCase;
 import org.example.librarymanagement.port.dtos.common.PageResult;
-import org.example.librarymanagement.infrastructure.web.librarians.dto.UpdateBookRequest;
-import org.example.librarymanagement.infrastructure.web.librarians.dto.ReplenishStockRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package org.example.librarymanagement.infrastructure.web.admin;
+package org.example.librarymanagement.infrastructure.web.user;
 
 import java.time.LocalDateTime;
 import java.util.Set;
