@@ -291,11 +291,11 @@ public class Book {
         if (o == null || getClass() != o.getClass())
             return false;
         Book book = (Book) o;
-        return Objects.equals(id, book.id);
+        return id != null && book.id != null && Objects.equals(id, book.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return getClass().hashCode();
     }
 }

@@ -284,11 +284,11 @@ public class Reader {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Reader reader = (Reader) o;
-        return Objects.equals(id, reader.id);
+        return id != null && reader.id != null && Objects.equals(id, reader.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return getClass().hashCode();
     }
 }
