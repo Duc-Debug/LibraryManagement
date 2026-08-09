@@ -35,10 +35,25 @@ public class Reader {
         this.phoneNumber = normalize(builder.phoneNumber);
         this.address = normalize(builder.address);
         this.cardStatus = builder.cardStatus;
-        this.cardIssuedAt = builder.cardIssuedAt != null ? builder.cardIssuedAt : LocalDate.now();
-        this.cardExpiryAt = builder.cardExpiryAt != null ? builder.cardExpiryAt : LocalDate.now().plusYears(1);
-        this.createdAt = builder.createdAt != null ? builder.createdAt : LocalDateTime.now();
-        this.updatedAt = builder.updatedAt != null ? builder.updatedAt : LocalDateTime.now();
+
+        if (this.id == null) {
+            // Creation flow (Transient entity defaults)
+            this.cardIssuedAt = builder.cardIssuedAt != null ? builder.cardIssuedAt : LocalDate.now();
+            this.cardExpiryAt = builder.cardExpiryAt != null ? builder.cardExpiryAt : this.cardIssuedAt.plusYears(1);
+            this.createdAt = builder.createdAt != null ? builder.createdAt : LocalDateTime.now();
+            this.updatedAt = builder.updatedAt != null ? builder.updatedAt : LocalDateTime.now();
+        } else {
+            // Reconstitution flow (Persisted entity contract)
+            this.cardIssuedAt = builder.cardIssuedAt != null ? builder.cardIssuedAt : LocalDate.now();
+            this.cardExpiryAt = builder.cardExpiryAt != null ? builder.cardExpiryAt : this.cardIssuedAt.plusYears(1);
+            this.createdAt = builder.createdAt != null ? builder.createdAt : LocalDateTime.now();
+            this.updatedAt = builder.updatedAt != null ? builder.updatedAt : LocalDateTime.now();
+        }
+
+        if (this.cardExpiryAt.isBefore(this.cardIssuedAt)) {
+            throw new DomainException("Card expiry date cannot be before card issue date");
+        }
+
         this.active = builder.active;
         this.createdByUserId = builder.createdByUserId;
     }
