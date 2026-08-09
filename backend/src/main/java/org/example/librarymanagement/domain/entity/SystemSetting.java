@@ -47,8 +47,14 @@ public class SystemSetting {
         this.settingValue = settingValue != null ? settingValue.trim() : null;
         this.description = description != null ? description.trim() : null;
         this.updatedByUserId = updatedByUserId;
-        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
-        this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
+
+        if (this.id == null) {
+            this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
+            this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
+        } else {
+            this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
+            this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
+        }
     }
 
     // ==================== DOMAIN BUSINESS BEHAVIORS ====================
@@ -112,12 +118,12 @@ public class SystemSetting {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SystemSetting setting = (SystemSetting) o;
-        return Objects.equals(id, setting.id) || Objects.equals(settingKey, setting.settingKey);
+        return id != null && setting.id != null && Objects.equals(id, setting.id);
     }
 
     @Override
     public int hashCode() {
-        return id != null ? Objects.hash(id) : Objects.hash(settingKey);
+        return getClass().hashCode();
     }
 
     @Override
