@@ -1,112 +1,138 @@
 package org.example.librarymanagement.domain.entity;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Objects;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class SystemSetting {
 
-    private UUID id;
+    private Long id;
     private String settingKey;
     private String settingValue;
     private String description;
-    private UUID userId;
-    private LocalDateTime createAt;
-    private LocalDateTime updateAt;
+    private Long updatedByUserId;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public SystemSetting() {
+    // 1. Static Factory Method dùng khi Tạo Mới Setting
+    public static SystemSetting create(String key, String value, String description, Long userId) {
+        validateKey(key);
+        LocalDateTime now = LocalDateTime.now();
+        return new SystemSetting(
+                null,
+                key,
+                value,
+                description,
+                userId,
+                now,
+                now
+        );
     }
 
-    public SystemSetting(UUID id,
-            String key,
-            String value,
+    // 2. Full-Args Constructor dùng khi Reconstitute từ Database
+    public SystemSetting(
+            Long id,
+            String settingKey,
+            String settingValue,
             String description,
-            UUID userId,
-            LocalDateTime createAt,
-            LocalDateTime updateAt) {
+            Long updatedByUserId,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {
+        validateKey(settingKey);
 
-        setId(id);
-        setSettingKey(key);
-        setSettingValue(value);
-        setDescription(description);
-        setUserId(userId);
-        setCreateAt(createAt);
-        setUpdateAt(updateAt);
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        if (id != null) {
-            throw new DomainException("Id must be greater than 0.");
-        }
         this.id = id;
-    }
+        this.settingKey = settingKey.trim().toUpperCase();
+        this.settingValue = settingValue != null ? settingValue.trim() : null;
+        this.description = description != null ? description.trim() : null;
+        this.updatedByUserId = updatedByUserId;
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        if (description == null || description.trim().isEmpty()) {
-            throw new DomainException("Description cannot be empty.");
+        if (this.id == null) {
+            this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
+            this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
+        } else {
+            this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
+            this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
         }
-        this.description = description;
     }
 
-    @Override
-    public String toString() {
-        return "SystemSetting{" +
-                "id=" + id +
-                ", key=" + settingKey +
-                ", value='" + settingValue + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+    // ==================== DOMAIN BUSINESS BEHAVIORS ====================
+
+    /**
+     * Cập nhật giá trị cấu hình hệ thống
+     */
+    public void updateValue(String newValue, String newDescription, Long updatedByUserId) {
+        this.settingValue = newValue != null ? newValue.trim() : null;
+        if (newDescription != null) {
+            this.description = newDescription.trim();
+        }
+        this.updatedByUserId = updatedByUserId;
+        touch();
+    }
+
+    // ==================== HELPER VALIDATIONS ====================
+
+    private static void validateKey(String key) {
+        if (key == null || key.isBlank()) {
+            throw new DomainException("Setting key must not be blank");
+        }
+    }
+
+    private void touch() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // ==================== GETTERS ONLY (NO PUBLIC SETTERS) ====================
+
+    public Long getId() {
+        return id;
     }
 
     public String getSettingKey() {
         return settingKey;
     }
 
-    public void setSettingKey(String settingKey) {
-        this.settingKey = settingKey;
-    }
-
     public String getSettingValue() {
         return settingValue;
     }
 
-    public void setSettingValue(String settingValue) {
-        if (settingValue == null || settingValue.trim().isEmpty()) {
-            throw new DomainException("Setting value cannot be empty.");
-        }
-        this.settingValue = settingValue;
+    public String getDescription() {
+        return description;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public Long getUpdatedByUserId() {
+        return updatedByUserId;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public LocalDateTime getCreateAt() {
-        return createAt;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setCreateAt(LocalDateTime createAt) {
-        this.createAt = createAt;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SystemSetting setting = (SystemSetting) o;
+        return id != null && setting.id != null && Objects.equals(id, setting.id);
     }
 
-    public LocalDateTime getUpdateAt() {
-        return updateAt;
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 
-    public void setUpdateAt(LocalDateTime updateAt) {
-        this.updateAt = updateAt;
+    @Override
+    public String toString() {
+        return "SystemSetting{" +
+                "id=" + id +
+                ", settingKey='" + settingKey + '\'' +
+                ", settingValue='" + settingValue + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

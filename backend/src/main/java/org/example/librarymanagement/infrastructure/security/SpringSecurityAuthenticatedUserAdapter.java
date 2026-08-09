@@ -1,9 +1,9 @@
 package org.example.librarymanagement.infrastructure.security;
 
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.port.outbound.auth.LoadUserPort;
 import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
+import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
+import org.example.librarymanagement.port.outbound.user.LoadUserPort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;

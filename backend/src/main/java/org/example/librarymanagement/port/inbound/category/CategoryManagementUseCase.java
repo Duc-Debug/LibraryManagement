@@ -2,6 +2,10 @@ package org.example.librarymanagement.port.inbound.category;
 
 import java.util.List;
 
+import org.example.librarymanagement.port.dtos.category.CategoryResult;
+import org.example.librarymanagement.port.dtos.category.CreateCategoryCommand;
+import org.example.librarymanagement.port.dtos.category.UpdateCategoryCommand;
+
 public interface CategoryManagementUseCase {
 
     CategoryResult createCategory(

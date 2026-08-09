@@ -2,7 +2,7 @@ package org.example.librarymanagement.infrastructure.web.auth;
 
 import java.util.Set;
 
-import org.example.librarymanagement.application.auth.InvalidCredentialsException;
+import org.example.librarymanagement.domain.exceptions.shared.InvalidCredentialsException;
 import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptionHandler;
 import org.example.librarymanagement.port.dtos.auth.LoginCommand;
 import org.example.librarymanagement.port.dtos.auth.LoginResult;

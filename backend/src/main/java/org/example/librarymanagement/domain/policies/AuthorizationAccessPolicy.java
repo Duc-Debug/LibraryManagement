@@ -1,12 +1,8 @@
 package org.example.librarymanagement.domain.policies;
 
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.domain.exceptions.AccessDeniedException;
+import org.example.librarymanagement.domain.exceptions.shared.AccessDeniedException;
 
-/**
- * 
- * AuthorizationAccessPolicy: A1.3
- */
 public class AuthorizationAccessPolicy {
     public static final String ROLE_ADMIN = "ADMIN";
     public static final String ROLE_LIBRARIAN = "LIBRARIAN";
@@ -16,7 +12,7 @@ public class AuthorizationAccessPolicy {
      */
     public static void validateAdminAccess(User user) {
         if (user == null || !user.hasRole(ROLE_ADMIN)) {
-            throw new AccessDeniedException("Truy cập trái phép bị chặn (403): Chức năng này yêu cầu quyền Quản trị viên (Admin).");
+            throw new AccessDeniedException("Access denied: This feature requires Administrator (ADMIN) role.");
         }
     }
 
@@ -25,7 +21,7 @@ public class AuthorizationAccessPolicy {
      */
     public static void validateStaffAccess(User user) {
         if (user == null || (!user.hasRole(ROLE_ADMIN) && !user.hasRole(ROLE_LIBRARIAN))) {
-            throw new AccessDeniedException("Truy cập bị từ chối: Bạn không có quyền thao tác nghiệp vụ thư viện.");
+            throw new AccessDeniedException("Access denied: You do not have staff permissions to perform library operations.");
         }
     }
 }

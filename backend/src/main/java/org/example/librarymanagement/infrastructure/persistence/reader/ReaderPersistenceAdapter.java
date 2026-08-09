@@ -1,9 +1,10 @@
 package org.example.librarymanagement.infrastructure.persistence.reader;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.example.librarymanagement.domain.entity.Readers;
+import org.example.librarymanagement.domain.entity.Reader;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderSearchCriteria;
@@ -22,13 +23,13 @@ public class ReaderPersistenceAdapter implements ReaderRepositoryPort {
     private final ReaderPersistenceMapper readerPersistenceMapper;
 
     @Override
-public Optional<Readers> findById(Long readerId) {
+public Optional<Reader> findById(Long readerId) {
     return readerJpaRepository.findById(readerId)
             .map(readerPersistenceMapper::toDomain);
 }
 
 @Override
-public Readers save(Readers reader) {
+public Reader save(Reader reader) {
     ReaderJpaEntity entity =
             readerPersistenceMapper.toJpaEntity(reader);
 
@@ -38,7 +39,7 @@ public Readers save(Readers reader) {
     return readerPersistenceMapper.toDomain(savedEntity);
 }
     @Override
-    public Optional<Readers> findByCardNumber(String cardNumber) {
+    public Optional<Reader> findByCardNumber(String cardNumber) {
         return readerJpaRepository.findByCardNumber(cardNumber)
                 .map(readerPersistenceMapper::toDomain);
     }
@@ -59,7 +60,7 @@ public Readers save(Readers reader) {
     }
 
     @Override
-    public PageResult<Readers> search(ReaderSearchCriteria criteria) {
+    public PageResult<Reader> search(ReaderSearchCriteria criteria) {
         ReaderSearchCriteria safeCriteria = normalizeCriteria(criteria);
         Pageable pageable = PageRequest.of(
                 safeCriteria.page(),
@@ -71,7 +72,7 @@ public Readers save(Readers reader) {
                 pageable
         );
 
-        java.util.List<Readers> content = jpaPage.getContent().stream()
+        List<Reader> content = jpaPage.getContent().stream()
                 .map(readerPersistenceMapper::toDomain)
                 .collect(Collectors.toList());
 
@@ -84,21 +85,21 @@ public Readers save(Readers reader) {
     }
 
     @Override
-    public java.util.List<Readers> findAll() {
+    public List<Reader> findAll() {
         return readerJpaRepository.findByIsActiveTrue().stream()
                 .map(readerPersistenceMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public java.util.List<Readers> findByCreatedByUserId(Long createdByUserId) {
+    public List<Reader> findByCreatedByUserId(Long createdByUserId) {
         return readerJpaRepository.findByCreatedByUserIdAndIsActiveTrue(createdByUserId).stream()
                 .map(readerPersistenceMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public PageResult<Readers> findAll(int page, int size) {
+    public PageResult<Reader> findAll(int page, int size) {
         return search(new ReaderSearchCriteria(
                 null,
                 null,
@@ -109,7 +110,7 @@ public Readers save(Readers reader) {
     }
 
     @Override
-    public PageResult<Readers> findByCreatedByUserId(Long createdByUserId, int page, int size) {
+    public PageResult<Reader> findByCreatedByUserId(Long createdByUserId, int page, int size) {
         return search(new ReaderSearchCriteria(
                 null,
                 null,

@@ -1,14 +1,15 @@
 package org.example.librarymanagement.infrastructure.persistence.book;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
-import org.example.librarymanagement.port.inbound.common.PageResult;
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
-import org.example.librarymanagement.port.outbound.book.BookRepository;
+import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, CheckActiveBorrowPort, BookRepository {
+public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, CheckActiveBorrowPort, BookRepositoryPort {
 
     private final BookJpaRepository bookJpaRepository;
     private final BookPersistenceMapper bookPersistenceMapper;
@@ -26,8 +27,8 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
             BookJpaRepository bookJpaRepository,
             BookPersistenceMapper bookPersistenceMapper
     ) {
-        this.bookJpaRepository = bookJpaRepository;
-        this.bookPersistenceMapper = bookPersistenceMapper;
+         this.bookJpaRepository = Objects.requireNonNull(bookJpaRepository, "BookJpaRepository must not be null");
+        this.bookPersistenceMapper = Objects.requireNonNull(bookPersistenceMapper, "BookPersistenceMapper must not be null");
     }
 
     @Override
@@ -38,17 +39,21 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
     public Book save(Book book) {
         BookJpaEntity entity;
 
-        // 1. Trường hợp TẠO MỚI (bookId == null): Tạo mới hoàn toàn JPA Entity
-        if (book.getBookId() == null) {
+        if (book.getId() == null) {
             entity = create(book);
         } 
-        // 2. Trường hợp CẬP NHẬT (bookId != null): Tìm Entity cũ và cập nhật thông tin
         else {
             entity = update(book);
         }
 
-        BookJpaEntity saved = bookJpaRepository.save(entity);
-        return bookPersistenceMapper.toDomain(saved);
+        try {
+            BookJpaEntity saved = bookJpaRepository.save(entity);
+            return bookPersistenceMapper.toDomain(saved);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException(
+                    "ISBN already exists: " + book.getIsbn()
+            );
+        }
     }
 
     private BookJpaEntity create(Book book) {
@@ -56,10 +61,11 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
     }
 
     private BookJpaEntity update(Book book) {
-        BookJpaEntity entity = bookJpaRepository.findById(book.getBookId())
-                .orElseGet(() -> bookPersistenceMapper.toJpaEntity(book));
+        BookJpaEntity entity = bookJpaRepository.findById(book.getId())
+                .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.book.BookNotFoundException(
+                        "Book not found with ID: " + book.getId()
+                ));
         
-        // Chỉ cập nhật các trường thông tin đối với trường hợp Update
         bookPersistenceMapper.updateJpaEntity(book, entity);
         return entity;
     }

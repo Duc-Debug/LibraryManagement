@@ -1,8 +1,9 @@
 package org.example.librarymanagement.infrastructure.transaction.book;
 
 import java.util.Objects;
-import org.example.librarymanagement.port.inbound.book.BookResult;
-import org.example.librarymanagement.port.inbound.book.ReplenishBookStockCommand;
+
+import org.example.librarymanagement.port.dtos.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.ReplenishBookStockCommand;
 import org.example.librarymanagement.port.inbound.book.ReplenishBookStockUseCase;
 import org.springframework.transaction.annotation.Transactional;
 

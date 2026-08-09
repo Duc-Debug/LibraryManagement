@@ -3,7 +3,7 @@ package org.example.librarymanagement.domain.policies;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.example.librarymanagement.domain.entity.Readers;
+import org.example.librarymanagement.domain.entity.Reader;
 import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -16,7 +16,7 @@ class BorrowSlipCreationPolicyTest {
     @Test
     @DisplayName("validateCanBorrow - Success when reader card is ACTIVE and active")
     void givenActiveReader_whenValidateCanBorrow_thenDoNotThrow() {
-        Readers reader = Readers.builder()
+        Reader reader = Reader.builder()
                 .cardNumber("RD-001")
                 .name("Reader Active")
                 .email("active@test.com")
@@ -36,7 +36,7 @@ class BorrowSlipCreationPolicyTest {
     @Test
     @DisplayName("validateCanBorrow - Throw exception when reader card is LOCKED")
     void givenLockedReader_whenValidateCanBorrow_thenThrowDomainException() {
-        Readers reader = Readers.builder()
+        Reader reader = Reader.builder()
                 .cardNumber("RD-001")
                 .name("Reader Locked")
                 .email("locked@test.com")
@@ -56,7 +56,7 @@ class BorrowSlipCreationPolicyTest {
     @Test
     @DisplayName("validateCanBorrow - Throw exception when reader card is EXPIRED")
     void givenExpiredReader_whenValidateCanBorrow_thenThrowDomainException() {
-        Readers reader = Readers.builder()
+        Reader reader = Reader.builder()
                 .cardNumber("RD-001")
                 .name("Reader Expired")
                 .email("expired@test.com")
@@ -76,7 +76,7 @@ class BorrowSlipCreationPolicyTest {
     @Test
     @DisplayName("validateCanBorrow - Throw exception when reader is inactive")
     void givenInactiveReader_whenValidateCanBorrow_thenThrowDomainException() {
-        Readers reader = Readers.builder()
+        Reader reader = Reader.builder()
                 .cardNumber("RD-001")
                 .name("Reader Inactive")
                 .email("inactive@test.com")
