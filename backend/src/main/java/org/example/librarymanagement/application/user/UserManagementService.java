@@ -63,7 +63,7 @@ public class UserManagementService implements ManageUserUseCase {
 
         // 3. Tải Role từ Outbound Port
         Role role = loadRolePort.findByName(command.roleName())
-                .orElseThrow(() -> new DomainException("Role not found: " + command.roleName()));
+                .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.user.RoleNotFoundException(command.roleName()));
 
         // 4. Mã hóa mật khẩu qua Password Encoder Port
         String encodedPassword = encodePasswordPort.encode(command.rawPassword());
@@ -92,7 +92,7 @@ public class UserManagementService implements ManageUserUseCase {
         verifyAdminAccess();
 
         User targetUser = findUserPort.findById(command.userId())
-                .orElseThrow(() -> new DomainException("User not found with ID: " + command.userId()));
+                .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.user.UserNotFoundException(command.userId()));
 
         targetUser.updateProfile(command.fullName(), command.email(), command.phone());
 
@@ -113,7 +113,7 @@ public class UserManagementService implements ManageUserUseCase {
         verifyAdminAccess();
 
         User targetUser = findUserPort.findById(userId)
-                .orElseThrow(() -> new DomainException("User not found with ID: " + userId));
+                .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.user.UserNotFoundException(userId));
 
         targetUser.deactivate();
         saveUserPort.save(targetUser);
@@ -124,7 +124,7 @@ public class UserManagementService implements ManageUserUseCase {
         verifyStaffAccess();
 
         User user = findUserPort.findById(userId)
-                .orElseThrow(() -> new DomainException("User not found with ID: " + userId));
+                .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.user.UserNotFoundException(userId));
 
         return mapToResult(user);
     }

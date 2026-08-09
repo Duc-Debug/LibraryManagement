@@ -110,6 +110,20 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("READER_NOT_FOUND", exception.getMessage()));
     }
 
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.user.UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(org.example.librarymanagement.domain.exceptions.user.UserNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("USER_NOT_FOUND", exception.getMessage()));
+    }
+
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.user.RoleNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleRoleNotFound(org.example.librarymanagement.domain.exceptions.user.RoleNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("ROLE_NOT_FOUND", exception.getMessage()));
+    }
+
     @ExceptionHandler(ReaderAccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleReaderAccessDenied(ReaderAccessDeniedException exception) {
         return ResponseEntity
