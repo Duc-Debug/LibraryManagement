@@ -119,12 +119,12 @@ public class BorrowSlip {
         if (o == null || getClass() != o.getClass())
             return false;
         BorrowSlip that = (BorrowSlip) o;
-        return Objects.equals(id, that.id);
+        return id != null && that.id != null && Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return getClass().hashCode();
     }
 
     @Override

@@ -31,7 +31,7 @@ public class BorrowDetails {
         this.returnByUserId = returnByUserId;
         this.fineReason = normalizeNullable(fineReason);
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
-        this.updatedAt = updatedAt != null ? createdAt : LocalDateTime.now();
+        this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
     }
 
     // ==================== DOMAIN BUSINESS BEHAVIORS ====================
@@ -109,11 +109,11 @@ public class BorrowDetails {
         if (o == null || getClass() != o.getClass())
             return false;
         BorrowDetails details = (BorrowDetails) o;
-        return Objects.equals(id, details.id);
+        return id != null && details.id != null && Objects.equals(id, details.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return getClass().hashCode();
     }
 }
