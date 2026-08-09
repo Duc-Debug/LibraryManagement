@@ -75,7 +75,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort, LoadUserPort,
         if (user.getId() != null) {
             // Luồng UPDATE: Tìm Managed Entity từ DB để Hibernate Dirty Check & update các trường thay đổi
             entityToSave = userJpaRepository.findById(user.getId())
-                    .orElseGet(() -> userPersistenceMapper.toJpaEntity(user));
+                    .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.user.UserNotFoundException(user.getId()));
             userPersistenceMapper.updateJpaEntity(user, entityToSave);
         } else {
             // Luồng CREATE: Tạo mới hoàn toàn
