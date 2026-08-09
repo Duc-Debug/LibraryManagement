@@ -215,11 +215,11 @@ public class User {
         if (o == null || getClass() != o.getClass())
             return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) || Objects.equals(username, user.username);
+        return id != null && user.id != null && Objects.equals(id, user.id);
     }
 
     @Override
     public int hashCode() {
-        return id != null ? Objects.hash(id) : Objects.hash(username);
+        return getClass().hashCode();
     }
 }
