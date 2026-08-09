@@ -82,7 +82,13 @@ public class UserPersistenceAdapter implements UserRepositoryPort, LoadUserPort,
             entityToSave = userPersistenceMapper.toJpaEntity(user);
         }
 
-        UserJpaEntity savedEntity = userJpaRepository.save(entityToSave);
-        return userPersistenceMapper.toDomain(savedEntity);
+        try {
+            UserJpaEntity savedEntity = userJpaRepository.save(entityToSave);
+            return userPersistenceMapper.toDomain(savedEntity);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new org.example.librarymanagement.domain.exceptions.DomainException(
+                    "Username or email already exists: " + user.getUsername()
+            );
+        }
     }
 }

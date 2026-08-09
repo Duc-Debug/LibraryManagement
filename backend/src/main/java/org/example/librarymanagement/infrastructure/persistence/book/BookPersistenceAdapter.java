@@ -46,8 +46,14 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
             entity = update(book);
         }
 
-        BookJpaEntity saved = bookJpaRepository.save(entity);
-        return bookPersistenceMapper.toDomain(saved);
+        try {
+            BookJpaEntity saved = bookJpaRepository.save(entity);
+            return bookPersistenceMapper.toDomain(saved);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException(
+                    "ISBN already exists: " + book.getIsbn()
+            );
+        }
     }
 
     private BookJpaEntity create(Book book) {
