@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.DuplicateResourceException;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
@@ -52,12 +53,34 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
         }
 
         try {
-            BookJpaEntity saved = bookJpaRepository.save(entity);
+            // 2. Dùng saveAndFlush để đẩy SQL xuống DB ngay lập tức, đảm bảo bắt được constraint violation trong try-catch
+            BookJpaEntity saved = bookJpaRepository.saveAndFlush(entity);
             return bookPersistenceMapper.toDomain(saved);
-        } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            throw new org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException(
-                    "ISBN already exists: " + book.getIsbn());
+        } catch (DataIntegrityViolationException e) {
+            // 1 & 3. Chỉ translate khi xác định đúng ISBN constraint, và dùng cùng DuplicateResourceException contract
+            if (isIsbnConstraintViolation(e, book)) {
+                throw new DuplicateResourceException("Book with ISBN '" + book.getIsbn() + "' already exists.");
+            }
+            // Nếu là lỗi FK / NOT NULL / constraint khác, ném lại nguyên vẹn
+            throw e;
         }
+    }
+
+    private boolean isIsbnConstraintViolation(DataIntegrityViolationException e, Book book) {
+        String msg = e.getMessage();
+        Throwable rootCause = e.getRootCause();
+        String rootMsg = rootCause != null ? rootCause.getMessage() : "";
+
+        String combined = ((msg != null ? msg : "") + " " + (rootMsg != null ? rootMsg : "")).toLowerCase();
+        if (combined.contains("isbn") || combined.contains("uk_books_isbn")) {
+            return true;
+        }
+
+        if (book.getIsbn() != null && !book.getIsbn().isBlank()) {
+            return existsByIsbnAndIdNot(book.getIsbn(), book.getId());
+        }
+
+        return false;
     }
 
     private BookJpaEntity create(Book book) {
@@ -133,8 +156,17 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
 
     // ==================== FIND BOOK PORT ====================
     
+    @Override
+    public boolean existsByIsbn(String isbn) {
+        if (isbn == null) return false;
+        return bookJpaRepository.existsByIsbnIgnoreCase(isbn.trim());
+    }
+
+    @Override
     public List<Book> findAll(int page, int size) {
-        return bookJpaRepository.findAll(PageRequest.of(page, size))
+        // 4. Áp dụng cùng stable sort (id DESC) như các hàm phân trang khác
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        return bookJpaRepository.findAll(pageable)
                 .stream()
                 .map(bookPersistenceMapper::toDomain)
                 .filter(Objects::nonNull)

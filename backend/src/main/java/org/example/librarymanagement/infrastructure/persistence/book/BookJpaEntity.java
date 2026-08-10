@@ -54,7 +54,7 @@ public class BookJpaEntity {
     @Column(name = "available_quantity", nullable = false)
     private int availableQuantity;
 
-    @Column(name = "category_id")
+    @Column(name = "category_id", nullable = false)
     private Long categoryId;
 
     @Column(name = "active", nullable = false)

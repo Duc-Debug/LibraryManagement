@@ -1,6 +1,5 @@
 package org.example.librarymanagement.application.book;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.example.librarymanagement.domain.entity.Book;
@@ -10,31 +9,35 @@ import org.example.librarymanagement.domain.exceptions.ValidationException;
 import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.inbound.book.CreateBookCommand;
 import org.example.librarymanagement.port.inbound.book.CreateBookUseCase;
-import org.example.librarymanagement.port.outbound.book.FindBookPort;
+import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;
-import org.springframework.stereotype.Service;
+import org.example.librarymanagement.port.outbound.file.FileStoragePort;
 
-@Service
 public class CreateBookService implements CreateBookUseCase {
 
-    private final FindBookPort findBookPort;
     private final SaveBookPort saveBookPort;
-    private final CategoryRepositoryPort categoryRepositoryPort; // Dùng đúng port chứa findById của team
+    private final BookRepositoryPort bookRepositoryPort;
+    private final CategoryRepositoryPort categoryRepositoryPort;
+    private final FileStoragePort fileStoragePort;
 
     public CreateBookService(
-            FindBookPort findBookPort, 
-            SaveBookPort saveBookPort, 
-            CategoryRepositoryPort categoryRepositoryPort
+            SaveBookPort saveBookPort,
+            BookRepositoryPort bookRepositoryPort,
+            CategoryRepositoryPort categoryRepositoryPort,
+            FileStoragePort fileStoragePort
     ) {
-        this.findBookPort = findBookPort;
-        this.saveBookPort = saveBookPort;
-        this.categoryRepositoryPort = categoryRepositoryPort;
+        this.saveBookPort = Objects.requireNonNull(saveBookPort, "SaveBookPort must not be null");
+        this.bookRepositoryPort = Objects.requireNonNull(bookRepositoryPort, "BookRepositoryPort must not be null");
+        this.categoryRepositoryPort = Objects.requireNonNull(categoryRepositoryPort, "CategoryRepositoryPort must not be null");
+        this.fileStoragePort = Objects.requireNonNull(fileStoragePort, "FileStoragePort must not be null");
     }
 
     @Override
     public BookResult createBook(CreateBookCommand command) {
-
+        if (command == null) {
+            throw new ValidationException("Command tạo sách không được để trống");
+        }
         if (command.title() == null || command.title().isBlank()) {
             throw new ValidationException("Tên sách không được để trống");
         }
@@ -50,45 +53,57 @@ public class CreateBookService implements CreateBookUseCase {
         if (command.totalQuantity() <= 0) {
             throw new ValidationException("Số lượng sách phải lớn hơn 0");
         }
-        if (command.coverImageUrl() == null || command.coverImageUrl().isBlank()) {
-            throw new ValidationException("Ảnh bìa không được để trống");
-        }
 
         String normalizedIsbn = command.isbn().trim().toUpperCase().replace("-", "");
 
-        if (findBookPort.existsByIsbn(normalizedIsbn)) {
+        if (bookRepositoryPort.existsByIsbn(normalizedIsbn)) {
             throw new DuplicateResourceException("Sách với ISBN " + normalizedIsbn + " đã tồn tại.");
         }
 
-        // Tận dụng hàm findById của team an toàn tuyệt đối
         if (categoryRepositoryPort.findById(command.categoryId()).isEmpty()) {
             throw new ResourceNotFoundException("Thể loại với ID " + command.categoryId() + " không tồn tại.");
         }
 
-        Book book = Book.create(
-                command.title(),
-                command.author(),
-                normalizedIsbn, 
-                command.description(),
-                command.coverImageUrl(),
-                command.publisher(),
-                command.publishedYear() != null ? command.publishedYear().shortValue() : null,
-                command.shelfLocation(),
-                command.totalQuantity(),
-                command.categoryId()
-        );
+        String imageUrl = null;
+        try {
+            // 1. Storage orchestration tại tầng Application qua FileStoragePort
+            if (command.imageInputStream() != null) {
+                imageUrl = fileStoragePort.storeBookImage(
+                        command.imageInputStream(),
+                        command.imageFilename(),
+                        command.imageSize()
+                );
+            }
 
-        Book savedBook = saveBookPort.save(book);
-        return mapToResult(savedBook);
-    }
+            // 2. Khởi tạo Domain Entity
+            Book book = Book.create(
+                    command.title(),
+                    command.author(),
+                    normalizedIsbn, 
+                    command.description(),
+                    imageUrl,
+                    command.publisher(),
+                    command.publishedYear() != null ? command.publishedYear().shortValue() : null,
+                    command.shelfLocation(),
+                    command.totalQuantity(),
+                    command.categoryId()
+            );
 
-    @Override
-    public List<BookResult> getAllBooks(int page, int size) {
-        return findBookPort.findAll(page, size)
-                .stream()
-                .map(this::mapToResult)
-                .filter(Objects::nonNull)
-                .toList();
+            // 3. Lưu dữ liệu vào Database qua SaveBookPort riêng biệt
+            Book savedBook = saveBookPort.save(book);
+            return mapToResult(savedBook);
+
+        } catch (Exception e) {
+            // 4. Rollback compensation: Xóa ảnh mồ côi nếu có lỗi xảy ra
+            if (imageUrl != null) {
+                try {
+                    fileStoragePort.deleteFile(imageUrl);
+                } catch (Exception cleanupError) {
+                    e.addSuppressed(cleanupError);
+                }
+            }
+            throw e;
+        }
     }
 
     private BookResult mapToResult(Book book) {
