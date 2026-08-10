@@ -1,16 +1,16 @@
 package org.example.librarymanagement.infrastructure.persistence.book;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.DomainException;
-import org.example.librarymanagement.port.inbound.common.PageResult;
-import org.example.librarymanagement.port.outbound.book.BookRepository;
-import org.example.librarymanagement.port.outbound.book.FindBookPort;
+import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
+import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,65 +19,90 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class BookPersistenceAdapter implements 
-        LoadBookPort, 
-        CheckActiveBorrowPort, 
-        SaveBookPort,
-        FindBookPort,
-        BookRepository {
+public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, CheckActiveBorrowPort, BookRepositoryPort {
 
-    private final BookJpaRepository repository;
-    private final BookPersistenceMapper mapper;
+    private final BookJpaRepository bookJpaRepository;
+    private final BookPersistenceMapper bookPersistenceMapper;
 
-    public BookPersistenceAdapter(BookJpaRepository repository, BookPersistenceMapper mapper) {
-        this.repository = repository;
-        this.mapper = mapper;
+    public BookPersistenceAdapter(
+            BookJpaRepository bookJpaRepository,
+            BookPersistenceMapper bookPersistenceMapper) {
+        this.bookJpaRepository = Objects.requireNonNull(bookJpaRepository, "BookJpaRepository must not be null");
+        this.bookPersistenceMapper = Objects.requireNonNull(bookPersistenceMapper,
+                "BookPersistenceMapper must not be null");
     }
 
     // ==================== CHECK ACTIVE BORROW PORT ====================
 
     @Override
     public boolean hasActiveBorrowSlips(Long bookId) {
-        return repository.existsActiveBorrowByBookId(bookId) > 0;
+        return bookJpaRepository.existsActiveBorrowByBookId(bookId) > 0;
     }
 
     // ==================== SAVE BOOK PORT ====================
 
     @Override
     public Book save(Book book) {
-        try {
-            BookJpaEntity entity;
+        BookJpaEntity entity;
 
-            // 1. Trường hợp TẠO MỚI (bookId == null): Tạo mới hoàn toàn JPA Entity
-            if (book.getBookId() == null) {
-                entity = mapper.toJpaEntity(book);
-            } 
-            // 2. Trường hợp CẬP NHẬT (bookId != null): Tìm Entity cũ từ DB và cập nhật thông tin
-            else {
-                entity = repository.findById(book.getBookId())
-                        .orElseGet(() -> mapper.toJpaEntity(book));
-                mapper.updateJpaEntity(book, entity);
-            }
-
-            BookJpaEntity saved = repository.save(entity);
-            return mapper.toDomain(saved);
-        } catch (DataIntegrityViolationException e) {
-            // Bắt lỗi an toàn khi ISBN trùng lặp từ DB hoặc vi phạm ràng buộc
-            throw new DomainException("Không thể lưu sách: ISBN đã tồn tại hoặc vi phạm ràng buộc dữ liệu.");
+        if (book.getId() == null) {
+            entity = create(book);
+        } else {
+            entity = update(book);
         }
+
+        try {
+            BookJpaEntity saved = bookJpaRepository.save(entity);
+            return bookPersistenceMapper.toDomain(saved);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException(
+                    "ISBN already exists: " + book.getIsbn());
+        }
+    }
+
+    private BookJpaEntity create(Book book) {
+        return bookPersistenceMapper.toJpaEntity(book);
+    }
+
+    private BookJpaEntity update(Book book) {
+        BookJpaEntity entity = bookJpaRepository.findById(book.getId())
+                .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.book.BookNotFoundException(
+                        "Book not found with ID: " + book.getId()));
+
+        bookPersistenceMapper.updateJpaEntity(book, entity);
+        return entity;
     }
 
     @Override
     public void deleteById(Long bookId) {
-        repository.deleteById(bookId);
+        bookJpaRepository.deleteById(bookId);
     }
 
     // ==================== LOAD BOOK PORT ====================
 
     @Override
     public Optional<Book> findById(Long bookId) {
-        return repository.findById(bookId)
-                .map(mapper::toDomain);
+        return bookJpaRepository.findById(bookId)
+                .map(bookPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Book> findByIdForUpdate(Long bookId) {
+        return bookJpaRepository.findByIdForUpdate(bookId)
+                .map(bookPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return bookJpaRepository.existsById(id);
+    }
+
+    @Override
+    public boolean existsByIsbnAndIdNot(String isbn, Long id) {
+        if (id == null) {
+            return bookJpaRepository.existsByIsbn(isbn);
+        }
+        return bookJpaRepository.existsByIsbnAndIdNot(isbn, id);
     }
 
     @Override
@@ -86,16 +111,16 @@ public class BookPersistenceAdapter implements
         Page<BookJpaEntity> jpaPage;
 
         if (keyword == null || keyword.trim().isEmpty()) {
-            jpaPage = repository.findAll(pageable);
+            jpaPage = bookJpaRepository.findAll(pageable);
         } else {
             String search = keyword.trim();
-            jpaPage = repository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
-                    search, search, search, pageable
-            );
+            jpaPage = bookJpaRepository
+                    .findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCaseOrIsbnContainingIgnoreCase(
+                            search, search, search, pageable);
         }
 
         List<Book> domainBooks = jpaPage.getContent().stream()
-                .map(mapper::toDomain)
+                .map(bookPersistenceMapper::toDomain)
                 .toList();
 
         return new PageResult<>(
@@ -103,40 +128,17 @@ public class BookPersistenceAdapter implements
                 jpaPage.getNumber(),
                 jpaPage.getSize(),
                 jpaPage.getTotalElements(),
-                jpaPage.getTotalPages()
-        );
+                jpaPage.getTotalPages());
     }
 
     // ==================== FIND BOOK PORT ====================
-
-    @Override
-    public boolean existsByIsbn(String isbn) {
-        return repository.existsByIsbnIgnoreCase(isbn.trim());
-    }
-
-    @Override
-    public boolean existsById(Long id) {
-        return repository.existsById(id);
-    }
-
-    @Override
-    public boolean existsByIsbnAndIdNot(String isbn, Long id) {
-        return repository.existsByIsbnAndIdNot(isbn.trim(), id);
-    }
-
-    @Override
-    public List<Book> findAll(int page, int size) {
-        return repository.findAll(PageRequest.of(page, size))
-                .stream()
-                .map(mapper::toDomain)
-                .toList();
-    }
     
-    // Backup hàm findAll không phân trang
-    public List<Book> findAll() {
-        return repository.findAll()
+    public List<Book> findAll(int page, int size) {
+        return bookJpaRepository.findAll(PageRequest.of(page, size))
                 .stream()
-                .map(mapper::toDomain)
+                .map(bookPersistenceMapper::toDomain)
+                .filter(Objects::nonNull)
                 .toList();
     }
+
 }

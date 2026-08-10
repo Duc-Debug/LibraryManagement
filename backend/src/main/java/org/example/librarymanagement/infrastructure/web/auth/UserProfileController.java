@@ -1,11 +1,11 @@
 package org.example.librarymanagement.infrastructure.web.auth;
 
-import org.example.librarymanagement.application.auth.InvalidCredentialsException;
+import org.example.librarymanagement.domain.exceptions.shared.InvalidCredentialsException;
 import org.example.librarymanagement.infrastructure.security.UserPrincipal;
 import org.example.librarymanagement.infrastructure.web.auth.dtos.UpdateProfileRequest;
 import org.example.librarymanagement.port.dtos.auth.UpdateProfileCommand;
+import org.example.librarymanagement.port.dtos.user.UserResult;
 import org.example.librarymanagement.port.inbound.auth.ProfileUseCase;
-import org.example.librarymanagement.port.inbound.manage.UserResult;
 import org.example.librarymanagement.port.outbound.auth.token.VerifiedAccessToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +28,7 @@ public class UserProfileController {
     @GetMapping("/me")
     public ResponseEntity<UserResult> getMyProfile(@AuthenticationPrincipal Object principal) {
         if (principal == null) {
-            throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
+            throw new InvalidCredentialsException("Authentication token verification failed or session expired");
         }
         Long userId = extractUserId(principal);
         UserResult profile = profileUseCase.getProfile(userId);
@@ -41,7 +41,7 @@ public class UserProfileController {
             @Valid @RequestBody UpdateProfileRequest request
     ) {
         if (principal == null) {
-            throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
+            throw new InvalidCredentialsException("Authentication token verification failed or session expired");
         }
         Long userId = extractUserId(principal);
         UpdateProfileCommand command = new UpdateProfileCommand(
@@ -60,6 +60,6 @@ public class UserProfileController {
         if (principal instanceof VerifiedAccessToken verifiedToken) {
             return verifiedToken.userId();
         }
-        throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
+        throw new InvalidCredentialsException("Authentication token verification failed or session expired");
     }
 }

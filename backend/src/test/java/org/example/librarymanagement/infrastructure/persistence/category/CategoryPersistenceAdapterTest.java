@@ -9,8 +9,8 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 
-import org.example.librarymanagement.application.category.exception.CategoryInUseException;
-import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
+import org.example.librarymanagement.application.category.exceptions.CategoryInUseException;
+import org.example.librarymanagement.application.category.exceptions.DuplicateCategoryNameException;
 import org.example.librarymanagement.domain.entity.Category;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;

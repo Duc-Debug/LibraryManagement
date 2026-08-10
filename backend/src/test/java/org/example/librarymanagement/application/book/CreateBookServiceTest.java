@@ -11,7 +11,7 @@ import org.example.librarymanagement.domain.entity.Category;
 import org.example.librarymanagement.domain.exceptions.ValidationException;
 import org.example.librarymanagement.domain.exceptions.DuplicateResourceException;
 import org.example.librarymanagement.domain.exceptions.ResourceNotFoundException;
-import org.example.librarymanagement.port.inbound.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.inbound.book.CreateBookCommand;
 import org.example.librarymanagement.port.outbound.book.FindBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;

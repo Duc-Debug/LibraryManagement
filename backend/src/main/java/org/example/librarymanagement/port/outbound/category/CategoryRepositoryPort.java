@@ -3,8 +3,8 @@ package org.example.librarymanagement.port.outbound.category;
 import java.util.List;
 import java.util.Optional;
 
-import org.example.librarymanagement.application.category.exception.CategoryInUseException;
-import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
+import org.example.librarymanagement.application.category.exceptions.CategoryInUseException;
+import org.example.librarymanagement.application.category.exceptions.DuplicateCategoryNameException;
 import org.example.librarymanagement.domain.entity.Category;
 
 public interface CategoryRepositoryPort {

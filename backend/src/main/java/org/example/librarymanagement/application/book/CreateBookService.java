@@ -1,12 +1,13 @@
 package org.example.librarymanagement.application.book;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.DuplicateResourceException;
 import org.example.librarymanagement.domain.exceptions.ResourceNotFoundException;
 import org.example.librarymanagement.domain.exceptions.ValidationException;
-import org.example.librarymanagement.port.inbound.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.inbound.book.CreateBookCommand;
 import org.example.librarymanagement.port.inbound.book.CreateBookUseCase;
 import org.example.librarymanagement.port.outbound.book.FindBookPort;
@@ -78,20 +79,21 @@ public class CreateBookService implements CreateBookUseCase {
         );
 
         Book savedBook = saveBookPort.save(book);
-        return toResultModel(savedBook);
+        return mapToResult(savedBook);
     }
 
     @Override
     public List<BookResult> getAllBooks(int page, int size) {
         return findBookPort.findAll(page, size)
                 .stream()
-                .map(this::toResultModel)
+                .map(this::mapToResult)
+                .filter(Objects::nonNull)
                 .toList();
     }
 
-    private BookResult toResultModel(Book book) {
+    private BookResult mapToResult(Book book) {
         return new BookResult(
-                book.getBookId(), 
+                book.getId(),
                 book.getTitle(),
                 book.getAuthor(),
                 book.getIsbn(),

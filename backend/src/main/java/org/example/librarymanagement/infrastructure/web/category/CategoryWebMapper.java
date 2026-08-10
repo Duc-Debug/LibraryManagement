@@ -5,9 +5,9 @@ import java.util.Objects;
 import org.example.librarymanagement.infrastructure.web.category.dto.CategoryResponse;
 import org.example.librarymanagement.infrastructure.web.category.dto.CreateCategoryRequest;
 import org.example.librarymanagement.infrastructure.web.category.dto.UpdateCategoryRequest;
-import org.example.librarymanagement.port.inbound.category.CategoryResult;
-import org.example.librarymanagement.port.inbound.category.CreateCategoryCommand;
-import org.example.librarymanagement.port.inbound.category.UpdateCategoryCommand;
+import org.example.librarymanagement.port.dtos.category.CategoryResult;
+import org.example.librarymanagement.port.dtos.category.CreateCategoryCommand;
+import org.example.librarymanagement.port.dtos.category.UpdateCategoryCommand;
 import org.springframework.stereotype.Component;
 
 @Component

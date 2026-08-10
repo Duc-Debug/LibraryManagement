@@ -45,7 +45,7 @@ class DeleteBookServiceTest {
                 id,
                 title,
                 "Uncle Bob",
-                "978-0134494167",
+                "9780134494167",
                 "Description",
                 "https://example.com/cover.jpg",
                 "Publisher",

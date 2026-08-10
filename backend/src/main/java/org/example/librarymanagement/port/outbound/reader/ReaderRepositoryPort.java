@@ -2,16 +2,16 @@ package org.example.librarymanagement.port.outbound.reader;
 
 import java.util.Optional;
 
-import org.example.librarymanagement.domain.entity.Readers;
+import org.example.librarymanagement.domain.entity.Reader;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 
 public interface ReaderRepositoryPort {
 
-    Readers save(Readers reader);
+    Reader save(Reader reader);
 
-    Optional<Readers> findById(Long id);
+    Optional<Reader> findById(Long id);
 
-    Optional<Readers> findByCardNumber(String cardNumber);
+    Optional<Reader> findByCardNumber(String cardNumber);
 
     boolean existsByCardNumber(String cardNumber);
 
@@ -19,15 +19,15 @@ public interface ReaderRepositoryPort {
 
     boolean existsByPhoneNumber(String phoneNumber);
 
-    PageResult<Readers> search(ReaderSearchCriteria criteria);
+    PageResult<Reader> search(ReaderSearchCriteria criteria);
 
-    java.util.List<Readers> findAll();
+    java.util.List<Reader> findAll();
 
-    java.util.List<Readers> findByCreatedByUserId(Long createdByUserId);
+    java.util.List<Reader> findByCreatedByUserId(Long createdByUserId);
 
-    PageResult<Readers> findAll(int page, int size);
+    PageResult<Reader> findAll(int page, int size);
 
-    PageResult<Readers> findByCreatedByUserId(Long createdByUserId, int page, int size);
+    PageResult<Reader> findByCreatedByUserId(Long createdByUserId, int page, int size);
     boolean existsByEmailAndIdNot(
         String email,
         Long excludedReaderId

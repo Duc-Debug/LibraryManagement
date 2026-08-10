@@ -19,7 +19,8 @@ export interface BookResponseDto {
 }
 
 export interface PageResult<T> {
-  items: T[];
+  content?: T[];
+  items?: T[];
   page: number;
   size: number;
   totalElements: number;
@@ -40,7 +41,16 @@ export async function fetchBooksApi(
     queryParams.append("keyword", keyword.trim());
   }
 
-  return apiFetch<PageResult<BookResponseDto>>(`/api/librarians/books?${queryParams.toString()}`);
+  const raw = await apiFetch<any>(`/api/librarians/books?${queryParams.toString()}`);
+  const list = raw?.content || raw?.items || [];
+  return {
+    content: list,
+    items: list,
+    page: raw?.page ?? 0,
+    size: raw?.size ?? 10,
+    totalElements: raw?.totalElements ?? 0,
+    totalPages: raw?.totalPages ?? 0,
+  };
 }
 
 export async function fetchBookByIdApi(id: number): Promise<BookResponseDto> {
@@ -62,5 +72,38 @@ export async function hideBookApi(id: number): Promise<void> {
 export async function unhideBookApi(id: number): Promise<void> {
   return apiFetch<void>(`/api/librarians/books/${id}/unhide`, {
     method: "PATCH",
+  });
+}
+
+export interface UpdateBookRequestDto {
+  title: string;
+  author: string;
+  isbn: string;
+  description?: string;
+  coverImageUrl?: string;
+  publisher?: string;
+  publishedYear: number;
+  shelfLocation?: string;
+  totalQuantity: number;
+  categoryId: number;
+}
+
+export async function updateBookApi(
+  id: number,
+  requestDto: UpdateBookRequestDto
+): Promise<BookResponseDto> {
+  return apiFetch<BookResponseDto>(`/api/librarians/books/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(requestDto),
+  });
+}
+
+export async function replenishBookStockApi(
+  id: number,
+  quantityToAdd: number
+): Promise<BookResponseDto> {
+  return apiFetch<BookResponseDto>(`/api/librarians/books/${id}/replenish`, {
+    method: "POST",
+    body: JSON.stringify({ quantityToAdd }),
   });
 }

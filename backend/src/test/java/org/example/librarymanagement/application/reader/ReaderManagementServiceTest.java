@@ -6,25 +6,27 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.example.librarymanagement.domain.entity.Readers;
+import org.example.librarymanagement.domain.entity.Reader;
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.enums.CardStatus;
-import org.example.librarymanagement.domain.exceptions.ReaderAccessDeniedException;
-import org.example.librarymanagement.domain.exceptions.ReaderAlreadyExistsException;
-import org.example.librarymanagement.domain.exceptions.ReaderHasActiveBorrowException;
-import org.example.librarymanagement.domain.exceptions.ReaderNotFoundException;
-import org.example.librarymanagement.domain.exceptions.UnauthenticatedException;
+import org.example.librarymanagement.domain.exceptions.reader.ReaderAccessDeniedException;
+import org.example.librarymanagement.domain.exceptions.reader.ReaderAlreadyExistsException;
+import org.example.librarymanagement.domain.exceptions.reader.ReaderHasActiveBorrowException;
+import org.example.librarymanagement.domain.exceptions.reader.ReaderNotFoundException;
+import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.dtos.reader.CreateReaderCommand;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
 import org.example.librarymanagement.port.dtos.reader.UpdateReaderCommand;
+import org.example.librarymanagement.port.dtos.reader.ChangeCardStatusCommand;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveReaderBorrowPort;
-import org.example.librarymanagement.port.outbound.manage.FindUserPort;
-import org.example.librarymanagement.port.outbound.manage.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.reader.CardNumberGeneratorPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderSearchCriteria;
+import org.example.librarymanagement.port.outbound.user.FindUserPort;
+import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -203,7 +205,7 @@ class ReaderManagementServiceTest {
         when(getAuthenticatedUserPort.getCurrentUser())
                 .thenReturn(admin);
 
-        Readers reader = existingReader(
+        Reader reader = existingReader(
                 1L,
                 2L,
                 true
@@ -295,7 +297,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers existingReader =
+        Reader existingReader =
                 existingReader(
                         10L,
                         1L,
@@ -422,7 +424,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers existingReader =
+        Reader existingReader =
                 existingReader(
                         10L,
                         2L,
@@ -473,7 +475,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers existingReader =
+        Reader existingReader =
                 existingReader(
                         10L,
                         1L,
@@ -525,7 +527,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers reader = existingReader(
+        Reader reader = existingReader(
                 10L,
                 1L,
                 true
@@ -566,7 +568,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers reader = existingReader(
+        Reader reader = existingReader(
                 10L,
                 1L,
                 true
@@ -633,7 +635,7 @@ class ReaderManagementServiceTest {
                 "LIBRARIAN"
         );
 
-        Readers reader = existingReader(
+        Reader reader = existingReader(
                 10L,
                 2L,
                 true
@@ -658,7 +660,7 @@ class ReaderManagementServiceTest {
                 .save(any());
     }
 
-    private Readers existingReader(
+    private Reader existingReader(
             Long id,
             Long creatorId,
             boolean active
@@ -679,7 +681,7 @@ class ReaderManagementServiceTest {
                         0
                 );
 
-        return Readers.builder()
+        return Reader.builder()
                 .id(id)
                 .cardNumber("RD-2026-" + id)
                 .name("Original Reader")
@@ -722,5 +724,67 @@ class ReaderManagementServiceTest {
                         )
                 )
         );
+    }
+
+    @Test
+    @DisplayName("changeCardStatus - Success when owner or admin")
+    void givenValidCommandAndAuthorizedUser_whenChangeCardStatus_thenReturnUpdatedResult() {
+        // Arrange
+        Long readerId = 1L;
+        Long creatorId = 10L;
+        User mockOwner = mockUser(creatorId, "owner", "LIBRARIAN");
+        when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(mockOwner);
+
+        Reader existingReader = existingReader(readerId, creatorId, true);
+        when(readerRepositoryPort.findById(readerId)).thenReturn(Optional.of(existingReader));
+        when(readerRepositoryPort.save(any(Reader.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ChangeCardStatusCommand command = new ChangeCardStatusCommand(readerId, CardStatus.LOCKED);
+
+        // Act
+        ReaderResult result = readerManagementService.changeCardStatus(command);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(CardStatus.LOCKED, result.cardStatus());
+        verify(readerRepositoryPort).save(existingReader);
+    }
+
+    @Test
+    @DisplayName("changeCardStatus - Throw exception when access denied")
+    void givenUnauthorisedUser_whenChangeCardStatus_thenThrowReaderAccessDeniedException() {
+        // Arrange
+        Long readerId = 1L;
+        Long creatorId = 10L;
+        User mockUser = mockUser(99L, "unauthorized", "LIBRARIAN");
+        when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(mockUser);
+
+        Reader existingReader = existingReader(readerId, creatorId, true);
+        when(readerRepositoryPort.findById(readerId)).thenReturn(Optional.of(existingReader));
+
+        ChangeCardStatusCommand command = new ChangeCardStatusCommand(readerId, CardStatus.LOCKED);
+
+        // Act & Assert
+        assertThrows(ReaderAccessDeniedException.class, () -> {
+            readerManagementService.changeCardStatus(command);
+        });
+    }
+
+    @Test
+    @DisplayName("changeCardStatus - Throw exception when reader not found")
+    void givenNonExistentReaderId_whenChangeCardStatus_thenThrowReaderNotFoundException() {
+        // Arrange
+        Long readerId = 99L;
+        User mockUser = mockUser(1L, "admin", "ADMIN");
+        when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(mockUser);
+
+        when(readerRepositoryPort.findById(readerId)).thenReturn(Optional.empty());
+
+        ChangeCardStatusCommand command = new ChangeCardStatusCommand(readerId, CardStatus.LOCKED);
+
+        // Act & Assert
+        assertThrows(ReaderNotFoundException.class, () -> {
+            readerManagementService.changeCardStatus(command);
+        });
     }
 }

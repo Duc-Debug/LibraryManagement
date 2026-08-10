@@ -1,7 +1,7 @@
 package org.example.librarymanagement.infrastructure.web.book;
 
 import org.example.librarymanagement.infrastructure.file.FileStorageService;
-import org.example.librarymanagement.port.inbound.book.BookResult;
+import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.inbound.book.CreateBookCommand;
 import org.example.librarymanagement.port.inbound.book.CreateBookUseCase;
 import org.springframework.http.HttpStatus;

@@ -1,6 +1,6 @@
 package org.example.librarymanagement.infrastructure.web.auth;
 
-import org.example.librarymanagement.application.auth.InvalidCredentialsException;
+import org.example.librarymanagement.domain.exceptions.shared.InvalidCredentialsException;
 import org.example.librarymanagement.infrastructure.security.UserPrincipal;
 import org.example.librarymanagement.infrastructure.web.auth.dtos.ChangePasswordRequest;
 import org.example.librarymanagement.port.dtos.auth.ChangePasswordCommand;
@@ -30,7 +30,7 @@ public class ChangePasswordController {
             @Valid @RequestBody ChangePasswordRequest request
     ) {
         if (principal == null) {
-            throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
+            throw new InvalidCredentialsException("Authentication token verification failed or session expired");
         }
 
         Long userId = extractUserId(principal);
@@ -57,6 +57,6 @@ public class ChangePasswordController {
         if (principal instanceof VerifiedAccessToken verifiedToken) {
             return verifiedToken.userId();
         }
-        throw new InvalidCredentialsException("Yêu cầu xác thực token bất thành hoặc phiên làm việc đã hết hạn.");
+        throw new InvalidCredentialsException("Authentication token verification failed or session expired");
     }
 }

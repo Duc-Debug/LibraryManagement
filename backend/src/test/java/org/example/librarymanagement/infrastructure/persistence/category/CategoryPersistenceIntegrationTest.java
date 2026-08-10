@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 
-import org.example.librarymanagement.application.category.exception.DuplicateCategoryNameException;
 import org.example.librarymanagement.LibraryManagementApplication;
+import org.example.librarymanagement.application.category.exceptions.DuplicateCategoryNameException;
 import org.example.librarymanagement.domain.entity.Category;
 import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;
 import org.junit.jupiter.api.Test;
