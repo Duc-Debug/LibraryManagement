@@ -49,6 +49,9 @@ export default function Page() {
       localStorage.removeItem('tokenType');
       localStorage.removeItem('currentUser');
       setCurrentUser(null);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({ page: 'login' }, '', '/?page=login');
+      }
     } else if (token && savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
@@ -73,7 +76,7 @@ export default function Page() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const pageParam = urlParams.get('page');
-      if (pageParam && ['dashboard', 'books', 'categories', 'members', 'borrowing', 'returns', 'accounts', 'settings'].includes(pageParam)) {
+      if (pageParam && ['dashboard', 'books', 'categories', 'members', 'borrowing', 'returns', 'accounts', 'settings', 'login'].includes(pageParam)) {
         setCurrentPage(pageParam);
       }
 
@@ -103,12 +106,15 @@ export default function Page() {
   }
 
   if (!currentUser) {
+    if (typeof window !== 'undefined' && !window.location.search.includes('page=login')) {
+      window.history.replaceState({ page: 'login' }, '', '/?page=login');
+    }
     return (
       <LoginPage
         accounts={accounts}
         onLogin={(account) => {
           setCurrentUser(account);
-          setCurrentPage('dashboard');
+          handlePageChange('dashboard');
         }}
       />
     );
@@ -123,7 +129,9 @@ export default function Page() {
     localStorage.removeItem('tokenType');
     localStorage.removeItem('currentUser');
     setCurrentUser(null);
-    setCurrentPage('dashboard');
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ page: 'login' }, '', '/?page=login');
+    }
   };
 
   const handleSetAccounts = (updated: UserAccount[]) => {
