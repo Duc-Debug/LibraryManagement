@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, RefreshCw, Edit3, Trash2, X, AlertCircle, Lock, Unlock, CheckCircle } from 'lucide-react';
+import { Plus, Search, RefreshCw, Edit3, Trash2, X, AlertCircle, Lock, Unlock, CheckCircle, CreditCard, QrCode, Calendar, ShieldCheck, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   fetchReadersPage,
@@ -35,6 +35,7 @@ export function MembersPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedMemberToEdit, setSelectedMemberToEdit] = useState<ReaderResponse | null>(null);
   const [selectedMemberToDelete, setSelectedMemberToDelete] = useState<ReaderResponse | null>(null);
+  const [previewCardReader, setPreviewCardReader] = useState<ReaderResponse | null>(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -118,16 +119,19 @@ export function MembersPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6 text-foreground animate-in fade-in duration-200">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 text-foreground animate-in fade-in duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/50">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Quản lý Độc Giả</h1>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <UserCheck className="w-6 h-6 text-primary" />
+            <span>Quản Lý Độc Giả & Thẻ Thư Viện</span>
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Xem danh sách, chỉnh sửa thông tin, khóa/mở khóa thẻ và xóa thông tin độc giả
+            Xem danh sách bạn đọc, phát hành thẻ điện tử, chỉnh sửa thông tin và quản lý khóa/mở thẻ.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start sm:self-auto">
           <Button onClick={loadReaders} variant="outline" disabled={loading} className="rounded-xl flex items-center gap-2 text-xs">
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Tải lại
@@ -138,10 +142,10 @@ export function MembersPage() {
               setForm({ name: '', email: '', phone: '', address: '' });
               setShowAddModal(true);
             }}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl flex items-center gap-2 text-xs font-semibold"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl flex items-center gap-2 text-xs font-semibold shadow-md cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Cấp thẻ mới
+            Cấp Thẻ Mới
           </Button>
         </div>
       </div>
@@ -197,41 +201,44 @@ export function MembersPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-muted/50 border-b border-border text-xs uppercase text-muted-foreground font-semibold">
+              <thead className="bg-muted/50 border-b border-border text-xs uppercase text-muted-foreground font-semibold whitespace-nowrap">
                 <tr>
-                  <th className="px-6 py-4">Mã Thẻ</th>
-                  <th className="px-6 py-4">Họ tên</th>
-                  <th className="px-6 py-4">Email / Điện thoại</th>
-                  <th className="px-6 py-4">Địa chỉ</th>
-                  <th className="px-6 py-4">Hạn Thẻ</th>
-                  <th className="px-6 py-4">Người tạo</th>
-                  <th className="px-6 py-4 text-center">Trạng thái</th>
-                  <th className="px-6 py-4 text-right">Thao tác</th>
+                  <th className="px-6 py-4 whitespace-nowrap">Mã Thẻ</th>
+                  <th className="px-6 py-4 whitespace-nowrap">Họ Tên</th>
+                  <th className="px-6 py-4 whitespace-nowrap">Liên Hệ</th>
+                  <th className="px-6 py-4 whitespace-nowrap">Địa Chỉ</th>
+                  <th className="px-6 py-4 whitespace-nowrap">Hạn Thẻ</th>
+                  <th className="px-6 py-4 text-center whitespace-nowrap">Trạng Thái</th>
+                  <th className="px-6 py-4 text-right whitespace-nowrap">Thao Tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredReaders.map((reader) => (
                   <tr key={reader.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4 text-sm font-mono font-bold text-primary">{reader.cardNumber}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-foreground">{reader.name}</td>
-                    <td className="px-6 py-4 text-xs space-y-0.5">
-                      <div className="text-foreground">{reader.email}</div>
-                      <div className="text-muted-foreground">{reader.phoneNumber}</div>
+                    <td className="px-6 py-4 text-sm font-mono font-bold text-primary whitespace-nowrap">
+                      <button
+                        onClick={() => setPreviewCardReader(reader)}
+                        className="inline-flex items-center gap-1.5 hover:underline cursor-pointer"
+                        title="Xem Thẻ Thư Viện Điện Tử"
+                      >
+                        <CreditCard className="w-4 h-4 text-indigo-500" />
+                        <span>{reader.cardNumber}</span>
+                      </button>
                     </td>
-                    <td className="px-6 py-4 text-xs text-muted-foreground max-w-xs truncate">{reader.address}</td>
-                    <td className="px-6 py-4 text-xs font-medium text-foreground">
+                    <td className="px-6 py-4 text-sm font-semibold text-foreground whitespace-nowrap">{reader.name}</td>
+                    <td className="px-6 py-4 text-xs space-y-0.5 whitespace-nowrap">
+                      <div className="text-foreground font-medium">{reader.email}</div>
+                      <div className="text-muted-foreground font-mono">{reader.phoneNumber}</div>
+                    </td>
+                    <td className="px-6 py-4 text-xs text-muted-foreground max-w-xs truncate whitespace-nowrap">{reader.address}</td>
+                    <td className="px-6 py-4 text-xs font-medium text-foreground whitespace-nowrap">
                       {reader.cardExpiryAt ? new Date(reader.cardExpiryAt).toLocaleDateString('vi-VN') : 'N/A'}
                     </td>
-                    <td className="px-6 py-4 text-xs text-foreground">
-                      <span className="px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20">
-                        {reader.createdByName || "Hệ thống"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${
                           reader.cardStatus === 'ACTIVE'
-                            ? 'bg-green-500/10 text-green-600 border border-green-500/20'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                             : 'bg-destructive/10 text-destructive border border-destructive/20'
                         }`}
                       >
@@ -242,19 +249,29 @@ export function MembersPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => setPreviewCardReader(reader)}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs"
+                        title="Xem Thẻ Điện Tử"
+                      >
+                        <CreditCard className="w-3.5 h-3.5 text-indigo-500" />
+                        Thẻ
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setSelectedMemberToEdit(reader)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                         Sửa
                       </Button>
                       
-                      {/* Nút Ẩn/Hiện (Khóa/Mở khóa thẻ) */}
                       <Button
                         variant={reader.cardStatus === 'ACTIVE' ? "secondary" : "outline"}
                         size="sm"
                         onClick={() => handleToggleStatus(reader)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs"
                       >
                         {reader.cardStatus === 'ACTIVE' ? (
                           <>
@@ -263,8 +280,8 @@ export function MembersPage() {
                           </>
                         ) : (
                           <>
-                            <Unlock className="w-3.5 h-3.5 text-green-500" />
-                            Kích hoạt
+                            <Unlock className="w-3.5 h-3.5 text-emerald-500" />
+                            Mở
                           </>
                         )}
                       </Button>
@@ -273,10 +290,9 @@ export function MembersPage() {
                         variant="destructive"
                         size="sm"
                         onClick={() => setSelectedMemberToDelete(reader)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        Xóa
                       </Button>
                     </td>
                   </tr>
@@ -329,6 +345,82 @@ export function MembersPage() {
         </div>
       </div>
 
+      {/* 🪪 DIGITAL LIBRARY CARD PREVIEW MODAL */}
+      {previewCardReader && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-150">
+          <div className="bg-card rounded-3xl border border-border w-full max-w-lg shadow-2xl p-6 relative overflow-hidden space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-indigo-500" />
+                <h2 className="text-lg font-bold text-foreground">Thẻ Thư Viện Điện Tử</h2>
+              </div>
+              <button
+                onClick={() => setPreviewCardReader(null)}
+                className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Holographic Library Plastic Card Graphic */}
+            <div className="relative rounded-2xl bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 text-white p-6 shadow-xl border border-indigo-500/30 overflow-hidden space-y-6">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+              
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center font-bold text-xs text-white">
+                    LIB
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-sm tracking-wider uppercase">THƯ VIỆN SỐ ENTERPRISE</div>
+                    <div className="text-[10px] text-indigo-300">DIGITAL LIBRARY PASS</div>
+                  </div>
+                </div>
+                <QrCode className="w-8 h-8 text-indigo-400 opacity-80" />
+              </div>
+
+              <div className="space-y-1 relative z-10">
+                <div className="text-[11px] text-indigo-300 uppercase tracking-widest">MÃ THẺ ĐỘC GIẢ</div>
+                <div className="font-mono text-xl font-extrabold tracking-widest text-indigo-200">
+                  {previewCardReader.cardNumber}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between relative z-10 text-xs">
+                <div>
+                  <div className="text-[10px] text-indigo-300 uppercase">CHỦ THẺ</div>
+                  <div className="font-bold text-sm text-white">{previewCardReader.name}</div>
+                  <div className="text-[11px] text-slate-400">{previewCardReader.phoneNumber}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] text-indigo-300 uppercase">HẠN THẺ</div>
+                  <div className="font-mono font-semibold text-emerald-400">
+                    {previewCardReader.cardExpiryAt ? new Date(previewCardReader.cardExpiryAt).toLocaleDateString('vi-VN') : 'Vĩnh viễn'}
+                  </div>
+                  <div className="text-[10px] text-emerald-300 flex items-center justify-end gap-1 mt-0.5">
+                    <ShieldCheck className="w-3 h-3" /> ACTIVE
+                  </div>
+                </div>
+              </div>
+
+              {/* Barcode graphic lines */}
+              <div className="pt-2 border-t border-indigo-500/20 flex justify-between items-center opacity-60">
+                <div className="font-mono text-[9px] tracking-[0.3em] text-slate-300">
+                  ||||| | ||||| || |||||| | ||||| |||||||
+                </div>
+                <div className="text-[9px] text-slate-400 font-mono">VERIFIED</div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={() => setPreviewCardReader(null)} variant="outline" size="sm" className="text-xs">
+                Đóng
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add Member Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-150">
@@ -340,7 +432,7 @@ export function MembersPage() {
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted transition"
+                className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -413,9 +505,9 @@ export function MembersPage() {
                 <Button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center gap-2 rounded-xl text-xs py-2"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center gap-2 rounded-xl text-xs py-2 shadow-md cursor-pointer"
                 >
-                  {saving && <RefreshCw className="w-4.5 h-4.5 animate-spin" />}
+                  {saving && <RefreshCw className="w-4 h-4 animate-spin" />}
                   <span>{saving ? 'Đang xử lý...' : 'Cấp thẻ mới'}</span>
                 </Button>
               </div>

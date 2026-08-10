@@ -221,7 +221,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(command)
         );
 
-        assertTrue(exception.getMessage().contains("không tồn tại"));
+        assertTrue(exception.getMessage().contains("not exist"));
         verify(saveBookPort, never()).save(any());
     }
 
@@ -246,6 +246,7 @@ class CreateBookServiceTest {
         assertTrue(savedBook.isActive());
     }
 
+
     @Test
     void throwsExceptionWhenCommandIsNull() {
         ValidationException exception = assertThrows(
@@ -268,7 +269,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("Tên sách không được để trống", exception.getMessage());
+        assertEquals("Book title must not be null", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 
@@ -284,7 +285,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("Tác giả không được để trống", exception.getMessage());
+        assertEquals("Author must not be null", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 
@@ -300,7 +301,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("ISBN không được để trống", exception.getMessage());
+        assertEquals("ISBN must not be null", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 
@@ -316,7 +317,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("Số lượng sách phải lớn hơn 0", exception.getMessage());
+        assertEquals("Total quantity must larger than 0", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 
@@ -332,7 +333,9 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("Thể loại không được để trống", exception.getMessage());
+
+        assertEquals("Category must not be null", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 }
+

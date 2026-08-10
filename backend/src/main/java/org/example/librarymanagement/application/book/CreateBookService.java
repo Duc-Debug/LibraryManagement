@@ -39,29 +39,33 @@ public class CreateBookService implements CreateBookUseCase {
             throw new ValidationException("Command tạo sách không được để trống");
         }
         if (command.title() == null || command.title().isBlank()) {
-            throw new ValidationException("Tên sách không được để trống");
+            throw new ValidationException("Book title must not be null");
         }
         if (command.author() == null || command.author().isBlank()) {
-            throw new ValidationException("Tác giả không được để trống");
+            throw new ValidationException("Author must not be null");
         }
         if (command.isbn() == null || command.isbn().isBlank()) {
-            throw new ValidationException("ISBN không được để trống");
+            throw new ValidationException("ISBN must not be null");
         }
         if (command.categoryId() == null) {
-            throw new ValidationException("Thể loại không được để trống");
+            throw new ValidationException("Category must not be null");
         }
         if (command.totalQuantity() <= 0) {
-            throw new ValidationException("Số lượng sách phải lớn hơn 0");
+
+            throw new ValidationException("Total quantity must larger than 0");
+
         }
 
         String normalizedIsbn = command.isbn().trim().toUpperCase().replace("-", "");
 
-        if (bookRepositoryPort.existsByIsbn(normalizedIsbn)) {
-            throw new DuplicateResourceException("Sách với ISBN " + normalizedIsbn + " đã tồn tại.");
+
+        if (loadBookPort.existsByIsbn(normalizedIsbn)) {
+            throw new DuplicateResourceException("Book with ISBN " + normalizedIsbn + " already have.");
+
         }
 
         if (categoryRepositoryPort.findById(command.categoryId()).isEmpty()) {
-            throw new ResourceNotFoundException("Thể loại với ID " + command.categoryId() + " không tồn tại.");
+            throw new ResourceNotFoundException("Category with ID " + command.categoryId() + " not exist.");
         }
 
         String imageUrl = null;

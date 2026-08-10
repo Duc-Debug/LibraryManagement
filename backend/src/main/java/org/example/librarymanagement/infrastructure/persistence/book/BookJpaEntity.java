@@ -11,8 +11,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
-import jakarta.persistence.Version;
-
 @Entity
 @Table(name = "books")
 public class BookJpaEntity {
@@ -20,9 +18,6 @@ public class BookJpaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Version
-    private Long version;
 
     @Column(name = "title", nullable = false, length = 150)
     private String title;

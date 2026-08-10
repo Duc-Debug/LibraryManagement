@@ -14,8 +14,6 @@ import org.example.librarymanagement.port.inbound.book.DeleteBookUseCase;
 import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
 import org.example.librarymanagement.port.inbound.book.ReplenishBookStockUseCase;
-import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
-import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
 import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;

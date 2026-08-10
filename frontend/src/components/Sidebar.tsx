@@ -48,7 +48,7 @@ const ALL_NAV_ITEMS: { id: Page; label: string; icon: ReactNode; adminOnly?: boo
   { id: "dashboard", label: "Bảng điều khiển", icon: <IconGrid /> },
   { id: "books", label: "Quản lý Sách", icon: <IconBook /> },
   { id: "categories", label: "Thể loại sách", icon: <IconFolder /> },
-  { id: "members", label: "Thành viên", icon: <IconUsers /> },
+  { id: "members", label: "Độc Giả", icon: <IconUsers /> },
   { id: "borrow", label: "Mượn sách", icon: <IconArrowIn /> },
   { id: "return", label: "Trả sách", icon: <IconRefresh /> },
   { id: "accounts", label: "Quản lý Tài khoản", icon: <IconShield />, adminOnly: true },
@@ -67,8 +67,7 @@ export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLog
       <div className="flex items-center gap-3 px-3 py-4 border-b border-gray-100">
         <button
           onClick={toggleExpanded}
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-opacity hover:opacity-80"
-          style={{ backgroundColor: "#1a4a2e" }}
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-emerald-700 text-white transition-opacity hover:opacity-90 shadow-sm"
           title={expanded ? "Thu gọn menu" : "Mở rộng menu"}
         >
           <IconBook size={20} className="text-white" />
@@ -77,7 +76,7 @@ export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLog
         {expanded && (
           <>
             <div className="overflow-hidden flex-1 min-w-0">
-              <div className="font-bold text-sm leading-tight truncate" style={{ color: "#1a4a2e" }}>
+              <div className="font-bold text-sm leading-tight truncate text-emerald-800 dark:text-emerald-400">
                 Thư viện
               </div>
               <div className="text-xs text-gray-400">Quản lý sách</div>
@@ -102,9 +101,8 @@ export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLog
               key={item.id}
               onClick={() => setPage(item.id)}
               className={`w-full flex items-center gap-3 px-2 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                active ? "text-white" : "text-gray-600 hover:bg-gray-50"
+                active ? "bg-emerald-700 text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"
               }`}
-              style={active ? { backgroundColor: "#1a4a2e" } : {}}
               title={!expanded ? item.label : undefined}
             >
               <span className="shrink-0">{item.icon}</span>
@@ -123,8 +121,7 @@ export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLog
         {expanded ? (
           <button
             onClick={onLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: "#1a4a2e" }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-sm"
           >
             <IconLogout size={18} />
             <span>Đăng xuất</span>
@@ -132,8 +129,7 @@ export default function Sidebar({ page, setPage, expanded, toggleExpanded, onLog
         ) : (
           <button
             onClick={onLogout}
-            className="w-full flex items-center justify-center py-2.5 rounded-xl text-white hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: "#1a4a2e" }}
+            className="w-full flex items-center justify-center py-2.5 rounded-xl bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-sm"
             title="Đăng xuất"
           >
             <IconLogout size={18} />

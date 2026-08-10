@@ -5,14 +5,16 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
+<<<<<<< HEAD
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.DuplicateResourceException;
+=======
+>>>>>>> c3e01c2f6f381e46632fc6b7aed44bc360242854
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -121,6 +123,11 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
     }
 
     @Override
+    public boolean existsByIsbn(String isbn) {
+        return bookJpaRepository.existsByIsbn(isbn);
+    }
+
+    @Override
     public boolean existsByIsbnAndIdNot(String isbn, Long id) {
         if (id == null) {
             return bookJpaRepository.existsByIsbn(isbn);
@@ -154,6 +161,7 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
                 jpaPage.getTotalPages());
     }
 
+<<<<<<< HEAD
     // ==================== FIND BOOK PORT ====================
     
     @Override
@@ -162,6 +170,8 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
         return bookJpaRepository.existsByIsbnIgnoreCase(isbn.trim());
     }
 
+=======
+>>>>>>> c3e01c2f6f381e46632fc6b7aed44bc360242854
     @Override
     public List<Book> findAll(int page, int size) {
         // 4. Áp dụng cùng stable sort (id DESC) như các hàm phân trang khác
@@ -172,5 +182,4 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
                 .filter(Objects::nonNull)
                 .toList();
     }
-
 }

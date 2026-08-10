@@ -107,3 +107,11 @@ export async function replenishBookStockApi(
     body: JSON.stringify({ quantityToAdd }),
   });
 }
+
+export async function createBookApi(formData: FormData): Promise<BookResponseDto> {
+  return apiFetch<BookResponseDto>("/api/books", {
+    method: "POST",
+    body: formData,
+  });
+}
+
