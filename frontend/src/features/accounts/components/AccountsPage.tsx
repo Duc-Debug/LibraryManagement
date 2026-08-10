@@ -163,7 +163,6 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Quản lý Thủ thư (Admin)</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Dữ liệu trực tiếp từ máy chủ Backend Spring Boot
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -210,12 +209,12 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/40">
+              <tr className="border-b border-border bg-muted/40 whitespace-nowrap">
                 {['ID', 'Họ và tên', 'Tên đăng nhập', 'Email', 'Số điện thoại', 'Vai trò', 'Trạng thái', 'Hành động'].map(
                   (h) => (
                     <th
                       key={h}
-                      className="px-6 py-3 text-left text-xs font-semibold text-foreground"
+                      className="px-6 py-3 text-left text-xs font-semibold text-foreground whitespace-nowrap"
                     >
                       {h}
                     </th>
@@ -223,17 +222,17 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
                 )}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border">
               {librarians.map((item) => {
                 const isSelf = String(item.id) === String(currentUserId);
                 const isToggling = togglingId === item.id;
 
                 return (
-                  <tr key={item.id} className="border-b border-border last:border-0 hover:bg-muted/50">
-                    <td className="px-6 py-4 text-muted-foreground text-xs font-mono">
+                  <tr key={item.id} className="hover:bg-muted/50 transition-colors">
+                    <td className="px-6 py-4 text-muted-foreground text-xs font-mono whitespace-nowrap">
                       #{item.id}
                     </td>
-                    <td className="px-6 py-4 font-semibold text-foreground">
+                    <td className="px-6 py-4 font-semibold text-foreground whitespace-nowrap">
                       {item.fullName}
                       {isSelf && (
                         <span className="ml-2 text-xs text-primary font-normal">
@@ -241,35 +240,35 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground font-mono text-xs">
+                    <td className="px-6 py-4 text-muted-foreground font-mono text-xs whitespace-nowrap">
                       {item.username}
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground text-xs">
+                    <td className="px-6 py-4 text-muted-foreground text-xs whitespace-nowrap">
                       {item.email || '—'}
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground text-xs">
+                    <td className="px-6 py-4 text-muted-foreground text-xs whitespace-nowrap">
                       {item.phone || '—'}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 whitespace-nowrap">
                         Thủ thư
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-block px-3 py-0.5 rounded-full text-xs font-medium ${item.enabled
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-600'
+                        className={`inline-block px-3 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${item.enabled
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                          : 'bg-destructive/10 text-destructive border border-destructive/20'
                           }`}
                       >
                         {item.enabled ? 'Hoạt động' : 'Đã khóa'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
                         <button
                           onClick={() => openEdit(item)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-border text-foreground hover:bg-muted transition-colors flex items-center gap-1"
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-border text-foreground hover:bg-muted transition-colors flex items-center gap-1 cursor-pointer"
                         >
                           <Edit2 size={14} />
                           Sửa
@@ -277,11 +276,11 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
                         <button
                           onClick={() => toggleLock(item)}
                           disabled={isSelf || isToggling}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 ${isSelf
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer ${isSelf
                             ? 'opacity-30 cursor-not-allowed border border-border text-muted-foreground'
                             : item.enabled
-                              ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                              : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                              ? 'bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20'
+                              : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20'
                             }`}
                         >
                           {isToggling ? (

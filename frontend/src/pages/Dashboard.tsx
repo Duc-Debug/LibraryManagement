@@ -26,7 +26,7 @@ export default function Dashboard({ books = [], members = [], records = [] }: Da
       iconBg: "bg-blue-50",
     },
     {
-      label: "Thành viên",
+      label: "Độc giả",
       value: members.length,
       sub: `${activeMembers} đang hoạt động`,
       icon: <IconUsers size={22} className="text-green-600" />,
