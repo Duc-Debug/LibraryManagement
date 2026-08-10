@@ -79,8 +79,16 @@ export function BooksPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchBooksApi(page, size, debouncedSearch);
-      setBooksPage(res);
+      const [res, cats] = await Promise.allSettled([
+        fetchBooksApi(page, size, debouncedSearch),
+        fetchCategoriesApi()
+      ]);
+      if (res.status === 'fulfilled') {
+        setBooksPage(res.value);
+      }
+      if (cats.status === 'fulfilled') {
+        setCategories(cats.value);
+      }
     } catch (err: any) {
       setError(err.message || 'Không thể tải danh sách sách từ máy chủ.');
     } finally {
@@ -317,9 +325,23 @@ export function BooksPage() {
                     <td className="px-6 py-4 text-sm font-semibold text-foreground whitespace-nowrap">{book.title}</td>
                     <td className="px-6 py-4 text-sm text-foreground whitespace-nowrap">{book.author}</td>
                     <td className="px-6 py-4 text-sm whitespace-nowrap">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary whitespace-nowrap inline-block">
-                        {book.categoryName || 'Chưa phân loại'}
-                      </span>
+                      {(() => {
+                        const matchedCat = categories.find(c => c.name === book.categoryName);
+                        const isCatInactive = matchedCat && !matchedCat.active;
+                        return isCatInactive ? (
+                          <span
+                            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap inline-flex items-center gap-1 cursor-help"
+                            title="Thể loại này hiện đang bị ẩn trên hệ thống"
+                          >
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                            {book.categoryName} (TL ẩn)
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary whitespace-nowrap inline-block">
+                            {book.categoryName || 'Chưa phân loại'}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4 text-sm font-mono text-muted-foreground whitespace-nowrap">{book.isbn}</td>
                     <td className="px-6 py-4 text-sm text-center text-foreground whitespace-nowrap">{book.publishedYear || 'N/A'}</td>
@@ -622,7 +644,7 @@ export function BooksPage() {
                     <option value={0}>Chọn thể loại...</option>
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
-                        {cat.name}
+                        {cat.name} {!cat.active ? ' ⚠️ (TL Đã Ẩn)' : ''}
                       </option>
                     ))}
                   </select>
