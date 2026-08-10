@@ -83,7 +83,7 @@ export function BorrowingPage() {
             <span>Quản Lý Mượn Sách</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Lập phiếu mượn sách chứa nhiều đầu sách, kiểm tra điều kiện độc giả & kho sách trực tiếp từ Database.
+            Lập phiếu mượn sách chứa nhiều đầu sách, kiểm tra điều kiện độc giả & kho sách trực tiếp.
           </p>
         </div>
         <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -200,7 +200,7 @@ export function BorrowingPage() {
         ) : (
           <div className="p-12 text-center text-muted-foreground text-sm space-y-2">
             <p>Chưa có phiếu mượn nào trong phiên làm việc hiện tại.</p>
-            <p className="text-xs text-muted-foreground">Nhấn nút <strong className="text-primary font-bold">&quot;Tạo Phiếu Mượn&quot;</strong> để chọn Độc giả và Thêm nhiều cuốn sách từ Database vào phiếu.</p>
+            <p className="text-xs text-muted-foreground">Nhấn nút <strong className="text-primary font-bold">&quot;Tạo Phiếu Mượn&quot;</strong> để chọn Độc giả và Thêm sách vào phiếu.</p>
           </div>
         )}
       </div>

@@ -163,7 +163,6 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Quản lý Thủ thư (Admin)</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Dữ liệu trực tiếp từ máy chủ Backend Spring Boot
           </p>
         </div>
         <div className="flex items-center gap-3">

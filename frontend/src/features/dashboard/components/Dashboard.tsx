@@ -130,7 +130,7 @@ export function Dashboard() {
             </span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Tổng quan dữ liệu kho sách, độc giả & hoạt động thư viện thực tế từ Database.
+            Tổng quan dữ liệu kho sách, độc giả & hoạt động thư viện thực tế.
           </p>
         </div>
 
@@ -357,8 +357,8 @@ export function Dashboard() {
       <div className="bg-card/80 backdrop-blur-md rounded-2xl border border-border/80 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-foreground">Danh Sách Sách Trong Thư Viện (Live Data)</h2>
-            <p className="text-xs text-muted-foreground">Các tựa sách đang lưu hành thực tế thu thập từ Database</p>
+            <h2 className="text-lg font-bold text-foreground">Danh Sách Sách Trong Thư Viện</h2>
+            <p className="text-xs text-muted-foreground">Các tựa sách đang lưu hành</p>
           </div>
           <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full self-start sm:self-auto">
             {books.length} Tựa Sách Đang Lưu Hành
