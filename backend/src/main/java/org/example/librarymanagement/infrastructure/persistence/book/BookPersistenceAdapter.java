@@ -121,7 +121,7 @@ public class BookPersistenceAdapter implements
 
     @Override
     public boolean existsByIsbnAndIdNot(String isbn, Long id) {
-        return repository.existsByIsbnAndIdNot(isbn, id);
+        return repository.existsByIsbnAndIdNot(isbn.trim(), id);
     }
 
     @Override
