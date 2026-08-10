@@ -29,7 +29,7 @@ public class BorrowSlip {
                 now,
                 calculatedDueDate,
                 null,
-                BorrowSlipStatus.BORROWED,
+                BorrowSlipStatus.BORROWING,
                 now,
                 now);
     }
