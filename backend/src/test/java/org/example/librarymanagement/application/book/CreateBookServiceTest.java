@@ -13,7 +13,7 @@ import org.example.librarymanagement.domain.exceptions.DuplicateResourceExceptio
 import org.example.librarymanagement.domain.exceptions.ResourceNotFoundException;
 import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.inbound.book.CreateBookCommand;
-import org.example.librarymanagement.port.outbound.book.FindBookPort;
+import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;
 
@@ -30,7 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class CreateBookServiceTest {
 
     @Mock
-    private FindBookPort findBookPort;
+    private LoadBookPort loadBookPort;
 
     @Mock
     private SaveBookPort saveBookPort;
@@ -61,7 +61,7 @@ class CreateBookServiceTest {
 
     @Test
     void createsBookSuccessfully() {
-        when(findBookPort.existsByIsbn(command.isbn())).thenReturn(false);
+        when(loadBookPort.existsByIsbn(command.isbn())).thenReturn(false);
         when(categoryRepositoryPort.findById(command.categoryId())).thenReturn(Optional.of(mock(Category.class)));
         when(saveBookPort.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -70,21 +70,21 @@ class CreateBookServiceTest {
         assertNotNull(result);
         assertEquals("Clean Code", result.title());
 
-        verify(findBookPort).existsByIsbn(command.isbn());
+        verify(loadBookPort).existsByIsbn(command.isbn());
         verify(categoryRepositoryPort).findById(command.categoryId());
         verify(saveBookPort).save(any(Book.class));
     }
 
     @Test
     void throwsExceptionWhenIsbnAlreadyExists() {
-        when(findBookPort.existsByIsbn(command.isbn())).thenReturn(true);
+        when(loadBookPort.existsByIsbn(command.isbn())).thenReturn(true);
 
         DuplicateResourceException exception = assertThrows(
                 DuplicateResourceException.class,
                 () -> createBookService.createBook(command)
         );
 
-        assertTrue(exception.getMessage().contains("đã tồn tại"));
+        assertTrue(exception.getMessage().contains("already have"));
 
         verify(categoryRepositoryPort, never()).findById(any());
         verify(saveBookPort, never()).save(any());
@@ -92,7 +92,7 @@ class CreateBookServiceTest {
 
     @Test
     void throwsExceptionWhenCategoryDoesNotExist() {
-        when(findBookPort.existsByIsbn(command.isbn())).thenReturn(false);
+        when(loadBookPort.existsByIsbn(command.isbn())).thenReturn(false);
         when(categoryRepositoryPort.findById(command.categoryId())).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(
@@ -100,13 +100,13 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(command)
         );
 
-        assertTrue(exception.getMessage().contains("không tồn tại"));
+        assertTrue(exception.getMessage().contains("not exist"));
         verify(saveBookPort, never()).save(any());
     }
 
     @Test
     void savesBookWithCorrectInformation() {
-        when(findBookPort.existsByIsbn(command.isbn())).thenReturn(false);
+        when(loadBookPort.existsByIsbn(command.isbn())).thenReturn(false);
         when(categoryRepositoryPort.findById(command.categoryId())).thenReturn(Optional.of(mock(Category.class)));
 
         ArgumentCaptor<Book> captor = ArgumentCaptor.forClass(Book.class);
@@ -125,6 +125,7 @@ class CreateBookServiceTest {
         assertTrue(savedBook.isActive());
     }
 
+
     @Test
     void throwsExceptionWhenTitleIsEmpty() {
         CreateBookCommand invalidCommand = new CreateBookCommand(
@@ -137,7 +138,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("Tên sách không được để trống", exception.getMessage());
+        assertEquals("Book title must not be null", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 
@@ -153,7 +154,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("Tác giả không được để trống", exception.getMessage());
+        assertEquals("Author must not be null", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 
@@ -169,7 +170,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("ISBN không được để trống", exception.getMessage());
+        assertEquals("ISBN must not be null", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 
@@ -185,7 +186,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("Số lượng sách phải lớn hơn 0", exception.getMessage());
+        assertEquals("Total quantity must larger than 0", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 
@@ -201,23 +202,7 @@ class CreateBookServiceTest {
                 () -> createBookService.createBook(invalidCommand)
         );
 
-        assertEquals("Thể loại không được để trống", exception.getMessage());
-        verify(saveBookPort, never()).save(any());
-    }
-
-    @Test
-    void throwsExceptionWhenCoverImageIsEmpty() {
-        CreateBookCommand invalidCommand = new CreateBookCommand(
-                "Clean Code", "Robert Martin", "9780132350884", "Software book",
-                "", "Prentice Hall", 2008, "A1", 10, 1L
-        );
-
-        ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> createBookService.createBook(invalidCommand)
-        );
-
-        assertEquals("Ảnh bìa không được để trống", exception.getMessage());
+        assertEquals("Category must not be null", exception.getMessage());
         verify(saveBookPort, never()).save(any());
     }
 }

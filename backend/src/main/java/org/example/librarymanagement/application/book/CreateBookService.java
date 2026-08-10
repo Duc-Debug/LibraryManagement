@@ -10,59 +10,53 @@ import org.example.librarymanagement.domain.exceptions.ValidationException;
 import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.inbound.book.CreateBookCommand;
 import org.example.librarymanagement.port.inbound.book.CreateBookUseCase;
-import org.example.librarymanagement.port.outbound.book.FindBookPort;
+import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;
-import org.springframework.stereotype.Service;
 
-@Service
 public class CreateBookService implements CreateBookUseCase {
 
-    private final FindBookPort findBookPort;
+    private final LoadBookPort loadBookPort;
     private final SaveBookPort saveBookPort;
-    private final CategoryRepositoryPort categoryRepositoryPort; // Dùng đúng port chứa findById của team
+    private final CategoryRepositoryPort categoryRepositoryPort;
 
     public CreateBookService(
-            FindBookPort findBookPort, 
+            LoadBookPort loadBookPort, 
             SaveBookPort saveBookPort, 
             CategoryRepositoryPort categoryRepositoryPort
     ) {
-        this.findBookPort = findBookPort;
-        this.saveBookPort = saveBookPort;
-        this.categoryRepositoryPort = categoryRepositoryPort;
+        this.loadBookPort = Objects.requireNonNull(loadBookPort, "LoadBookPort must not be null");
+        this.saveBookPort = Objects.requireNonNull(saveBookPort, "SaveBookPort must not be null");
+        this.categoryRepositoryPort = Objects.requireNonNull(categoryRepositoryPort, "CategoryRepositoryPort must not be null");
     }
 
     @Override
     public BookResult createBook(CreateBookCommand command) {
 
         if (command.title() == null || command.title().isBlank()) {
-            throw new ValidationException("Tên sách không được để trống");
+            throw new ValidationException("Book title must not be null");
         }
         if (command.author() == null || command.author().isBlank()) {
-            throw new ValidationException("Tác giả không được để trống");
+            throw new ValidationException("Author must not be null");
         }
         if (command.isbn() == null || command.isbn().isBlank()) {
-            throw new ValidationException("ISBN không được để trống");
+            throw new ValidationException("ISBN must not be null");
         }
         if (command.categoryId() == null) {
-            throw new ValidationException("Thể loại không được để trống");
+            throw new ValidationException("Category must not be null");
         }
         if (command.totalQuantity() <= 0) {
-            throw new ValidationException("Số lượng sách phải lớn hơn 0");
-        }
-        if (command.coverImageUrl() == null || command.coverImageUrl().isBlank()) {
-            throw new ValidationException("Ảnh bìa không được để trống");
+            throw new ValidationException("Total quantity must larger than 0");
         }
 
         String normalizedIsbn = command.isbn().trim().toUpperCase().replace("-", "");
 
-        if (findBookPort.existsByIsbn(normalizedIsbn)) {
-            throw new DuplicateResourceException("Sách với ISBN " + normalizedIsbn + " đã tồn tại.");
+        if (loadBookPort.existsByIsbn(normalizedIsbn)) {
+            throw new DuplicateResourceException("Book with ISBN " + normalizedIsbn + " already have.");
         }
 
-        // Tận dụng hàm findById của team an toàn tuyệt đối
         if (categoryRepositoryPort.findById(command.categoryId()).isEmpty()) {
-            throw new ResourceNotFoundException("Thể loại với ID " + command.categoryId() + " không tồn tại.");
+            throw new ResourceNotFoundException("Category with ID " + command.categoryId() + " not exist.");
         }
 
         Book book = Book.create(
@@ -84,7 +78,7 @@ public class CreateBookService implements CreateBookUseCase {
 
     @Override
     public List<BookResult> getAllBooks(int page, int size) {
-        return findBookPort.findAll(page, size)
+        return loadBookPort.findAll(page, size)
                 .stream()
                 .map(this::mapToResult)
                 .filter(Objects::nonNull)

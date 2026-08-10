@@ -18,9 +18,12 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
   const authToken = token || (typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
 
   const defaultHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
     Accept: "application/json",
   };
+
+  if (!(options.body instanceof FormData)) {
+    defaultHeaders["Content-Type"] = "application/json";
+  }
 
   if (authToken) {
     defaultHeaders["Authorization"] = `Bearer ${authToken}`;

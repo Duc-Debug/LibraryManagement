@@ -236,7 +236,7 @@ export function BooksPage() {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý Sách (UC A2.5)</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý Sách</h1>
           <p className="text-muted-foreground">Nhấp vào từng dòng sách để xem chi tiết & thực hiện các thao tác quản lý</p>
         </div>
         <Button onClick={() => setShowAddModal(true)} className="bg-primary hover:bg-primary/90">
