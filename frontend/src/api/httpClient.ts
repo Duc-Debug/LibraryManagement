@@ -1,12 +1,40 @@
 const getApiBaseUrl = (): string => {
-  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  // 1. Kiểm tra biến môi trường được cấu hình sẵn (Vite / Next.js)
+  const envUrl =
+    (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_API_BASE_URL) ||
+    (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_BASE_URL);
+
+  if (envUrl) {
+    return envUrl;
   }
 
+  // 2. Tự động nhận diện linh hoạt khi chạy trên trình duyệt (Browser Runtime)
+  if (typeof window !== "undefined") {
+    // 2.1. Kiểm tra nếu người dùng đã tùy chỉnh URL trong localStorage
+    const savedCustomUrl = localStorage.getItem("customApiBaseUrl");
+    if (savedCustomUrl) {
+      return savedCustomUrl;
+    }
+
+    const { hostname, protocol } = window.location;
+
+    // 2.2. Xử lý VS Code Dev Tunnels / GitHub Codespaces (ví dụ: xxxx-3000.asse.devtunnels.ms -> xxxx-8080.asse.devtunnels.ms)
+    if (hostname.includes(".devtunnels.ms") || hostname.includes(".app.github.dev")) {
+      const backendHostname = hostname.replace(/-(5173|3000|4173)/, "-8080");
+      return `${protocol}//${backendHostname}`;
+    }
+
+    // 2.3. Nếu truy cập qua IP mạng LAN (vd: 192.168.1.x) hoặc Domain Public ngoài localhost
+    if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+      return `${protocol}//${hostname}:8080`;
+    }
+  }
+
+  // 3. Mặc định fallback về localhost:8080 khi phát triển nội bộ
   return "http://localhost:8080";
 };
 
-export const API_BASE_URL = getApiBaseUrl();
+export const getDynamicApiBaseUrl = getApiBaseUrl;
 
 export interface ApiFetchOptions extends RequestInit {
   token?: string;
@@ -16,6 +44,7 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
   const { token, headers, ...customConfig } = options;
 
   const authToken = token || (typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
+  const baseUrl = getDynamicApiBaseUrl();
 
   const defaultHeaders: Record<string, string> = {
     "Content-Type": "application/json",
@@ -35,7 +64,7 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
     ...customConfig,
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  const response = await fetch(`${baseUrl}${endpoint}`, config);
 
   if (!response.ok) {
     // Nếu token hết hạn hoặc không hợp lệ (401) -> Tự động xóa session và redirect về trang login
@@ -44,7 +73,9 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("tokenType");
         localStorage.removeItem("currentUser");
-        window.location.href = "/";
+        if (window.location.search !== "?page=login") {
+          window.location.href = "/?page=login";
+        }
       }
     }
     const errorData = await response.json().catch(() => ({}));

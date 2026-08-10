@@ -280,30 +280,30 @@ export default function BooksPage() {
                     className="hover:bg-gray-50/60 transition cursor-pointer"
                     onClick={() => handleViewDetail(b.bookId)}
                   >
-                    <td className="px-6 py-4 font-mono text-xs font-semibold text-gray-400">
+                    <td className="px-6 py-4 font-mono text-xs font-semibold text-gray-400 whitespace-nowrap">
                       #{b.bookId}
                     </td>
-                    <td className="px-6 py-4 font-semibold text-gray-900">{b.title}</td>
-                    <td className="px-6 py-4 text-gray-600">{b.author}</td>
-                    <td className="px-6 py-4 text-gray-600 font-medium">
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-100">
+                    <td className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">{b.title}</td>
+                    <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{b.author}</td>
+                    <td className="px-6 py-4 text-gray-600 font-medium whitespace-nowrap">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-100 whitespace-nowrap inline-block">
                         {b.categoryName || "Chưa phân loại"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-mono text-xs text-gray-500">{b.isbn}</td>
-                    <td className="px-6 py-4 text-center font-medium text-gray-700">
+                    <td className="px-6 py-4 font-mono text-xs text-gray-500 whitespace-nowrap">{b.isbn}</td>
+                    <td className="px-6 py-4 text-center font-medium text-gray-700 whitespace-nowrap">
                       {b.totalQuantity}
                     </td>
-                    <td className="px-6 py-4 text-center font-bold text-emerald-700">
+                    <td className="px-6 py-4 text-center font-bold text-emerald-700 whitespace-nowrap">
                       {b.availableQuantity}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
                       {b.active ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 whitespace-nowrap">
                           Đang hiện
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">
                           Đã ẩn
                         </span>
                       )}

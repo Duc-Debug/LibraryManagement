@@ -13,7 +13,7 @@ import {
   UpdateBookRequestDto,
 } from '@/api/bookApi';
 import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
-import { Search, Plus, Eye, EyeOff, Trash2, X, Edit3, PackagePlus, AlertTriangle, BookOpen } from 'lucide-react';
+import { Search, Plus, Eye, EyeOff, Trash2, X, Edit3, PackagePlus, AlertTriangle, BookOpen, Upload, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddBookModal } from './AddBookModal';
 
@@ -79,8 +79,16 @@ export function BooksPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchBooksApi(page, size, debouncedSearch);
-      setBooksPage(res);
+      const [res, cats] = await Promise.allSettled([
+        fetchBooksApi(page, size, debouncedSearch),
+        fetchCategoriesApi()
+      ]);
+      if (res.status === 'fulfilled') {
+        setBooksPage(res.value);
+      }
+      if (cats.status === 'fulfilled') {
+        setCategories(cats.value);
+      }
     } catch (err: any) {
       setError(err.message || 'Không thể tải danh sách sách từ máy chủ.');
     } finally {
@@ -236,7 +244,7 @@ export function BooksPage() {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý Sách (UC A2.5)</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý Sách</h1>
           <p className="text-muted-foreground">Nhấp vào từng dòng sách để xem chi tiết & thực hiện các thao tác quản lý</p>
         </div>
         <Button onClick={() => setShowAddModal(true)} className="bg-primary hover:bg-primary/90">
@@ -269,7 +277,7 @@ export function BooksPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Tìm theo tên sách, tác giả hoặc ISBN (Live Search)..."
+          placeholder="Tìm theo tên sách, tác giả hoặc ISBN..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -281,28 +289,28 @@ export function BooksPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border bg-muted/50 text-xs font-semibold text-foreground uppercase">
-                <th className="px-6 py-3 text-left">Mã Sách</th>
-                <th className="px-6 py-3 text-left">Tên sách</th>
-                <th className="px-6 py-3 text-left">Tác giả</th>
-                <th className="px-6 py-3 text-left">Thể loại</th>
-                <th className="px-6 py-3 text-left">ISBN</th>
-                <th className="px-6 py-3 text-center">Năm</th>
-                <th className="px-6 py-3 text-center">Có sẵn / Tổng</th>
-                <th className="px-6 py-3 text-center">Trạng thái</th>
-                <th className="px-6 py-3 text-right">Chi Tiết</th>
+              <tr className="border-b border-border bg-muted/50 text-xs font-semibold text-foreground uppercase whitespace-nowrap">
+                <th className="px-6 py-3 text-left whitespace-nowrap">Mã Sách</th>
+                <th className="px-6 py-3 text-left whitespace-nowrap">Tên sách</th>
+                <th className="px-6 py-3 text-left whitespace-nowrap">Tác giả</th>
+                <th className="px-6 py-3 text-left whitespace-nowrap">Thể loại</th>
+                <th className="px-6 py-3 text-left whitespace-nowrap">ISBN</th>
+                <th className="px-6 py-3 text-center whitespace-nowrap">Năm</th>
+                <th className="px-6 py-3 text-center whitespace-nowrap">Có sẵn / Tổng</th>
+                <th className="px-6 py-3 text-center whitespace-nowrap">Trạng thái</th>
+                <th className="px-6 py-3 text-right whitespace-nowrap">Chi Tiết</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-6 py-8 text-center text-muted-foreground whitespace-nowrap">
                     Đang nạp dữ liệu từ máy chủ...
                   </td>
                 </tr>
               ) : (booksPage?.items || booksPage?.content || []).length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-6 py-8 text-center text-muted-foreground whitespace-nowrap">
                     Không tìm thấy cuốn sách nào trong Database.
                   </td>
                 </tr>
@@ -313,32 +321,46 @@ export function BooksPage() {
                     className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
                     onClick={() => setSelectedBook(book)}
                   >
-                    <td className="px-6 py-4 text-xs font-mono text-muted-foreground">#{book.bookId}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-foreground">{book.title}</td>
-                    <td className="px-6 py-4 text-sm text-foreground">{book.author}</td>
-                    <td className="px-6 py-4 text-sm">
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                        {book.categoryName || 'Chưa phân loại'}
-                      </span>
+                    <td className="px-6 py-4 text-xs font-mono text-muted-foreground whitespace-nowrap">#{book.bookId}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-foreground whitespace-nowrap">{book.title}</td>
+                    <td className="px-6 py-4 text-sm text-foreground whitespace-nowrap">{book.author}</td>
+                    <td className="px-6 py-4 text-sm whitespace-nowrap">
+                      {(() => {
+                        const matchedCat = categories.find(c => c.name === book.categoryName);
+                        const isCatInactive = matchedCat && !matchedCat.active;
+                        return isCatInactive ? (
+                          <span
+                            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap inline-flex items-center gap-1 cursor-help"
+                            title="Thể loại này hiện đang bị ẩn trên hệ thống"
+                          >
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                            {book.categoryName} (TL ẩn)
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary whitespace-nowrap inline-block">
+                            {book.categoryName || 'Chưa phân loại'}
+                          </span>
+                        );
+                      })()}
                     </td>
-                    <td className="px-6 py-4 text-sm font-mono text-muted-foreground">{book.isbn}</td>
-                    <td className="px-6 py-4 text-sm text-center text-foreground">{book.publishedYear || 'N/A'}</td>
-                    <td className="px-6 py-4 text-sm text-center">
+                    <td className="px-6 py-4 text-sm font-mono text-muted-foreground whitespace-nowrap">{book.isbn}</td>
+                    <td className="px-6 py-4 text-sm text-center text-foreground whitespace-nowrap">{book.publishedYear || 'N/A'}</td>
+                    <td className="px-6 py-4 text-sm text-center whitespace-nowrap">
                       <span className="font-bold text-primary">{book.availableQuantity}</span>
                       <span className="text-muted-foreground"> / {book.totalQuantity}</span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-center">
+                    <td className="px-6 py-4 text-sm text-center whitespace-nowrap">
                       {book.active ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 whitespace-nowrap inline-block">
                           Đang hiện
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground whitespace-nowrap inline-block">
                           Đã ẩn
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-right">
+                    <td className="px-6 py-4 text-sm text-right whitespace-nowrap">
                       <span className="text-xs text-primary font-medium hover:underline">
                         Xem chi tiết &rarr;
                       </span>
@@ -622,7 +644,7 @@ export function BooksPage() {
                     <option value={0}>Chọn thể loại...</option>
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
-                        {cat.name}
+                        {cat.name} {!cat.active ? ' ⚠️ (TL Đã Ẩn)' : ''}
                       </option>
                     ))}
                   </select>
@@ -677,14 +699,54 @@ export function BooksPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground block">Ảnh Bìa (URL)</label>
-                  <input
-                    type="text"
-                    name="coverImageUrl"
-                    value={editForm.coverImageUrl}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+                  <label className="text-xs font-semibold text-muted-foreground block">Ảnh Bìa Sách</label>
+                  <div className="flex items-center gap-3">
+                    {editForm.coverImageUrl ? (
+                      <img
+                        src={editForm.coverImageUrl}
+                        alt="Cover Preview"
+                        className="w-10 h-14 object-cover rounded-lg border border-border shrink-0 shadow-xs"
+                      />
+                    ) : (
+                      <div className="w-10 h-14 bg-muted/40 rounded-lg border border-border shrink-0 flex items-center justify-center text-muted-foreground">
+                        <Image className="w-4 h-4 opacity-50" />
+                      </div>
+                    )}
+                    <div className="flex-1 space-y-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="edit-cover-file"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const result = event.target?.result as string;
+                              setEditForm((prev) => ({ ...prev, coverImageUrl: result }));
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor="edit-cover-file"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-muted/50 hover:bg-muted text-xs font-medium cursor-pointer transition-colors"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Tải ảnh lên</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="coverImageUrl"
+                        placeholder="Hoặc dán URL ảnh..."
+                        value={editForm.coverImageUrl}
+                        onChange={handleInputChange}
+                        className="w-full px-2.5 py-1 rounded border border-border bg-background text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
