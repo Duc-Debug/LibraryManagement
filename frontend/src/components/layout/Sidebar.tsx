@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { UserAccount } from '@/features/accounts';
+import { useTheme } from '@/hooks/useTheme';
 import {
   LayoutDashboard,
   BookOpen,
@@ -15,6 +16,8 @@ import {
   Search,
   User,
   Tags,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -27,6 +30,7 @@ interface SidebarProps {
 
 export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const navItems = [
     {
@@ -46,7 +50,7 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
     },
     {
       id: 'members',
-      label: 'Thành viên',
+      label: 'Độc giả',
       icon: Users,
     },
     {
@@ -135,6 +139,30 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
 
       {/* Footer */}
       <div className="p-4 border-t border-sidebar-border space-y-3">
+        {/* Sun / Moon Theme Toggle */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+            theme === 'dark'
+              ? 'bg-sidebar-accent border-sidebar-border text-amber-400 hover:bg-sidebar-accent/80'
+              : 'bg-sidebar-accent border-sidebar-border text-indigo-600 hover:bg-sidebar-accent/80'
+          }`}
+          title={theme === 'dark' ? 'Chuyển sang Giao diện Sáng (Light Mode)' : 'Chuyển sang Giao diện Tối (Dark Mode)'}
+        >
+          {theme === 'dark' ? (
+            <>
+              <Sun className="w-4 h-4 text-amber-400" />
+              {!isCollapsed && <span className="text-sidebar-foreground">Giao diện Sáng</span>}
+            </>
+          ) : (
+            <>
+              <Moon className="w-4 h-4 text-indigo-600" />
+              {!isCollapsed && <span className="text-sidebar-foreground">Giao diện Tối</span>}
+            </>
+          )}
+        </button>
+
         {currentUser && !isCollapsed && (
           <div className="px-2 py-2 bg-sidebar-accent rounded-lg">
             <p className="text-xs font-semibold text-sidebar-foreground truncate">

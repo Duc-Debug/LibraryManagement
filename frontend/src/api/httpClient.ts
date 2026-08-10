@@ -44,7 +44,9 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("tokenType");
         localStorage.removeItem("currentUser");
-        window.location.href = "/";
+        if (window.location.search !== "?page=login") {
+          window.location.href = "/?page=login";
+        }
       }
     }
     const errorData = await response.json().catch(() => ({}));
