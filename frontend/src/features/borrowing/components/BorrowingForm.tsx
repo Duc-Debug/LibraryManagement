@@ -5,7 +5,9 @@ import type { ReaderResponse } from '@/api/readerApi';
 import type { BookResponseDto } from '@/api/bookApi';
 import type { CategoryResponse } from '@/api/categoryApi';
 import { Button } from '@/components/ui/button';
-import { Search, UserCheck, BookOpen, CreditCard, Calendar, AlertTriangle, Check, X, ShieldAlert, Image as ImageIcon } from 'lucide-react';
+import { Search, BookOpen, CreditCard, Calendar, AlertTriangle, Check, X, Image as ImageIcon, Plus, Trash2, ShoppingBag } from 'lucide-react';
+
+const MAX_BOOKS_PER_SLIP = 5;
 
 interface BorrowingFormProps {
   readers: ReaderResponse[];
@@ -17,7 +19,7 @@ interface BorrowingFormProps {
 
 export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }: BorrowingFormProps) {
   const [selectedReader, setSelectedReader] = useState<ReaderResponse | null>(null);
-  const [selectedBook, setSelectedBook] = useState<BookResponseDto | null>(null);
+  const [selectedBooks, setSelectedBooks] = useState<BookResponseDto[]>([]);
   
   const [readerSearch, setReaderSearch] = useState('');
   const [bookSearch, setBookSearch] = useState('');
@@ -29,6 +31,7 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
   const [dueDate, setDueDate] = useState(
     new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   );
+  const [formError, setFormError] = useState<string | null>(null);
 
   const readerRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<HTMLDivElement>(null);
@@ -70,10 +73,13 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
   // Filter Available Books matching search (Exclude books with inactive categories or 0 copies)
   const filteredBooks = useMemo(() => {
     const term = bookSearch.toLowerCase().trim();
+    const selectedBookIds = new Set(selectedBooks.map((b) => b.bookId));
+
     return books.filter((b) => {
       if (!b.active) return false; // Hidden book
       if (b.availableQuantity <= 0) return false; // Out of stock
       if (b.categoryName && inactiveCatNames.has(b.categoryName)) return false; // Hidden category
+      if (selectedBookIds.has(b.bookId)) return false; // Already selected in cart
       if (!term) return true;
       return (
         b.title.toLowerCase().includes(term) ||
@@ -82,22 +88,49 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
         (b.categoryName && b.categoryName.toLowerCase().includes(term))
       );
     });
-  }, [books, bookSearch, inactiveCatNames]);
+  }, [books, bookSearch, inactiveCatNames, selectedBooks]);
+
+  const handleAddBookToSlip = (book: BookResponseDto) => {
+    setFormError(null);
+    if (selectedBooks.length >= MAX_BOOKS_PER_SLIP) {
+      setFormError(`Mỗi phiếu mượn chỉ được chọn tối đa ${MAX_BOOKS_PER_SLIP} cuốn sách.`);
+      return;
+    }
+    setSelectedBooks([...selectedBooks, book]);
+    setBookSearch('');
+    setIsBookDropdownOpen(false);
+  };
+
+  const handleRemoveBookFromSlip = (bookId: number) => {
+    setSelectedBooks(selectedBooks.filter((b) => b.bookId !== bookId));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedReader && selectedBook) {
-      onSubmit({
-        readerId: selectedReader.id,
-        readerName: selectedReader.name,
-        readerCardNumber: selectedReader.cardNumber,
-        bookId: selectedBook.bookId,
-        bookTitle: selectedBook.title,
-        bookIsbn: selectedBook.isbn,
-        borrowDate,
-        dueDate,
-      });
+    setFormError(null);
+
+    if (!selectedReader) {
+      setFormError('Vui lòng chọn Độc giả mượn sách.');
+      return;
     }
+
+    if (selectedBooks.length === 0) {
+      setFormError('Vui lòng chọn ít nhất 1 cuốn sách để mượn.');
+      return;
+    }
+
+    onSubmit({
+      readerId: selectedReader.id,
+      readerName: selectedReader.name,
+      readerCardNumber: selectedReader.cardNumber,
+      books: selectedBooks.map((b) => ({
+        bookId: b.bookId,
+        title: b.title,
+        isbn: b.isbn,
+      })),
+      borrowDate,
+      dueDate,
+    });
   };
 
   return (
@@ -105,14 +138,21 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
       <div className="flex items-center justify-between pb-3 border-b border-border/60">
         <div>
           <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-primary" />
-            <span>Tạo Phiếu Mượn Sách Mới</span>
+            <ShoppingBag className="w-5 h-5 text-primary" />
+            <span>Tạo Phiếu Mượn Nối Nhất (Cho Phép Mượn Nhiều Sách)</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Tìm kiếm bằng Tên, Mã thẻ Độc giả hoặc Tên sách, ISBN để chọn nhanh.
+            Chọn Độc giả và thêm nhiều đầu sách vào Giỏ mượn (Tối đa {MAX_BOOKS_PER_SLIP} cuốn/phiếu).
           </p>
         </div>
       </div>
+
+      {formError && (
+        <div className="p-3.5 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 text-xs flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>{formError}</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 1. SEARCHABLE READER COMBOBOX */}
@@ -149,7 +189,7 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
                   setSelectedReader(null);
                   setReaderSearch('');
                 }}
-                className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                 title="Chọn lại độc giả"
               >
                 <X className="w-4 h-4" />
@@ -210,123 +250,132 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
           )}
         </div>
 
-        {/* 2. SEARCHABLE BOOK COMBOBOX */}
+        {/* 2. SEARCHABLE BOOK MULTI-SELECT COMBOBOX */}
         <div className="space-y-2 relative" ref={bookRef}>
           <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            2. Chọn Sách Mượn (Gõ tên sách, ISBN, tác giả...) <span className="text-destructive">*</span>
+            2. Thêm Sách Vào Phiếu (Gõ tên sách, ISBN...) <span className="text-destructive">*</span>
           </label>
 
-          {selectedBook ? (
-            /* Selected Book Card Display */
-            <div className="p-3.5 rounded-xl bg-card border-2 border-primary/40 shadow-xs flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {selectedBook.coverImageUrl ? (
-                  <img
-                    src={selectedBook.coverImageUrl}
-                    alt={selectedBook.title}
-                    className="w-10 h-14 object-cover rounded-lg border border-border shrink-0 shadow-xs"
-                  />
-                ) : (
-                  <div className="w-10 h-14 bg-muted/40 rounded-lg border border-border shrink-0 flex items-center justify-center text-muted-foreground">
-                    <ImageIcon className="w-4 h-4 opacity-50" />
-                  </div>
-                )}
-                <div>
-                  <div className="font-bold text-sm text-foreground line-clamp-1">
-                    {selectedBook.title}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
-                    <span>Tác giả: {selectedBook.author}</span>
-                    <span className="font-mono text-[11px] text-primary font-bold">
-                      Còn {selectedBook.availableQuantity} cuốn
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
-                    Kệ: {selectedBook.shelfLocation || 'Chưa xếp'} • ISBN: {selectedBook.isbn}
-                  </div>
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={bookSearch}
+              onFocus={() => setIsBookDropdownOpen(true)}
+              onChange={(e) => {
+                setBookSearch(e.target.value);
+                setIsBookDropdownOpen(true);
+              }}
+              placeholder="Gõ tên sách để chọn thêm vào phiếu..."
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-xs"
+            />
+          </div>
+
+          {isBookDropdownOpen && (
+            <div className="absolute left-0 right-0 top-full mt-1 max-h-60 overflow-y-auto bg-card border border-border rounded-xl shadow-xl z-50 divide-y divide-border/60">
+              {filteredBooks.length === 0 ? (
+                <div className="p-4 text-center text-xs text-muted-foreground">
+                  Không tìm thấy sách phù hợp hoặc sách đã được chọn hết vào giỏ.
                 </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSelectedBook(null);
-                  setBookSearch('');
-                }}
-                className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                title="Chọn lại cuốn sách"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ) : (
-            /* Searchable Input Dropdown */
-            <div>
-              <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={bookSearch}
-                  onFocus={() => setIsBookDropdownOpen(true)}
-                  onChange={(e) => {
-                    setBookSearch(e.target.value);
-                    setIsBookDropdownOpen(true);
-                  }}
-                  placeholder="Gõ tên sách, mã ISBN 978-..."
-                  className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-xs"
-                />
-              </div>
-
-              {isBookDropdownOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1 max-h-60 overflow-y-auto bg-card border border-border rounded-xl shadow-xl z-50 divide-y divide-border/60">
-                  {filteredBooks.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-muted-foreground">
-                      Không tìm thấy cuốn sách nào còn khả dụng hoặc thuộc Thể loại bị ẩn.
-                    </div>
-                  ) : (
-                    filteredBooks.map((b) => (
-                      <div
-                        key={b.bookId}
-                        onClick={() => {
-                          setSelectedBook(b);
-                          setIsBookDropdownOpen(false);
-                        }}
-                        className="p-3 hover:bg-muted/40 transition cursor-pointer flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          {b.coverImageUrl ? (
-                            <img src={b.coverImageUrl} alt={b.title} className="w-8 h-11 object-cover rounded-md border border-border shrink-0" />
-                          ) : (
-                            <div className="w-8 h-11 bg-muted/40 rounded-md border border-border shrink-0 flex items-center justify-center">
-                              <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div>
-                            <div className="font-semibold text-xs text-foreground">{b.title}</div>
-                            <div className="text-[11px] text-muted-foreground">
-                              {b.author} • ISBN: {b.isbn}
-                            </div>
-                          </div>
+              ) : (
+                filteredBooks.map((b) => (
+                  <div
+                    key={b.bookId}
+                    onClick={() => handleAddBookToSlip(b)}
+                    className="p-3 hover:bg-muted/40 transition cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-3">
+                      {b.coverImageUrl ? (
+                        <img src={b.coverImageUrl} alt={b.title} className="w-8 h-11 object-cover rounded-md border border-border shrink-0" />
+                      ) : (
+                        <div className="w-8 h-11 bg-muted/40 rounded-md border border-border shrink-0 flex items-center justify-center">
+                          <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
                         </div>
-
-                        <div className="text-right whitespace-nowrap">
-                          <div className="text-xs font-bold text-primary">
-                            Còn {b.availableQuantity} cuốn
-                          </div>
-                          <div className="text-[10px] text-muted-foreground">
-                            Kệ: {b.shelfLocation || 'N/A'}
-                          </div>
+                      )}
+                      <div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+                          {b.title}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {b.author} • ISBN: {b.isbn}
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right whitespace-nowrap">
+                        <div className="text-xs font-bold text-primary">
+                          Còn {b.availableQuantity} cuốn
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          Kệ: {b.shelfLocation || 'N/A'}
+                        </div>
+                      </div>
+                      <span className="p-1 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                        <Plus className="w-4 h-4" />
+                      </span>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           )}
         </div>
+      </div>
+
+      {/* SELECTED BOOKS CART LIST */}
+      <div className="space-y-3 pt-2">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+            <ShoppingBag className="w-4 h-4 text-primary" />
+            <span>Danh Sách Sách Trong Phiếu Mượn ({selectedBooks.length}/{MAX_BOOKS_PER_SLIP} cuốn)</span>
+          </label>
+        </div>
+
+        {selectedBooks.length === 0 ? (
+          <div className="p-6 rounded-2xl border border-dashed border-border/80 text-center text-xs text-muted-foreground bg-muted/20">
+            Chưa có cuốn sách nào được thêm vào phiếu mượn. Hãy gõ tên sách ở ô tìm kiếm bên trên để thêm.
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {selectedBooks.map((b, index) => (
+              <div
+                key={b.bookId}
+                className="p-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-primary/40 transition shadow-xs"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">
+                    {index + 1}
+                  </span>
+                  {b.coverImageUrl ? (
+                    <img src={b.coverImageUrl} alt={b.title} className="w-8 h-11 object-cover rounded-md border border-border shrink-0" />
+                  ) : (
+                    <div className="w-8 h-11 bg-muted/40 rounded-md border border-border shrink-0 flex items-center justify-center">
+                      <ImageIcon className="w-3.5 h-3.5 opacity-50" />
+                    </div>
+                  )}
+                  <div>
+                    <div className="font-bold text-xs text-foreground">{b.title}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      Tác giả: {b.author} • ISBN: {b.isbn} • Kệ: {b.shelfLocation || 'Chưa xếp'}
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveBookFromSlip(b.bookId)}
+                  className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                  title="Xóa cuốn sách này khỏi phiếu mượn"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* DATES SELECTION */}
@@ -357,16 +406,16 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
       </div>
 
       {/* BORROW SLIP SUMMARY PREVIEW */}
-      {selectedReader && selectedBook && (
+      {selectedReader && selectedBooks.length > 0 && (
         <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-foreground space-y-2">
           <div className="font-bold text-sm text-primary flex items-center gap-1.5">
-            <Check className="w-4 h-4" /> Xác Nhận Thông Tin Phiếu Mượn:
+            <Check className="w-4 h-4" /> Xác Nhận Thông Tin Phiếu Mượn ({selectedBooks.length} cuốn):
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>• Độc giả: <span className="font-bold">{selectedReader.name}</span> ({selectedReader.cardNumber})</div>
-            <div>• Cuốn sách: <span className="font-bold">{selectedBook.title}</span></div>
-            <div>• Hạn trả: <span className="font-bold text-emerald-600 dark:text-emerald-400">{dueDate}</span></div>
-            <div>• Số lượng giảm kho: <span className="font-bold">1 cuốn</span></div>
+            <div>• Tổng số cuốn mượn: <span className="font-bold text-primary">{selectedBooks.length} cuốn</span></div>
+            <div>• Hạn hẹn trả: <span className="font-bold text-emerald-600 dark:text-emerald-400">{dueDate}</span></div>
+            <div>• Các cuốn sách: <span className="font-semibold">{selectedBooks.map(b => b.title).join(', ')}</span></div>
           </div>
         </div>
       )}
@@ -383,10 +432,10 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
         </Button>
         <Button
           type="submit"
-          disabled={!selectedReader || !selectedBook}
+          disabled={!selectedReader || selectedBooks.length === 0}
           className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl text-xs py-2.5 shadow-md cursor-pointer disabled:opacity-50"
         >
-          Xác Nhận Tạo Phiếu Mượn
+          Xác Nhận Tạo Phiếu Mượn ({selectedBooks.length} Cuốn)
         </Button>
       </div>
     </form>

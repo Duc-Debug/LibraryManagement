@@ -60,15 +60,16 @@ export function BorrowingPage() {
     
     setBorrowingRecords([newRecord, ...borrowingRecords]);
     
-    // Update local available stock quantity for the borrowed book
+    // Update local available stock quantity for all borrowed books in this slip
+    const borrowedBookIds = new Set((record.books || []).map((b: any) => b.bookId));
     setBooks(prev => prev.map(b => {
-      if (b.bookId === record.bookId) {
+      if (borrowedBookIds.has(b.bookId)) {
         return { ...b, availableQuantity: Math.max(0, b.availableQuantity - 1) };
       }
       return b;
     }));
 
-    setSuccessMessage(`Tạo phiếu mượn mã #${newRecord.id} cho độc giả "${record.readerName}" thành công!`);
+    setSuccessMessage(`Tạo thành công phiếu mượn mã #${newRecord.id} gồm ${record.books.length} cuốn sách cho độc giả "${record.readerName}"!`);
     setShowForm(false);
   };
 
@@ -82,7 +83,7 @@ export function BorrowingPage() {
             <span>Quản Lý Mượn Sách</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Lập phiếu mượn sách mới với bộ lọc thông minh, kiểm tra điều kiện độc giả & kho sách trực tiếp từ Database.
+            Lập phiếu mượn sách chứa nhiều đầu sách, kiểm tra điều kiện độc giả & kho sách trực tiếp từ Database.
           </p>
         </div>
         <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -154,7 +155,7 @@ export function BorrowingPage() {
                 <tr>
                   <th className="px-6 py-4 whitespace-nowrap">Mã Phiếu</th>
                   <th className="px-6 py-4 whitespace-nowrap">Mã Thẻ / Độc Giả</th>
-                  <th className="px-6 py-4 whitespace-nowrap">Tên Sách Mượn</th>
+                  <th className="px-6 py-4 whitespace-nowrap">Danh Sách Sách Mượn</th>
                   <th className="px-6 py-4 whitespace-nowrap">Ngày Mượn</th>
                   <th className="px-6 py-4 whitespace-nowrap">Ngày Hẹn Trả</th>
                   <th className="px-6 py-4 text-center whitespace-nowrap">Trạng Thái</th>
@@ -170,8 +171,15 @@ export function BorrowingPage() {
                       <div className="font-semibold text-foreground">{record.readerName}</div>
                       <div className="font-mono text-xs text-muted-foreground">{record.readerCardNumber}</div>
                     </td>
-                    <td className="px-6 py-4 font-semibold text-foreground whitespace-nowrap">
-                      {record.bookTitle}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-bold text-foreground flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-mono">
+                          {record.books?.length || 1} cuốn
+                        </span>
+                        <span className="text-xs text-muted-foreground line-clamp-1 max-w-xs">
+                          {(record.books || []).map((b: any) => b.title).join(', ')}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-xs text-muted-foreground whitespace-nowrap">
                       {record.borrowDate}
@@ -192,7 +200,7 @@ export function BorrowingPage() {
         ) : (
           <div className="p-12 text-center text-muted-foreground text-sm space-y-2">
             <p>Chưa có phiếu mượn nào trong phiên làm việc hiện tại.</p>
-            <p className="text-xs text-muted-foreground">Nhấn nút <strong className="text-primary font-bold">&quot;Tạo Phiếu Mượn&quot;</strong> để chọn Độc giả và Sách từ Database.</p>
+            <p className="text-xs text-muted-foreground">Nhấn nút <strong className="text-primary font-bold">&quot;Tạo Phiếu Mượn&quot;</strong> để chọn Độc giả và Thêm nhiều cuốn sách từ Database vào phiếu.</p>
           </div>
         )}
       </div>
