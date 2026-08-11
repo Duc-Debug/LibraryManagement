@@ -157,6 +157,22 @@ class CalculateFineServiceTest {
     }
 
     @Test
+    @DisplayName("calculateBorrowSlipFine: Ném DomainException khi phiếu mượn không có sách (totalBooks <= 0)")
+    void calculateFine_ZeroOrNegativeTotalBooks_ThrowsDomainException() {
+        when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(createLibrarianUser());
+
+        LocalDateTime now = LocalDateTime.now();
+        BorrowSlipResponseDto zeroBookSlip = createSampleSlip(1L, now.minusDays(10), now.minusDays(5), 0);
+        when(loadBorrowSlipPort.findSlipDetailById(1L)).thenReturn(Optional.of(zeroBookSlip));
+
+        org.example.librarymanagement.domain.exceptions.DomainException exception = assertThrows(
+                org.example.librarymanagement.domain.exceptions.DomainException.class,
+                () -> calculateFineService.calculateBorrowSlipFine(1L, now)
+        );
+        assertEquals("Borrow slip has no borrowed books to calculate fine (totalBooks must be greater than 0)", exception.getMessage());
+    }
+
+    @Test
     @DisplayName("calculateBorrowSlipFine: Ném UnauthenticatedException khi chưa đăng nhập")
     void calculateFine_Unauthenticated_ThrowsException() {
         when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(null);

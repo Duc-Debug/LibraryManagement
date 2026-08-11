@@ -96,6 +96,22 @@ class FineCalculationPolicyTest {
         assertEquals("Damage percentage must be between 0.0 (0%) and 1.0 (100%)", exHigh.getMessage());
     }
 
+    @Test
+    @DisplayName("calculateDamagedBookFine: Ném DomainException khi giá sách null hoặc <= 0")
+    void calculateDamagedBookFine_InvalidPrice_ThrowsDomainException() {
+        DomainException exNull = assertThrows(DomainException.class, () ->
+                FineCalculationPolicy.calculateDamagedBookFine(null, 0.5));
+        assertEquals("Book price must be greater than 0", exNull.getMessage());
+
+        DomainException exZero = assertThrows(DomainException.class, () ->
+                FineCalculationPolicy.calculateDamagedBookFine(BigDecimal.ZERO, 0.5));
+        assertEquals("Book price must be greater than 0", exZero.getMessage());
+
+        DomainException exNeg = assertThrows(DomainException.class, () ->
+                FineCalculationPolicy.calculateDamagedBookFine(BigDecimal.valueOf(-1000), 0.5));
+        assertEquals("Book price must be greater than 0", exNeg.getMessage());
+    }
+
     // ==================== 3. LOST FINE TESTS ====================
 
     @Test
@@ -106,6 +122,27 @@ class FineCalculationPolicyTest {
 
         // 100.000 + 20.000 = 120.000đ
         assertEquals(BigDecimal.valueOf(120000), fine);
+    }
+
+    @Test
+    @DisplayName("calculateLostBookFine: Ném DomainException khi giá sách null hoặc <= 0")
+    void calculateLostBookFine_InvalidPrice_ThrowsDomainException() {
+        DomainException exNull = assertThrows(DomainException.class, () ->
+                FineCalculationPolicy.calculateLostBookFine(null));
+        assertEquals("Book price must be greater than 0", exNull.getMessage());
+
+        DomainException exZero = assertThrows(DomainException.class, () ->
+                FineCalculationPolicy.calculateLostBookFine(BigDecimal.ZERO));
+        assertEquals("Book price must be greater than 0", exZero.getMessage());
+    }
+
+    @Test
+    @DisplayName("calculateLostBookFine: Ném DomainException khi phí xử lý âm")
+    void calculateLostBookFine_NegativeProcessingFee_ThrowsDomainException() {
+        BigDecimal bookPrice = BigDecimal.valueOf(100000);
+        DomainException exception = assertThrows(DomainException.class, () ->
+                FineCalculationPolicy.calculateLostBookFine(bookPrice, 1.0, BigDecimal.valueOf(-5000)));
+        assertEquals("Processing fee cannot be negative", exception.getMessage());
     }
 
     // ==================== 4. MISSING ACCESSORY TESTS ====================
@@ -127,6 +164,14 @@ class FineCalculationPolicyTest {
 
         BigDecimal total = FineCalculationPolicy.calculateTotalFine(overdue, damaged, null, null, null);
         assertEquals(BigDecimal.valueOf(65000), total);
+    }
+
+    @Test
+    @DisplayName("calculateTotalFine: Ném DomainException khi có khoản phạt âm")
+    void calculateTotalFine_NegativeComponent_ThrowsDomainException() {
+        DomainException exception = assertThrows(DomainException.class, () ->
+                FineCalculationPolicy.calculateTotalFine(BigDecimal.valueOf(-1000), null, null, null, null));
+        assertEquals("Overdue fine cannot be negative", exception.getMessage());
     }
 
     @Test

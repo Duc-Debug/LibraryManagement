@@ -63,25 +63,27 @@ public class FineCalculationPolicy {
         return calculateOverdueFine(dueDate, returnDate, bookCount, DEFAULT_DAILY_OVERDUE_RATE);
     }
     // ======================================================================
-    // 2. PHÍ BỒI THƯỜNG HỎNG / RÁCH SÁCH (DAMAGED FINE)
+    // 2. PHÍ BỒI THƯỜNG HỎNG / RÁCH SÁCH (DAMAGED FINE - FAIL-FAST)
     // ======================================================================
     /**
      * Tính tiền phạt hỏng sách theo % giá trị sách (damagePercentage: 0.0 -> 1.0)
      */
     public static BigDecimal calculateDamagedBookFine(BigDecimal bookPrice, double damagePercentage) {
         if (bookPrice == null || bookPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            return BigDecimal.ZERO;
+            throw new DomainException("Book price must be greater than 0");
         }
         if (damagePercentage < 0.0 || damagePercentage > 1.0) {
             throw new DomainException("Damage percentage must be between 0.0 (0%) and 1.0 (100%)");
         }
         return bookPrice.multiply(BigDecimal.valueOf(damagePercentage)).setScale(0, RoundingMode.HALF_UP);
     }
+
     public static BigDecimal calculateDamagedBookFine(BigDecimal bookPrice) {
         return calculateDamagedBookFine(bookPrice, DEFAULT_DAMAGED_PERCENTAGE);
     }
+
     // ======================================================================
-    // 3. PHÍ BỒI THƯỜNG MẤT SÁCH (LOST BOOK FINE)
+    // 3. PHÍ BỒI THƯỜNG MẤT SÁCH (LOST BOOK FINE - FAIL-FAST)
     // ======================================================================
     /**
      * Tính tiền bồi thường mất sách = (Giá sách * Tỷ lệ đền bù) + Phí xử lý nghiệp vụ
@@ -90,21 +92,29 @@ public class FineCalculationPolicy {
             BigDecimal bookPrice,
             double compensationRate,
             BigDecimal processingFee) {
-        BigDecimal safeBookPrice = (bookPrice != null && bookPrice.compareTo(BigDecimal.ZERO) > 0)
-                ? bookPrice
-                : BigDecimal.ZERO;
+
+        if (bookPrice == null || bookPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new DomainException("Book price must be greater than 0");
+        }
         if (compensationRate < 1.0) {
             throw new DomainException("Compensation rate for lost book must be at least 1.0 (100%)");
         }
-        BigDecimal safeProcessingFee = (processingFee != null && processingFee.compareTo(BigDecimal.ZERO) >= 0)
+        if (processingFee != null && processingFee.compareTo(BigDecimal.ZERO) < 0) {
+            throw new DomainException("Processing fee cannot be negative");
+        }
+
+        BigDecimal effectiveProcessingFee = (processingFee != null)
                 ? processingFee
-                : BigDecimal.ZERO;
-        BigDecimal compensationAmount = safeBookPrice.multiply(BigDecimal.valueOf(compensationRate));
-        return compensationAmount.add(safeProcessingFee).setScale(0, RoundingMode.HALF_UP);
+                : DEFAULT_LOST_PROCESSING_FEE;
+
+        BigDecimal compensationAmount = bookPrice.multiply(BigDecimal.valueOf(compensationRate));
+        return compensationAmount.add(effectiveProcessingFee).setScale(0, RoundingMode.HALF_UP);
     }
+
     public static BigDecimal calculateLostBookFine(BigDecimal bookPrice) {
         return calculateLostBookFine(bookPrice, DEFAULT_LOST_COMPENSATION_RATE, DEFAULT_LOST_PROCESSING_FEE);
     }
+
     // ======================================================================
     // 4. PHÍ MẤT PHỤ KIỆN ĐÍNH KÈM (MISSING ACCESSORY FINE)
     // ======================================================================
@@ -120,8 +130,9 @@ public class FineCalculationPolicy {
         }
         return DEFAULT_MISSING_ACCESSORY_FINE;
     }
+
     // ======================================================================
-    // 5. PHÍ KHÁC & TÍNH TỔNG PHÍ KẾT HỢP (COMBINED FINE)
+    // 5. PHÍ KHÁC & TÍNH TỔNG PHÍ KẾT HỢP (COMBINED FINE - FAIL-FAST)
     // ======================================================================
     /**
      * Tính tổng các khoản phạt kết hợp cho một lượt trả sách
@@ -132,24 +143,28 @@ public class FineCalculationPolicy {
             BigDecimal lostFine,
             BigDecimal accessoryFine,
             BigDecimal otherFine) {
+
+        validateNonNegativeFine("Overdue fine", overdueFine);
+        validateNonNegativeFine("Damaged fine", damagedFine);
+        validateNonNegativeFine("Lost fine", lostFine);
+        validateNonNegativeFine("Accessory fine", accessoryFine);
+        validateNonNegativeFine("Other fine", otherFine);
+
         BigDecimal total = BigDecimal.ZERO;
-        if (overdueFine != null && overdueFine.compareTo(BigDecimal.ZERO) > 0) {
-            total = total.add(overdueFine);
-        }
-        if (damagedFine != null && damagedFine.compareTo(BigDecimal.ZERO) > 0) {
-            total = total.add(damagedFine);
-        }
-        if (lostFine != null && lostFine.compareTo(BigDecimal.ZERO) > 0) {
-            total = total.add(lostFine);
-        }
-        if (accessoryFine != null && accessoryFine.compareTo(BigDecimal.ZERO) > 0) {
-            total = total.add(accessoryFine);
-        }
-        if (otherFine != null && otherFine.compareTo(BigDecimal.ZERO) > 0) {
-            total = total.add(otherFine);
-        }
+        if (overdueFine != null) total = total.add(overdueFine);
+        if (damagedFine != null) total = total.add(damagedFine);
+        if (lostFine != null) total = total.add(lostFine);
+        if (accessoryFine != null) total = total.add(accessoryFine);
+        if (otherFine != null) total = total.add(otherFine);
         return total;
     }
+
+    private static void validateNonNegativeFine(String fieldName, BigDecimal amount) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new DomainException(fieldName + " cannot be negative");
+        }
+    }
+
     /**
      * Định dạng chuỗi lý do phạt chi tiết theo loại
      */
@@ -162,7 +177,4 @@ public class FineCalculationPolicy {
         }
         return String.format("[%s] %s", type.getDescription(), detail.trim());
     }
-
-
-    
 }

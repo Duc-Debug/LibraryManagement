@@ -2,7 +2,6 @@ package org.example.librarymanagement.application.borrow;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.domain.entity.User;
@@ -25,57 +24,47 @@ public class CalculateFineService implements CalculateFineUseCase {
 
     public CalculateFineService(
             LoadBorrowSlipPort loadBorrowSlipPort,
-            GetAuthenticatedUserPort getAuthenticatedUserPort
-    ) {
-        this.loadBorrowSlipPort = Objects.requireNonNull(
-                loadBorrowSlipPort,
-                "LoadBorrowSlipPort must not be null"
-        );
-        this.getAuthenticatedUserPort = Objects.requireNonNull(
-                getAuthenticatedUserPort,
-                "GetAuthenticatedUserPort must not be null"
-        );
+            GetAuthenticatedUserPort getAuthenticatedUserPort) {
+        this.loadBorrowSlipPort = loadBorrowSlipPort;
+        this.getAuthenticatedUserPort = getAuthenticatedUserPort;
     }
 
     @Override
     public FineCalculationResponseDto calculateBorrowSlipFine(Long borrowSlipId, LocalDateTime returnDate) {
-        // 1. Kiểm tra xác thực và phân quyền (chỉ Thủ thư hoặc Quản trị viên hoạt động mới được truy cập)
         verifyStaffAccess();
 
-        // 2. Validate tham số đầu vào
         if (borrowSlipId == null || borrowSlipId <= 0) {
             throw new ValidationException("Borrow slip ID must be greater than 0");
         }
 
-        // 3. Ngày trả tính toán (nếu không truyền -> mặc định thời điểm hiện tại)
-        LocalDateTime effectiveReturnDate = (returnDate != null) ? returnDate : LocalDateTime.now();
-
-        // 4. Lấy chi tiết phiếu mượn từ Outbound Port
         BorrowSlipResponseDto slip = loadBorrowSlipPort.findSlipDetailById(borrowSlipId)
                 .orElseThrow(() -> new BorrowSlipNotFoundException(borrowSlipId));
 
-        // 5. Áp dụng Domain Policy tính số ngày trễ và tiền phạt quá hạn
-        long overdueDays = FineCalculationPolicy.calculateOverdueDays(slip.dueAt(), effectiveReturnDate);
-        boolean isOverdue = overdueDays > 0;
-        int totalBooks = slip.totalBooks() > 0 ? slip.totalBooks() : 1;
+        LocalDateTime actualReturnDate = (returnDate != null) ? returnDate : LocalDateTime.now();
 
-        BigDecimal overdueFineAmount = FineCalculationPolicy.calculateOverdueFine(
+        if (slip.totalBooks() <= 0) {
+            throw new org.example.librarymanagement.domain.exceptions.DomainException(
+                    "Borrow slip has no borrowed books to calculate fine (totalBooks must be greater than 0)"
+            );
+        }
+        int totalBooks = slip.totalBooks();
+
+        long overdueDays = FineCalculationPolicy.calculateOverdueDays(slip.dueAt(), actualReturnDate);
+        boolean isOverdue = overdueDays > 0;
+
+        BigDecimal overdueFine = FineCalculationPolicy.calculateOverdueFine(
                 slip.dueAt(),
-                effectiveReturnDate,
+                actualReturnDate,
                 totalBooks,
                 FineCalculationPolicy.DEFAULT_DAILY_OVERDUE_RATE
         );
 
-        BigDecimal totalFineAmount = overdueFineAmount;
+        String fineReason = null;
+        if (isOverdue) {
+            String detail = String.format("Quá hạn %d ngày (%d cuốn sách)", overdueDays, totalBooks);
+            fineReason = FineCalculationPolicy.formatFineReason(FineType.OVERDUE, detail);
+        }
 
-        String fineReason = isOverdue
-                ? FineCalculationPolicy.formatFineReason(
-                        FineType.OVERDUE,
-                        String.format("Quá hạn %d ngày (%d cuốn sách)", overdueDays, totalBooks)
-                )
-                : null;
-
-        // 6. Trả về kết quả hoàn chỉnh cho Controller / Frontend
         return new FineCalculationResponseDto(
                 slip.id(),
                 slip.borrowCode(),
@@ -84,12 +73,12 @@ public class CalculateFineService implements CalculateFineUseCase {
                 slip.readerName(),
                 slip.borrowedAt(),
                 slip.dueAt(),
-                effectiveReturnDate,
+                actualReturnDate,
                 overdueDays,
                 totalBooks,
                 FineCalculationPolicy.DEFAULT_DAILY_OVERDUE_RATE,
-                overdueFineAmount,
-                totalFineAmount,
+                overdueFine,
+                overdueFine,
                 isOverdue,
                 fineReason
         );
@@ -100,7 +89,6 @@ public class CalculateFineService implements CalculateFineUseCase {
         if (currentUser == null) {
             throw new UnauthenticatedException("User is unauthenticated");
         }
-
         AccountLockPolicy.validateAccountActive(currentUser);
         AuthorizationAccessPolicy.validateStaffAccess(currentUser);
     }
