@@ -117,6 +117,9 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
     loadAllUsers();
   }, [loadAllUsers]);
 
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'locked'>('all');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
+
   // Combine readers and librarians into UnifiedUser list
   const unifiedUsersList = useMemo<UnifiedUser[]>(() => {
     const list: UnifiedUser[] = [];
@@ -158,14 +161,18 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
     return list;
   }, [readers, librarians, isAdmin]);
 
-  // Filter list based on Tab and Search term
+  // Filter & Sort list based on Tab, Status, Search term, and Sort option
   const filteredUsers = useMemo(() => {
-    return unifiedUsersList.filter((user) => {
-      // Tab filter
+    const result = unifiedUsersList.filter((user) => {
+      // 1. Tab filter
       if (activeTab === 'readers' && user.userType !== 'reader') return false;
       if (activeTab === 'librarians' && user.userType !== 'librarian') return false;
 
-      // Search term filter
+      // 2. Status filter
+      if (statusFilter === 'active' && !user.enabled) return false;
+      if (statusFilter === 'locked' && user.enabled) return false;
+
+      // 3. Search term filter
       if (!searchTerm.trim()) return true;
       const term = searchTerm.toLowerCase().trim();
       return (
@@ -176,7 +183,21 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
         (user.username && user.username.toLowerCase().includes(term))
       );
     });
-  }, [unifiedUsersList, activeTab, searchTerm]);
+
+    // 4. Sorting logic
+    return result.sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name, 'vi');
+      }
+      const numA = Number(String(a.id).replace(/\D/g, '')) || 0;
+      const numB = Number(String(b.id).replace(/\D/g, '')) || 0;
+      if (sortBy === 'oldest') {
+        return numA - numB;
+      }
+      // 'newest'
+      return numB - numA;
+    });
+  }, [unifiedUsersList, activeTab, statusFilter, searchTerm, sortBy]);
 
   // Statistics counters
   const totalReadersCount = readers.length;
@@ -344,16 +365,41 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
           )}
         </div>
 
-        {/* Live Search */}
-        <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Tìm theo họ tên, email, SĐT, mã thẻ hoặc username..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-border rounded-xl bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition text-sm shadow-xs"
-          />
+        {/* Search, Status & Sort Controls */}
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto flex-1 justify-end">
+          {/* Live Search */}
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Tìm theo tên, email, SĐT..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-xl bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition text-xs shadow-xs"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="px-3 py-2 border border-border rounded-xl bg-card text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary shadow-xs cursor-pointer w-full sm:w-auto"
+          >
+            <option value="all">Tất cả trạng thái</option>
+            <option value="active">Hoạt động</option>
+            <option value="locked">Tạm khóa</option>
+          </select>
+
+          {/* Sort By */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="px-3 py-2 border border-border rounded-xl bg-card text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary shadow-xs cursor-pointer w-full sm:w-auto"
+          >
+            <option value="newest">Mới nhất (ID giảm dần)</option>
+            <option value="oldest">Cũ nhất (ID tăng dần)</option>
+            <option value="name">Tên (A - Z)</option>
+          </select>
         </div>
       </div>
 
