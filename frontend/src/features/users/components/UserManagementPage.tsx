@@ -52,6 +52,7 @@ export interface UnifiedUser {
   username?: string;
   address?: string;
   cardExpiryAt?: string;
+  createdAt?: string;
   enabled: boolean;
   roleTitle: string;
   originalReaderData?: ReaderResponse;
@@ -135,6 +136,7 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
         cardNumber: r.cardNumber,
         address: r.address,
         cardExpiryAt: r.cardExpiryAt,
+        createdAt: r.cardIssuedAt,
         enabled: r.cardStatus === 'ACTIVE',
         roleTitle: 'Độc giả',
         originalReaderData: r,
@@ -151,6 +153,7 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
           email: l.email || '',
           phone: l.phone || '',
           username: l.username,
+          createdAt: l.createdAt,
           enabled: l.enabled,
           roleTitle: 'Thủ thư',
           originalLibrarianData: l,
@@ -184,18 +187,20 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
       );
     });
 
-    // 4. Sorting logic
+    // 4. Strict Sorting logic by Creation Date
     return result.sort((a, b) => {
       if (sortBy === 'name') {
         return a.name.localeCompare(b.name, 'vi');
       }
-      const numA = Number(String(a.id).replace(/\D/g, '')) || 0;
-      const numB = Number(String(b.id).replace(/\D/g, '')) || 0;
+
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : (Number(String(a.id).replace(/\D/g, '')) || 0);
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : (Number(String(b.id).replace(/\D/g, '')) || 0);
+
       if (sortBy === 'oldest') {
-        return numA - numB;
+        return timeA - timeB;
       }
-      // 'newest'
-      return numB - numA;
+      // 'newest' (Ngày tạo mới nhất đứng đầu)
+      return timeB - timeA;
     });
   }, [unifiedUsersList, activeTab, statusFilter, searchTerm, sortBy]);
 
