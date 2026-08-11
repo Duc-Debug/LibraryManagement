@@ -50,7 +50,7 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
     },
     {
       id: 'members',
-      label: 'Độc giả',
+      label: currentUser?.role === 'admin' ? 'Quản lý người dùng' : 'Quản lý độc giả',
       icon: Users,
     },
     {
@@ -63,15 +63,6 @@ export function Sidebar({ currentPage, onPageChange, currentUser, onLogout }: Si
       label: 'Trả sách',
       icon: Repeat2,
     },
-    ...(currentUser?.role === 'admin'
-      ? [
-          {
-            id: 'accounts',
-            label: 'Quản lý TK',
-            icon: Settings,
-          },
-        ]
-      : []),
     {
       id: 'settings',
       label: 'Cài đặt cá nhân',
