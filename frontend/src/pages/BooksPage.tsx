@@ -12,6 +12,7 @@ import {
 } from "@/api/bookApi";
 import { fetchCategoriesApi, CategoryResponse } from "@/api/categoryApi";
 import { IconSearch, IconX } from "@/components/icons";
+import { BookOpen } from "lucide-react";
 
 export default function BooksPage() {
   const [booksPage, setBooksPage] = useState<PageResult<BookResponseDto>>({
@@ -283,7 +284,25 @@ export default function BooksPage() {
                     <td className="px-6 py-4 font-mono text-xs font-semibold text-gray-400 whitespace-nowrap">
                       #{b.bookId}
                     </td>
-                    <td className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">{b.title}</td>
+                    <td className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        {b.coverImageUrl ? (
+                          <img
+                            src={b.coverImageUrl}
+                            alt={b.title}
+                            className="w-10 h-14 object-cover rounded-md border border-gray-200 shrink-0 shadow-xs"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-10 h-14 bg-gray-100 rounded-md border border-gray-200 shrink-0 flex items-center justify-center text-gray-400">
+                            <BookOpen className="w-5 h-5 opacity-60" />
+                          </div>
+                        )}
+                        <span>{b.title}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{b.author}</td>
                     <td className="px-6 py-4 text-gray-600 font-medium whitespace-nowrap">
                       <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-100 whitespace-nowrap inline-block">
