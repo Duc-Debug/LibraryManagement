@@ -31,7 +31,7 @@ public class BookJpaEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "cover_image_url", length = 500)
+    @Column(name = "cover_image_url", columnDefinition = "LONGTEXT")
     private String coverImageUrl;
 
     @Column(name = "publisher", length = 150)

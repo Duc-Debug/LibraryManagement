@@ -1,7 +1,6 @@
 package org.example.librarymanagement.port.dtos.reader;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import org.example.librarymanagement.domain.enums.CardStatus;
 
