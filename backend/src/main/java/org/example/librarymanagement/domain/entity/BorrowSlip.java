@@ -77,6 +77,9 @@ public class BorrowSlip {
 
     // ==================== DOMAIN BUSINESS BEHAVIORS ====================
     public void markReturned(LocalDateTime actualReturnDate) {
+        if (this.status == BorrowSlipStatus.RETURNED) {
+            throw new DomainException("Borrow slip has already been returned");
+        }
         if (actualReturnDate != null && borrowDate != null && actualReturnDate.isBefore(borrowDate)) {
             throw new DomainException("Return date cannot be before borrow date");
         }
@@ -90,6 +93,12 @@ public class BorrowSlip {
     }
 
     public void markOverdue() {
+        if (this.status == BorrowSlipStatus.RETURNED) {
+            throw new DomainException("Cannot mark a returned borrow slip as overdue");
+        }
+        if (this.status == BorrowSlipStatus.OVERDUE) {
+            return;
+        }
         this.status = BorrowSlipStatus.OVERDUE;
         touch();
     }
