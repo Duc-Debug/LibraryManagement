@@ -1,5 +1,6 @@
 package org.example.librarymanagement.port.outbound.book;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
@@ -13,4 +14,7 @@ public interface LoadBookPort {
     PageResult<Book> findAll(int page, int size, String keyword);
 
     PageResult<Book> findAll(BookFilterQuery query);
+    boolean existsByIsbn(String isbn);
+    List<Book> findAll(int page, int size);
 }
+

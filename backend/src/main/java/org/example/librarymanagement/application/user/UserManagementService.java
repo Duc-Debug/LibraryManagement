@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
