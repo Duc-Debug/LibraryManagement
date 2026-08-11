@@ -114,6 +114,8 @@ export default function App() {
           <UserManagementPage
             currentRole={currentUser.role}
             currentUserId={currentUser.id}
+            currentUsername={currentUser.username}
+            currentFullName={currentUser.fullName}
           />
         );
       case "settings":

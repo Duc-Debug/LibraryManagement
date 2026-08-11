@@ -169,6 +169,8 @@ export default function Page() {
           <UserManagementPage
             currentRole={currentUser.role}
             currentUserId={currentUser.id}
+            currentUsername={currentUser.username}
+            currentFullName={currentUser.fullName}
           />
         );
       case 'borrowing':

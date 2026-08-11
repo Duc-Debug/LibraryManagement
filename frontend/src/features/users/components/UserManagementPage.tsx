@@ -53,6 +53,7 @@ export interface UnifiedUser {
   address?: string;
   cardExpiryAt?: string;
   createdAt?: string;
+  createdByName?: string;
   enabled: boolean;
   roleTitle: string;
   originalReaderData?: ReaderResponse;
@@ -62,9 +63,16 @@ export interface UnifiedUser {
 interface UserManagementPageProps {
   currentRole?: string;
   currentUserId?: string | number;
+  currentUsername?: string;
+  currentFullName?: string;
 }
 
-export function UserManagementPage({ currentRole = 'admin', currentUserId }: UserManagementPageProps) {
+export function UserManagementPage({
+  currentRole = 'admin',
+  currentUserId,
+  currentUsername,
+  currentFullName,
+}: UserManagementPageProps) {
   const isAdmin = currentRole === 'admin';
   const [activeTab, setActiveTab] = useState<UserTypeFilter>(isAdmin ? 'all' : 'readers');
   
@@ -137,6 +145,7 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
         address: r.address,
         cardExpiryAt: r.cardExpiryAt,
         createdAt: r.cardIssuedAt,
+        createdByName: r.createdByName,
         enabled: r.cardStatus === 'ACTIVE',
         roleTitle: 'Độc giả',
         originalReaderData: r,
@@ -164,12 +173,23 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
     return list;
   }, [readers, librarians, isAdmin]);
 
-  // Filter & Sort list based on Tab, Status, Search term, and Sort option
+  // Filter & Sort list based on Tab, Status, Search term, Sort option, and Librarian Ownership
   const filteredUsers = useMemo(() => {
     const result = unifiedUsersList.filter((user) => {
       // 1. Tab filter
       if (activeTab === 'readers' && user.userType !== 'reader') return false;
       if (activeTab === 'librarians' && user.userType !== 'librarian') return false;
+
+      // Ownership filter for Librarians: Only show reader cards created by this specific librarian!
+      if (!isAdmin && user.userType === 'reader') {
+        const creator = user.createdByName?.toLowerCase().trim();
+        const uname = currentUsername?.toLowerCase().trim();
+        const fname = currentFullName?.toLowerCase().trim();
+        if (creator && (uname || fname)) {
+          const isMatch = (uname && creator === uname) || (fname && creator === fname);
+          if (!isMatch) return false;
+        }
+      }
 
       // 2. Status filter
       if (statusFilter === 'active' && !user.enabled) return false;
@@ -493,6 +513,11 @@ export function UserManagementPage({ currentRole = 'admin', currentUserId }: Use
                             <div className="text-[11px] text-muted-foreground">
                               Hạn thẻ: {user.cardExpiryAt ? new Date(user.cardExpiryAt).toLocaleDateString('vi-VN') : 'N/A'}
                             </div>
+                            {user.createdByName && (
+                              <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
+                                Cấp bởi thủ thư: <span className="font-semibold">{user.createdByName}</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </td>
