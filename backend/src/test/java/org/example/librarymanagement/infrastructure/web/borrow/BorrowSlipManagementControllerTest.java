@@ -31,11 +31,14 @@ class BorrowSlipManagementControllerTest {
     @Mock
     private BorrowSlipsUseCase borrowSlipsUseCase;
 
+    @Mock
+    private org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase calculateFineUseCase;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     public void setUp() {
-        BorrowSlipManagementController controller = new BorrowSlipManagementController(borrowSlipsUseCase);
+        BorrowSlipManagementController controller = new BorrowSlipManagementController(borrowSlipsUseCase, calculateFineUseCase);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
@@ -104,5 +107,42 @@ class BorrowSlipManagementControllerTest {
                 .andExpect(jsonPath("$.size").value(10));
 
         verify(borrowSlipsUseCase).getBorrowSlips(new BorrowSlipFilterQuery(0, 10, null, null));
+    }
+
+    @Test
+    @DisplayName("GET /api/librarians/borrow-slips/{id}/fine-preview: Trả về HTTP 200 kèm kết quả tính phạt")
+    void previewFine_Success() throws Exception {
+        // Arrange
+        org.example.librarymanagement.port.dtos.borrow.FineCalculationResponseDto fineDto =
+                new org.example.librarymanagement.port.dtos.borrow.FineCalculationResponseDto(
+                        1L,
+                        "PM20260810-001",
+                        10L,
+                        "CARD-001",
+                        "Nguyễn Văn A",
+                        LocalDateTime.of(2026, 8, 1, 10, 0),
+                        LocalDateTime.of(2026, 8, 15, 10, 0),
+                        LocalDateTime.of(2026, 8, 18, 10, 0),
+                        3L,
+                        2,
+                        java.math.BigDecimal.valueOf(5000),
+                        java.math.BigDecimal.valueOf(30000),
+                        java.math.BigDecimal.valueOf(30000),
+                        true,
+                        "[Trả quá hạn] Quá hạn 3 ngày (2 cuốn sách)"
+                );
+
+        when(calculateFineUseCase.calculateBorrowSlipFine(any(Long.class), any())).thenReturn(fineDto);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/librarians/borrow-slips/1/fine-preview")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.borrowSlipId").value(1))
+                .andExpect(jsonPath("$.overdueDays").value(3))
+                .andExpect(jsonPath("$.totalFineAmount").value(30000))
+                .andExpect(jsonPath("$.isOverdue").value(true));
+
+        verify(calculateFineUseCase).calculateBorrowSlipFine(1L, null);
     }
 }

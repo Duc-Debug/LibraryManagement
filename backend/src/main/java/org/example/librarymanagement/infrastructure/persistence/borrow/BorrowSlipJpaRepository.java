@@ -1,4 +1,5 @@
 package org.example.librarymanagement.infrastructure.persistence.borrow;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,6 +56,28 @@ public interface BorrowSlipJpaRepository extends JpaRepository<BorrowSlipJpaEnti
             @Param("keyword") String keyword,
             Pageable pageable
     );
+        @Query(value = """
+        SELECT 
+            bs.id AS id,
+            bs.borrow_code AS borrowCode,
+            bs.reader_id AS readerId,
+            r.card_code AS readerCardNumber,
+            r.full_name AS readerName,
+            bs.created_by_user_id AS createdByUserId,
+            u.full_name AS createdByUserName,
+            bs.borrowed_at AS borrowedAt,
+            bs.due_at AS dueAt,
+            bs.status AS status,
+            bs.note AS note,
+            (SELECT CAST(COUNT(1) AS SIGNED) FROM borrow_details bd WHERE bd.borrow_slip_id = bs.id) AS totalBooks,
+            bs.created_at AS createdAt
+        FROM borrow_slips bs
+        LEFT JOIN readers r ON bs.reader_id = r.id
+        LEFT JOIN users u ON bs.created_by_user_id = u.id
+        WHERE bs.id = :id
+        """,
+        nativeQuery = true)
+    Optional<BorrowSlipSummaryProjection> findBorrowSlipDetailById(@Param("id") Long id);
 
     boolean existsByBorrowCode(String borrowCode);
 }

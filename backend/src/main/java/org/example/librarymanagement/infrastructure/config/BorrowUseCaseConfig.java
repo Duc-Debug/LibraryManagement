@@ -1,7 +1,9 @@
 package org.example.librarymanagement.infrastructure.config;
 
+import org.example.librarymanagement.application.borrow.CalculateFineService;
 import org.example.librarymanagement.application.borrow.GetBorrowSlipsService;
 import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
+import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 import org.springframework.context.annotation.Bean;
@@ -16,5 +18,13 @@ public class BorrowUseCaseConfig {
             GetAuthenticatedUserPort getAuthenticatedUserPort
     ) {
         return new GetBorrowSlipsService(loadBorrowSlipPort, getAuthenticatedUserPort);
+    }
+
+    @Bean
+    public CalculateFineUseCase calculateFineUseCase(
+            LoadBorrowSlipPort loadBorrowSlipPort,
+            GetAuthenticatedUserPort getAuthenticatedUserPort
+    ) {
+        return new CalculateFineService(loadBorrowSlipPort, getAuthenticatedUserPort);
     }
 }
