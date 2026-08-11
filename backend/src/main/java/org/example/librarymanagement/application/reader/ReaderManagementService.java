@@ -307,9 +307,7 @@ public class ReaderManagementService implements ReaderManagementUseCase {
         }
 
         private Long scopedCreatedByUserId(User currentUser) {
-                return isAdmin(currentUser)
-                                ? null
-                                : currentUser.getId();
+                return null;
         }
 
         private boolean isAdmin(User user) {
