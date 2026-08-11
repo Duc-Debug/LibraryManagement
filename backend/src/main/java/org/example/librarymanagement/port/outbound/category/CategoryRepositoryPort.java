@@ -26,6 +26,7 @@ public interface CategoryRepositoryPort {
     boolean existsByName(
             String name
     );
+    boolean existsById(Long categoryId);
 
     boolean existsByNameAndIdNot(
             String name,
