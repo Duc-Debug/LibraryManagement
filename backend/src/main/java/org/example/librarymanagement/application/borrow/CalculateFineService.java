@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.enums.FineType;
+import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.borrow.BorrowSlipNotFoundException;
 import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
@@ -43,7 +44,7 @@ public class CalculateFineService implements CalculateFineUseCase {
         LocalDateTime actualReturnDate = (returnDate != null) ? returnDate : LocalDateTime.now();
 
         if (slip.totalBooks() <= 0) {
-            throw new org.example.librarymanagement.domain.exceptions.DomainException(
+            throw new DomainException(
                     "Borrow slip has no borrowed books to calculate fine (totalBooks must be greater than 0)"
             );
         }
