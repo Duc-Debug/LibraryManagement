@@ -389,8 +389,26 @@ export function Dashboard() {
                       <div className="text-[11px] text-muted-foreground font-normal">{book.isbn}</div>
                     </td>
                     <td className="px-6 py-4 font-medium text-foreground max-w-xs truncate">
-                      <div className="font-semibold text-foreground">{book.title}</div>
-                      <div className="text-[11px] text-muted-foreground font-normal">Tác giả: {book.author}</div>
+                      <div className="flex items-center gap-3">
+                        {book.coverImageUrl ? (
+                          <img
+                            src={book.coverImageUrl}
+                            alt={book.title}
+                            className="w-9 h-12 object-cover rounded-md border border-border shrink-0 shadow-xs"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-9 h-12 bg-muted/40 rounded-md border border-border shrink-0 flex items-center justify-center text-muted-foreground">
+                            <BookOpen className="w-4 h-4 opacity-60" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <div className="font-semibold text-foreground truncate">{book.title}</div>
+                          <div className="text-[11px] text-muted-foreground font-normal">Tác giả: {book.author}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">

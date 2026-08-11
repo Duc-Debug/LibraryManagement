@@ -56,7 +56,10 @@ public class CategoryPersistenceAdapter
         return categoryJpaRepository.findAllById(categoryIds).stream()
                 .collect(Collectors.toMap(CategoryJpaEntity::getId, CategoryJpaEntity::getName));
     }
-
+@Override
+public boolean existsById(Long categoryId) {
+    return categoryJpaRepository.existsById(categoryId);
+}
     @Override
     public Category save(
             Category category

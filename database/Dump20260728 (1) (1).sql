@@ -30,7 +30,7 @@ CREATE TABLE `books` (
   `author` varchar(150) NOT NULL,
   `isbn` varchar(20) NOT NULL,
   `description` text,
-  `cover_image_url` varchar(500) DEFAULT NULL,
+  `cover_image_url` longtext DEFAULT NULL,
   `publisher` varchar(150) DEFAULT NULL,
   `published_year` smallint DEFAULT NULL,
   `shelf_location` varchar(50) DEFAULT NULL,
