@@ -81,7 +81,7 @@ public class CreateBookService implements CreateBookUseCase {
                     command.description(),
                     imageUrl,
                     command.publisher(),
-                    command.publishedYear() != null ? command.publishedYear().shortValue() : null,
+                   toPublishedYear(command.publishedYear()),
                     command.shelfLocation(),
                     command.totalQuantity(),
                     command.categoryId()
@@ -101,6 +101,19 @@ public class CreateBookService implements CreateBookUseCase {
             throw e;
         }
     }
+    private Short toPublishedYear(Integer publishedYear) {
+    if (publishedYear == null) {
+        return null;
+    }
+
+    if (publishedYear < Short.MIN_VALUE || publishedYear > Short.MAX_VALUE) {
+        throw new IllegalArgumentException(
+                "Năm xuất bản nằm ngoài phạm vi cho phép"
+        );
+    }
+
+    return publishedYear.shortValue();
+}
 
     private BookResult mapToResult(Book book) {
         return new BookResult(

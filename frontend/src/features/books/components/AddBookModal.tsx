@@ -115,9 +115,6 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
       // Cover image file (Nếu người dùng không chọn ảnh, tạo ảnh mặc định dạng file)
       if (coverImageFile) {
         payload.append("coverImage", coverImageFile);
-      } else {
-        const dummyFile = new File(["dummy"], "default-cover.jpg", { type: "image/jpeg" });
-        payload.append("coverImage", dummyFile);
       }
 
       await createBookApi(payload);

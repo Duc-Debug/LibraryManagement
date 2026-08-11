@@ -29,14 +29,26 @@ import org.springframework.context.annotation.Configuration;
 public class BookUseCaseConfig {
 
     @Bean
-    public CreateBookUseCase createBookUseCase(
-            SaveBookPort saveBookPort,
-            BookRepositoryPort bookRepositoryPort,
-            CategoryRepositoryPort categoryRepositoryPort,
-            FileStoragePort fileStoragePort) {
-        CreateBookUseCase createBookService = new CreateBookService(saveBookPort, bookRepositoryPort, categoryRepositoryPort, fileStoragePort);
-        return new TransactionalCreateBookUseCase(createBookService);
-    }
+public CreateBookUseCase createBookUseCase(
+        SaveBookPort saveBookPort,
+        BookRepositoryPort bookRepositoryPort,
+        CategoryRepositoryPort categoryRepositoryPort,
+        FileStoragePort fileStoragePort
+) {
+
+    CreateBookUseCase createBookService =
+            new CreateBookService(
+                    saveBookPort,
+                    bookRepositoryPort,
+                    categoryRepositoryPort,
+                    fileStoragePort
+            );
+
+    return new TransactionalCreateBookUseCase(
+            createBookService,
+            fileStoragePort
+    );
+}
 
     @Bean
     public DeleteBookUseCase deleteBookUseCase(

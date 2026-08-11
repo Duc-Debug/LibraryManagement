@@ -8,9 +8,9 @@ import jakarta.validation.constraints.Size;
 
 public record CreateBookRequest(
 
-        @NotBlank(message = "Tên sách không được trống")
-        @Size(max = 255, message = "Tên sách không được vượt quá 255 ký tự")
-        String title,
+       @NotBlank(message = "Tên sách không được trống")
+@Size(max = 150, message = "Tên sách không được vượt quá 150 ký tự")
+String title,
 
         @NotBlank(message = "Tác giả không được trống")
         @Size(max = 150, message = "Tác giả không được vượt quá 150 ký tự")

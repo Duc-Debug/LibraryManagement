@@ -37,13 +37,23 @@ public class FileStorageService implements FileStoragePort {
             "image/webp"
     );
 
-    public FileStorageService(
-            @Value("${app.storage.upload-dir:uploads/books}") String uploadDir,
-            @Value("${app.storage.max-file-size:5242880}") long maxFileSize
-    ) {
-        this.uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        this.maxFileSize = maxFileSize;
+   public FileStorageService(
+        @Value("${app.storage.upload-dir:uploads/books}") String uploadDir,
+        @Value("${app.storage.max-file-size:5242880}") long maxFileSize
+) {
+    if (maxFileSize <= 0 || maxFileSize >= Integer.MAX_VALUE) {
+        throw new IllegalArgumentException(
+                "app.storage.max-file-size must be between 1 and "
+                        + (Integer.MAX_VALUE - 1)
+        );
     }
+
+    this.uploadPath = Paths.get(uploadDir)
+            .toAbsolutePath()
+            .normalize();
+
+    this.maxFileSize = maxFileSize;
+}
 
     @PostConstruct
     public void init() {
@@ -66,7 +76,7 @@ public class FileStorageService implements FileStoragePort {
 
         byte[] bytes;
         try {
-            bytes = inputStream.readAllBytes();
+            bytes = readWithLimit(inputStream);
         } catch (IOException e) {
             throw new RuntimeException("Không thể đọc nội dung file để tải lên", e);
         }
@@ -157,24 +167,54 @@ public class FileStorageService implements FileStoragePort {
      * Xóa file vật lý khi có lỗi xảy ra (Compensation action)
      */
     @Override
-    public void deleteFile(String fileUrl) {
-        if (fileUrl == null || fileUrl.isBlank()) {
-            return;
-        }
-
-        Path targetLocation = null;
-        try {
-            String filename = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-            targetLocation = uploadPath.resolve(filename).normalize();
-
-            if (!targetLocation.startsWith(uploadPath)) {
-                throw new SecurityException("Đường dẫn file không hợp lệ!");
-            }
-
-            Files.deleteIfExists(targetLocation);
-
-        } catch (Exception e) {
-            log.error("Không thể xóa file mồ côi (Rollback storage thất bại). File URL: {}, Path: {}", fileUrl, targetLocation, e);
-        }
+public void deleteFile(String fileUrl) {
+    if (fileUrl == null || fileUrl.isBlank()) {
+        return;
     }
+
+    try {
+        Path targetLocation = resolveStoredFile(fileUrl);
+        Files.deleteIfExists(targetLocation);
+
+    } catch (IOException e) {
+        throw new FileStorageException(
+                "Failed to delete stored file: " + fileUrl,
+                e
+        );
+    }
+}
+private Path resolveStoredFile(String fileUrl) {
+    String filename = Paths.get(fileUrl)
+            .getFileName()
+            .toString();
+
+    Path target = uploadPath
+            .resolve(filename)
+            .normalize();
+
+    if (!target.startsWith(uploadPath)) {
+        throw new FileStorageException("Invalid file path");
+    }
+
+    return target;
+}
+private byte[] readWithLimit(InputStream inputStream) throws IOException {
+    long limit = maxFileSize + 1;
+
+    if (limit > Integer.MAX_VALUE) {
+        throw new FileStorageException(
+                "Configured max file size is too large"
+        );
+    }
+
+    byte[] bytes = inputStream.readNBytes((int) limit);
+
+    if (bytes.length > maxFileSize) {
+        throw new FileStorageException(
+                "Kích thước file thực tế vượt quá giới hạn cho phép."
+        );
+    }
+
+    return bytes;
+}
 }
