@@ -1,3 +1,4 @@
+
 package org.example.librarymanagement.infrastructure.config;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,29 +22,29 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import jakarta.servlet.http.HttpServletResponse;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableMethodSecurity
+@EnableConfigurationProperties({
+        JwtProperties.class,
+        CorsProperties.class
+})
 public class SecurityConfig {
-
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return objectMapper;
+ private final ObjectMapper objectMapper;
+private final CorsProperties corsProperties;
+ public SecurityConfig(
+            ObjectMapper objectMapper,CorsProperties corsProperties
+    ) {
+        this.objectMapper = objectMapper;
+         this.corsProperties = corsProperties;
     }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
@@ -51,29 +53,27 @@ public class SecurityConfig {
     ) throws Exception {
 
         return http
-                .cors(cors
-                        -> cors.configurationSource(corsConfigurationSource)
+                .cors(cors -> cors
+                        .configurationSource(corsConfigurationSource)
                 )
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session
-                        -> session.sessionCreationPolicy(
-                        SessionCreationPolicy.STATELESS
-                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(
-                        HttpMethod.OPTIONS,
-                        "/**"
-                ).permitAll()
-                .requestMatchers(
-                        HttpMethod.POST,
-                        "/api/auth/login",
-                        "/api/auth/logout"
-                ).permitAll()
-                .requestMatchers(
-                        "/error"
-                ).permitAll()
-                .anyRequest().authenticated()
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/auth/login",
+                                "/api/auth/logout"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/error"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(
                         accessTokenAuthenticationFilter,
@@ -83,14 +83,26 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json;charset=UTF-8");
-                            ErrorResponse error = ErrorResponse.of("UNAUTHORIZED", "Unauthorized access (401): Please login to access this resource.");
-                            response.getWriter().write(objectMapper.writeValueAsString(error));
+
+                            ErrorResponse error = ErrorResponse.of(
+                                    "UNAUTHORIZED",
+                                    "Unauthorized access (401): Please login to access this resource."
+                            );
+
+                            response.getWriter()
+                                    .write(objectMapper.writeValueAsString(error));
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json;charset=UTF-8");
-                            ErrorResponse error = ErrorResponse.of("ACCESS_DENIED", "Access denied (403): You do not have permission to access this resource.");
-                            response.getWriter().write(objectMapper.writeValueAsString(error));
+
+                            ErrorResponse error = ErrorResponse.of(
+                                    "ACCESS_DENIED",
+                                    "Access denied (403): You do not have permission to access this resource."
+                            );
+
+                            response.getWriter()
+                                    .write(objectMapper.writeValueAsString(error));
                         })
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -102,13 +114,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOriginPatterns(List.of(
-                "http://*",
-                "https://*",
-                "http://localhost:*",
-                "http://127.0.0.1:*",
-                "http://0.0.0.0:*"
-        ));
+       configuration.setAllowedOrigins(
+        corsProperties.allowedOrigins()
+);
 
         configuration.setAllowedMethods(List.of(
                 "GET",
@@ -128,12 +136,12 @@ public class SecurityConfig {
         configuration.setExposedHeaders(List.of(
                 "Authorization"
         ));
-        
+
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source
-                = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", configuration);
 
