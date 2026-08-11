@@ -224,6 +224,23 @@ export function UserManagementPage({
     });
   }, [unifiedUsersList, activeTab, statusFilter, searchTerm, sortBy]);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Reset page when tab, search, status, or sort changes
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [activeTab, searchTerm, statusFilter, sortBy]);
+
+  // Paginated users slice
+  const paginatedUsers = useMemo(() => {
+    const start = currentPage * pageSize;
+    return filteredUsers.slice(start, start + pageSize);
+  }, [filteredUsers, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
+
   // Statistics counters
   const totalReadersCount = readers.length;
   const totalLibrariansCount = librarians.length;
@@ -421,8 +438,8 @@ export function UserManagementPage({
             onChange={(e) => setSortBy(e.target.value as any)}
             className="px-3 py-2 border border-border rounded-xl bg-card text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary shadow-xs cursor-pointer w-full sm:w-auto"
           >
-            <option value="newest">Mới nhất (ID giảm dần)</option>
-            <option value="oldest">Cũ nhất (ID tăng dần)</option>
+            <option value="newest">Mới nhất</option>
+            <option value="oldest">Cũ nhất </option>
             <option value="name">Tên (A - Z)</option>
           </select>
         </div>
@@ -455,7 +472,7 @@ export function UserManagementPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredUsers.map((user) => {
+                {paginatedUsers.map((user) => {
                   const isLibrarian = user.userType === 'librarian';
                   const isSelf = isLibrarian && String(user.originalLibrarianData?.id) === String(currentUserId);
                   const isToggling = togglingId === user.id;
@@ -599,6 +616,53 @@ export function UserManagementPage({
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Phân trang Footer */}
+        {filteredUsers.length > 0 && (
+          <div className="px-6 py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <span>Hiển thị</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(0);
+                }}
+                className="border border-border rounded-lg px-2 py-1 bg-card text-foreground font-medium focus:outline-none cursor-pointer"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+              <span>bản ghi / trang (Tổng số: {filteredUsers.length} người dùng)</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 0}
+                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                className="text-xs rounded-xl cursor-pointer"
+              >
+                Trang trước
+              </Button>
+              <span className="font-semibold text-foreground">
+                Trang {currentPage + 1} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage + 1 >= totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                className="text-xs rounded-xl cursor-pointer"
+              >
+                Trang sau
+              </Button>
+            </div>
           </div>
         )}
       </div>
