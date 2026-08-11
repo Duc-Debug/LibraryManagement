@@ -17,8 +17,8 @@ import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
 /**
- * Application Service: UpdateBookService Pure Java 100% - Hexagonal
- * Architecture Implementation
+ * Application Service: UpdateBookService
+ * Pure Java 100% - Hexagonal Architecture Implementation
  */
 public class UpdateBookService implements UpdateBookUseCase {
 
