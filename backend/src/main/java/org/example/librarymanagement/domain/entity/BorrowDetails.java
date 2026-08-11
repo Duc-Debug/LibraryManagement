@@ -1,37 +1,60 @@
 package org.example.librarymanagement.domain.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class BorrowDetails {
-    private Long id;
-    private Long borrowSlipId;
-    private Long bookId;
-    private LocalDateTime returnAt;
-    private Long returnByUserId;
-    private String fineReason;
-    private LocalDateTime createdAt;
+    private final Long id;
+    private final Long borrowSlipId;
+    private final Long bookId;
+    private final LocalDateTime returnAt;
+    private final Long returnByUserId;
+    private final BigDecimal fineAmount;
+    private final String fineReason;
+    private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public static BorrowDetails create(Long borrowSlipId, Long bookId) {
         LocalDateTime now = LocalDateTime.now();
-        return new BorrowDetails(null, borrowSlipId, bookId, null, null, null, now, now);
+        return new BorrowDetails(null, borrowSlipId, bookId, null, null, BigDecimal.ZERO, null, now, now);
     }
 
-    public BorrowDetails(Long id, Long borrowSlipId, Long bookId, LocalDateTime returnAt, Long returnByUserId,
-            String fineReason, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public BorrowDetails(
+            Long id,
+            Long borrowSlipId,
+            Long bookId,
+            LocalDateTime returnAt,
+            Long returnByUserId,
+            BigDecimal fineAmount,
+            String fineReason,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
         validateRequiredIds(borrowSlipId, bookId);
-        validateReturnInformation(returnAt, returnByUserId, fineReason);
+        validateReturnInformation(returnAt, returnByUserId, fineAmount, fineReason);
         this.id = id;
         this.borrowSlipId = borrowSlipId;
         this.bookId = bookId;
         this.returnAt = returnAt;
         this.returnByUserId = returnByUserId;
+        this.fineAmount = fineAmount != null ? fineAmount : BigDecimal.ZERO;
         this.fineReason = normalizeNullable(fineReason);
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
+    }
+
+    public BorrowDetails(
+            Long id,
+            Long borrowSlipId,
+            Long bookId,
+            LocalDateTime returnAt,
+            Long returnByUserId,
+            String fineReason,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
+        this(id, borrowSlipId, bookId, returnAt, returnByUserId, BigDecimal.ZERO, fineReason, createdAt, updatedAt);
     }
 
     // ==================== DOMAIN BUSINESS BEHAVIORS ====================
@@ -52,9 +75,13 @@ public class BorrowDetails {
     private static void validateReturnInformation(
             LocalDateTime returnAt,
             Long returnByUserId,
+            BigDecimal fineAmount,
             String fineReason) {
         if (returnAt != null && returnByUserId == null) {
             throw new DomainException("Return by user ID must not be null when return date is set");
+        }
+        if (fineAmount != null && fineAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new DomainException("Fine amount cannot be negative");
         }
         if (fineReason != null && fineReason.trim().length() > 255) {
             throw new DomainException("Fine reason cannot exceed 255 characters");
@@ -86,16 +113,20 @@ public class BorrowDetails {
         return returnAt;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
     public Long getReturnByUserId() {
         return returnByUserId;
     }
 
+    public BigDecimal getFineAmount() {
+        return fineAmount;
+    }
+
     public String getFineReason() {
         return fineReason;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public LocalDateTime getUpdatedAt() {
