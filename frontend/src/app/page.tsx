@@ -6,12 +6,11 @@ import { Dashboard } from '@/features/dashboard';
 import { BooksPage } from '@/features/books';
 import type { Book } from '@/features/books';
 import { CategoriesPage } from '@/features/categories/components/CategoriesPage';
-import { MembersPage } from '@/features/members';
+import { UserManagementPage } from '@/features/users';
 import { BorrowingPage } from '@/features/borrowing';
 import { ReturnsPage } from '@/features/returns';
 import { LoginPage } from '@/features/auth';
-import { AccountsPage, mockUserAccounts } from '@/features/accounts';
-import type { UserAccount } from '@/features/accounts';
+import { mockUserAccounts, type UserAccount } from '@/features/accounts';
 import { logout } from '@/api/authApi';
 import SettingsPage from '@/pages/SettingsPage';
 
@@ -165,29 +164,17 @@ export default function Page() {
       case 'categories':
         return <CategoriesPage />;
       case 'members':
-        return <MembersPage />;
+      case 'accounts':
+        return (
+          <UserManagementPage
+            currentRole={currentUser.role}
+            currentUserId={currentUser.id}
+          />
+        );
       case 'borrowing':
         return <BorrowingPage />;
       case 'returns':
         return <ReturnsPage />;
-      case 'accounts':
-        return currentUser.role === 'admin' ? (
-          <AccountsPage
-            accounts={accounts}
-            setAccounts={handleSetAccounts}
-            currentUserId={currentUser.id}
-          />
-        ) : (
-          <div className="p-12 flex flex-col items-center justify-center min-h-[500px] text-center">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4 text-2xl font-bold shadow-sm border border-red-200">
-              403
-            </div>
-            <h2 className="text-xl font-bold text-foreground mb-2">Truy cập trái phép bị chặn (403)</h2>
-            <p className="text-sm text-muted-foreground max-w-md">
-              Tài khoản hiện tại của bạn không có quyền Quản trị viên (Admin) để truy cập chức năng này.
-            </p>
-          </div>
-        );
       case 'settings':
         return (
           <SettingsPage
