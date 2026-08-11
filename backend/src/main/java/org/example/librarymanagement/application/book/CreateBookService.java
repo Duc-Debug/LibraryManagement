@@ -60,9 +60,11 @@ public class CreateBookService implements CreateBookUseCase {
             throw new DuplicateResourceException("Book with ISBN " + normalizedIsbn + " already have.");
         }
 
-        if (categoryRepositoryPort.findById(command.categoryId()).isEmpty()) {
-            throw new ResourceNotFoundException("Category with ID " + command.categoryId() + " not exist.");
-        }
+       if (!categoryRepositoryPort.existsById(command.categoryId())) {
+    throw new ResourceNotFoundException(
+            "Category with ID " + command.categoryId() + " does not exist."
+    );
+}
 
         String imageUrl = null;
         try {
@@ -101,14 +103,16 @@ public class CreateBookService implements CreateBookUseCase {
             throw e;
         }
     }
-    private Short toPublishedYear(Integer publishedYear) {
+   private Short toPublishedYear(Integer publishedYear) {
     if (publishedYear == null) {
         return null;
     }
 
-    if (publishedYear < Short.MIN_VALUE || publishedYear > Short.MAX_VALUE) {
-        throw new IllegalArgumentException(
-                "Năm xuất bản nằm ngoài phạm vi cho phép"
+    int currentYear = java.time.Year.now().getValue();
+
+    if (publishedYear < 1000 || publishedYear > currentYear) {
+        throw new ValidationException(
+                "Published year must be between 1000 and " + currentYear
         );
     }
 
