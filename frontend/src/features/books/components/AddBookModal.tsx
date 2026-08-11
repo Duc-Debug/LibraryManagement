@@ -59,7 +59,7 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'publishedYear' || name === 'totalQuantity' || name === 'categoryId' 
-        ? (value === "" ? 0 : parseInt(value)) 
+        ? (value === "" || isNaN(parseInt(value)) ? 0 : parseInt(value)) 
         : value,
     }));
   };
@@ -112,7 +112,7 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
       if (formData.publishedYear) payload.append("publishedYear", formData.publishedYear.toString());
       if (formData.shelfLocation) payload.append("shelfLocation", formData.shelfLocation.trim());
 
-      // Cover image file (Nếu người dùng không chọn ảnh, tạo ảnh mặc định dạng file)
+      // Cover image file
       if (coverImageFile) {
         payload.append("coverImage", coverImageFile);
       }
