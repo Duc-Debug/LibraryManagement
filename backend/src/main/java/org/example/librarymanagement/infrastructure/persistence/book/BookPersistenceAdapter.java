@@ -90,9 +90,8 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
     private BookJpaEntity update(Book book) {
         BookJpaEntity entity = bookJpaRepository.findById(book.getId())
                 .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.book.BookNotFoundException(
-                "Book not found with ID: " + book.getId()
-        ));
-                        "Book not found with ID: " + book.getId()));
+                        "Book not found with ID: " + book.getId()
+                ));
 
         bookPersistenceMapper.updateJpaEntity(book, entity);
         return entity;
