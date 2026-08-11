@@ -74,7 +74,7 @@ public class BorrowSlipJpaEntity {
     }
 
     @PrePersist
-    void prePersist() {
+   public void prePersist() {
         LocalDateTime now = LocalDateTime.now();
         if (createdAt == null) {
             createdAt = now;
@@ -85,7 +85,7 @@ public class BorrowSlipJpaEntity {
     }
 
     @PreUpdate
-    void preUpdate() {
+    public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
 }

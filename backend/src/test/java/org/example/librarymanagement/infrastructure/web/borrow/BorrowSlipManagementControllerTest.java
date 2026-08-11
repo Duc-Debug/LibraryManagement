@@ -34,7 +34,7 @@ class BorrowSlipManagementControllerTest {
     private MockMvc mockMvc;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         BorrowSlipManagementController controller = new BorrowSlipManagementController(borrowSlipsUseCase);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(controller)

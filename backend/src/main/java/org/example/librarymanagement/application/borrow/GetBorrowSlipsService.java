@@ -2,6 +2,7 @@ package org.example.librarymanagement.application.borrow;
 
 import java.util.Objects;
 
+import org.example.librarymanagement.application.shared.ValidationException;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
@@ -13,43 +14,62 @@ import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
-
-
 public class GetBorrowSlipsService implements BorrowSlipsUseCase {
+
+    public static final int MAX_PAGE_SIZE = 100;
+
     private final LoadBorrowSlipPort loadBorrowSlipPort;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
-    
-    public GetBorrowSlipsService(LoadBorrowSlipPort loadBorrowSlipPort, GetAuthenticatedUserPort getAuthenticatedUserPort) {
-        this.loadBorrowSlipPort = Objects.requireNonNull(loadBorrowSlipPort, "LoadBorrowSlipPort must not be null");
-        this.getAuthenticatedUserPort = Objects.requireNonNull(getAuthenticatedUserPort, "GetAuthenticatedUserPort must not be null");
-    }
 
-    @Override
-    public PageResult<BorrowSlipResponseDto> getBorrowSlips(BorrowSlipFilterQuery query)
-    {
-        // check xac thuc va phan quyen
-        verifyStaffAccess();
-
-        // chuan hoa dau vao
-        BorrowSlipFilterQuery safeQuery = query != null ? query : new BorrowSlipFilterQuery(0, 10, null, null);
-       int pageNumber = Math.max(0, safeQuery.page());
-        int pageSize = safeQuery.size() <0 ? 10 : safeQuery.size();
-
-        String keyword = safeQuery.keyword() != null ? safeQuery.keyword().trim() : null;
-
-
-        // goi outbound portt de truy van du lieu persistence
-
-        return loadBorrowSlipPort.findBorrowSlips(
-            pageNumber,pageSize,safeQuery.status(),keyword
+    public GetBorrowSlipsService(
+            LoadBorrowSlipPort loadBorrowSlipPort,
+            GetAuthenticatedUserPort getAuthenticatedUserPort
+    ) {
+        this.loadBorrowSlipPort = Objects.requireNonNull(
+                loadBorrowSlipPort,
+                "LoadBorrowSlipPort must not be null"
+        );
+        this.getAuthenticatedUserPort = Objects.requireNonNull(
+                getAuthenticatedUserPort,
+                "GetAuthenticatedUserPort must not be null"
         );
     }
 
-    private void verifyStaffAccess()
-    {
+    @Override
+    public PageResult<BorrowSlipResponseDto> getBorrowSlips(BorrowSlipFilterQuery query) {
+        // 1. Kiểm tra xác thực và phân quyền
+        verifyStaffAccess();
+
+        // 2. Validate & Enforce ranh giới tham số tại Use-Case Boundary
+        if (query == null) {
+            throw new ValidationException("Filter query must not be null");
+        }
+        if (query.page() < 0) {
+            throw new ValidationException("Page index must be greater than or equal to 0");
+        }
+        if (query.size() <= 0) {
+            throw new ValidationException("Page size must be greater than 0");
+        }
+        if (query.size() > MAX_PAGE_SIZE) {
+            throw new ValidationException("Page size must not exceed " + MAX_PAGE_SIZE);
+        }
+
+        String keyword = (query.keyword() != null && !query.keyword().isBlank())
+                ? query.keyword().trim()
+                : null;
+
+        // 3. Gọi outbound port để truy vấn dữ liệu
+        return loadBorrowSlipPort.findBorrowSlips(
+                query.page(),
+                query.size(),
+                query.status(),
+                keyword
+        );
+    }
+
+    private void verifyStaffAccess() {
         User currentUser = getAuthenticatedUserPort.getCurrentUser();
-        if(currentUser == null )
-        {
+        if (currentUser == null) {
             throw new UnauthenticatedException("User is unauthenticated");
         }
 

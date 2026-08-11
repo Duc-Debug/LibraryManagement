@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,6 +40,7 @@ public class BorrowDetailsJpaEntity {
     @Column(name = "returned_by_user_id")
     private Long returnedByUserId;
 
+    @DecimalMin(value = "0.00", message = "Fine amount must be greater than or equal to 0")
     @Column(name = "fine_amount", precision = 12, scale = 2, nullable = false)
     private BigDecimal fineAmount = BigDecimal.ZERO;
 
@@ -74,13 +76,20 @@ public class BorrowDetailsJpaEntity {
         if (updatedAt == null) {
             updatedAt = now;
         }
-        if (fineAmount == null) {
-            fineAmount = BigDecimal.ZERO;
-        }
+        validateAndNormalizeFineAmount();
     }
 
     @PreUpdate
     void preUpdate() {
         updatedAt = LocalDateTime.now();
+        validateAndNormalizeFineAmount();
+    }
+
+    private void validateAndNormalizeFineAmount() {
+        if (fineAmount == null) {
+            fineAmount = BigDecimal.ZERO;
+        } else if (fineAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Fine amount cannot be negative");
+        }
     }
 }

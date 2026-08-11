@@ -24,6 +24,9 @@ public class BorrowSlipPersistenceMapper {
             }
         }
 
+        Integer totalBooks = projection.getTotalBooks();
+        int safeTotalBooks = (totalBooks != null) ? totalBooks.intValue() : 0;
+
         return new BorrowSlipResponseDto(
                 projection.getId(),
                 projection.getBorrowCode(),
@@ -36,13 +39,13 @@ public class BorrowSlipPersistenceMapper {
                 projection.getDueAt(),
                 status,
                 projection.getNote(),
-                projection.getTotalBooks() != null ? projection.getTotalBooks() : 0,
+                safeTotalBooks,
                 projection.getCreatedAt()
         );
     }
 
     /**
-     * Chuyển đổi từ JPA Entity sang Domain Entity (Pure Java)
+     * Chuyển đổi từ JPA Entity sang Domain Entity (Pure Java, round-trip hoàn hảo)
      */
     public BorrowSlip toDomain(BorrowSlipJpaEntity entity) {
         if (entity == null) {
@@ -54,7 +57,6 @@ public class BorrowSlipPersistenceMapper {
                 entity.getReaderId(),
                 entity.getBorrowedAt(),
                 entity.getDueAt(),
-                null, // returnDate
                 entity.getStatus(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()

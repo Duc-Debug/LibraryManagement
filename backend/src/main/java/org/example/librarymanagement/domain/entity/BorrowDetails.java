@@ -6,13 +6,13 @@ import java.util.Objects;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class BorrowDetails {
-    private Long id;
-    private Long borrowSlipId;
-    private Long bookId;
-    private LocalDateTime returnAt;
-    private Long returnByUserId;
-    private String fineReason;
-    private LocalDateTime createdAt;
+    private final Long id;
+    private final Long borrowSlipId;
+    private final Long bookId;
+    private final LocalDateTime returnAt;
+    private final Long returnByUserId;
+    private final String fineReason;
+    private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public static BorrowDetails create(Long borrowSlipId, Long bookId) {

@@ -17,24 +17,34 @@ public class BorrowSlip {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static BorrowSlip create(Long readerId, int borrowDays) {
+    public static BorrowSlip create(Long readerId, int borrowDays, LocalDateTime borrowDate) {
+        if (readerId == null || readerId <= 0) {
+            throw new DomainException("Reader ID must be greater than 0");
+        }
         if (borrowDays <= 0) {
             throw new DomainException("Borrow days must be greater than 0");
         }
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime calculatedDueDate = now.plusDays(borrowDays);
+        if (borrowDate == null) {
+            throw new DomainException("Borrow date must not be null");
+        }
+        LocalDateTime calculatedDueDate = borrowDate.plusDays(borrowDays);
         return new BorrowSlip(
                 null,
                 readerId,
-                now,
+                borrowDate,
                 calculatedDueDate,
                 null,
                 BorrowSlipStatus.BORROWING,
-                now,
-                now);
+                borrowDate,
+                borrowDate);
     }
 
-    public BorrowSlip(Long id,
+    public static BorrowSlip create(Long readerId, int borrowDays) {
+        return create(readerId, borrowDays, LocalDateTime.now());
+    }
+
+    public BorrowSlip(
+            Long id,
             Long readerId,
             LocalDateTime borrowDate,
             LocalDateTime dueDate,
@@ -54,19 +64,44 @@ public class BorrowSlip {
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
     }
 
+    public BorrowSlip(
+            Long id,
+            Long readerId,
+            LocalDateTime borrowDate,
+            LocalDateTime dueDate,
+            BorrowSlipStatus status,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
+        this(id, readerId, borrowDate, dueDate, null, status, createdAt, updatedAt);
+    }
+
     // ==================== DOMAIN BUSINESS BEHAVIORS ====================
+    public void markReturned(LocalDateTime actualReturnDate) {
+        if (actualReturnDate != null && borrowDate != null && actualReturnDate.isBefore(borrowDate)) {
+            throw new DomainException("Return date cannot be before borrow date");
+        }
+        this.status = BorrowSlipStatus.RETURNED;
+        this.returnDate = actualReturnDate != null ? actualReturnDate : LocalDateTime.now();
+        touch();
+    }
+
+    public void markReturned() {
+        markReturned(LocalDateTime.now());
+    }
+
+    public void markOverdue() {
+        this.status = BorrowSlipStatus.OVERDUE;
+        touch();
+    }
 
     // ==================== HELPER VALIDATIONS ====================
     private static void validateRequiredIds(Long readerId) {
-        if (readerId == null) {
-            throw new DomainException("Reader ID must not be null");
+        if (readerId == null || readerId <= 0) {
+            throw new DomainException("Reader ID must be greater than 0");
         }
     }
 
-    private static void validateDates(
-            LocalDateTime borrowDate,
-            LocalDateTime dueDate,
-            LocalDateTime returnDate) {
+    private static void validateDates(LocalDateTime borrowDate, LocalDateTime dueDate, LocalDateTime returnDate) {
         if (borrowDate != null && dueDate != null && dueDate.isBefore(borrowDate)) {
             throw new DomainException("Due date cannot be before borrow date");
         }

@@ -2,7 +2,9 @@ package org.example.librarymanagement.infrastructure.persistence.borrow;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import org.example.librarymanagement.domain.entity.BorrowSlip;
 import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
@@ -10,18 +12,28 @@ import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class BorrowSlipPersistenceAdapter implements LoadBorrowSlipPort {
 
-    private final BorrowSlipJpaRepository borrowSlipJpaRepository;
+    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 100;
 
-    public BorrowSlipPersistenceAdapter(BorrowSlipJpaRepository borrowSlipJpaRepository) {
+    private final BorrowSlipJpaRepository borrowSlipJpaRepository;
+    private final BorrowSlipPersistenceMapper borrowSlipPersistenceMapper;
+
+    public BorrowSlipPersistenceAdapter(
+            BorrowSlipJpaRepository borrowSlipJpaRepository,
+            BorrowSlipPersistenceMapper borrowSlipPersistenceMapper
+    ) {
         this.borrowSlipJpaRepository = Objects.requireNonNull(
                 borrowSlipJpaRepository,
                 "BorrowSlipJpaRepository must not be null"
+        );
+        this.borrowSlipPersistenceMapper = Objects.requireNonNull(
+                borrowSlipPersistenceMapper,
+                "BorrowSlipPersistenceMapper must not be null"
         );
     }
 
@@ -32,7 +44,10 @@ public class BorrowSlipPersistenceAdapter implements LoadBorrowSlipPort {
             BorrowSlipStatus status,
             String keyword
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "borrowed_at", "id"));
+        int safePage = Math.max(0, page);
+        int safeSize = (size <= 0) ? DEFAULT_PAGE_SIZE : Math.min(size, MAX_PAGE_SIZE);
+
+        Pageable pageable = PageRequest.of(safePage, safeSize);
         String statusStr = status != null ? status.name() : null;
 
         Page<BorrowSlipSummaryProjection> jpaPage = borrowSlipJpaRepository.findBorrowSlipsWithFilter(
@@ -42,7 +57,7 @@ public class BorrowSlipPersistenceAdapter implements LoadBorrowSlipPort {
         );
 
         List<BorrowSlipResponseDto> content = jpaPage.getContent().stream()
-                .map(this::mapToDto)
+                .map(borrowSlipPersistenceMapper::toDto)
                 .toList();
 
         return PageResult.of(
@@ -53,29 +68,20 @@ public class BorrowSlipPersistenceAdapter implements LoadBorrowSlipPort {
         );
     }
 
-    private BorrowSlipResponseDto mapToDto(BorrowSlipSummaryProjection p) {
-        BorrowSlipStatus status = null;
-        if (p.getStatus() != null) {
-            try {
-                status = BorrowSlipStatus.valueOf(p.getStatus());
-            } catch (IllegalArgumentException ignored) {
-            }
+    @Override
+    public Optional<BorrowSlip> findById(Long id) {
+        if (id == null) {
+            return Optional.empty();
         }
+        return borrowSlipJpaRepository.findById(id)
+                .map(borrowSlipPersistenceMapper::toDomain);
+    }
 
-        return new BorrowSlipResponseDto(
-                p.getId(),
-                p.getBorrowCode(),
-                p.getReaderId(),
-                p.getReaderCardNumber(),
-                p.getReaderName(),
-                p.getCreatedByUserId(),
-                p.getCreatedByUserName(),
-                p.getBorrowedAt(),
-                p.getDueAt(),
-                status,
-                p.getNote(),
-                p.getTotalBooks() != null ? p.getTotalBooks() : 0,
-                p.getCreatedAt()
-        );
+    @Override
+    public boolean existsByBorrowCode(String borrowCode) {
+        if (borrowCode == null || borrowCode.isBlank()) {
+            return false;
+        }
+        return borrowSlipJpaRepository.existsByBorrowCode(borrowCode.trim());
     }
 }
