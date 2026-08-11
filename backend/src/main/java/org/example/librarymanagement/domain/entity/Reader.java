@@ -10,7 +10,7 @@ import org.example.librarymanagement.domain.exceptions.DomainException;
 
 public class Reader {
 
-    private Long id;
+    private final Long id;
     private String cardNumber;
     private String name;
     private String email;

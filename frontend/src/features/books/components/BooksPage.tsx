@@ -322,7 +322,25 @@ export function BooksPage() {
                     onClick={() => setSelectedBook(book)}
                   >
                     <td className="px-6 py-4 text-xs font-mono text-muted-foreground whitespace-nowrap">#{book.bookId}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-foreground whitespace-nowrap">{book.title}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-foreground whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        {book.coverImageUrl ? (
+                          <img
+                            src={book.coverImageUrl}
+                            alt={book.title}
+                            className="w-10 h-14 object-cover rounded-md border border-border shrink-0 shadow-xs"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-10 h-14 bg-muted/40 rounded-md border border-border shrink-0 flex items-center justify-center text-muted-foreground">
+                            <BookOpen className="w-5 h-5 opacity-60" />
+                          </div>
+                        )}
+                        <span className="font-semibold text-foreground">{book.title}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-sm text-foreground whitespace-nowrap">{book.author}</td>
                     <td className="px-6 py-4 text-sm whitespace-nowrap">
                       {(() => {
