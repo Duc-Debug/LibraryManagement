@@ -51,17 +51,13 @@ public class CreateBookService implements CreateBookUseCase {
             throw new ValidationException("Category must not be null");
         }
         if (command.totalQuantity() <= 0) {
-
             throw new ValidationException("Total quantity must larger than 0");
-
         }
 
         String normalizedIsbn = command.isbn().trim().toUpperCase().replace("-", "");
 
-
-        if (loadBookPort.existsByIsbn(normalizedIsbn)) {
+        if (bookRepositoryPort.existsByIsbn(normalizedIsbn)) {
             throw new DuplicateResourceException("Book with ISBN " + normalizedIsbn + " already have.");
-
         }
 
         if (categoryRepositoryPort.findById(command.categoryId()).isEmpty()) {
@@ -70,7 +66,6 @@ public class CreateBookService implements CreateBookUseCase {
 
         String imageUrl = null;
         try {
-            // 1. Storage orchestration tại tầng Application qua FileStoragePort
             if (command.imageInputStream() != null) {
                 imageUrl = fileStoragePort.storeBookImage(
                         command.imageInputStream(),
@@ -79,7 +74,6 @@ public class CreateBookService implements CreateBookUseCase {
                 );
             }
 
-            // 2. Khởi tạo Domain Entity
             Book book = Book.create(
                     command.title(),
                     command.author(),
@@ -93,12 +87,10 @@ public class CreateBookService implements CreateBookUseCase {
                     command.categoryId()
             );
 
-            // 3. Lưu dữ liệu vào Database qua SaveBookPort riêng biệt
             Book savedBook = saveBookPort.save(book);
             return mapToResult(savedBook);
 
         } catch (Exception e) {
-            // 4. Rollback compensation: Xóa ảnh mồ côi nếu có lỗi xảy ra
             if (imageUrl != null) {
                 try {
                     fileStoragePort.deleteFile(imageUrl);
