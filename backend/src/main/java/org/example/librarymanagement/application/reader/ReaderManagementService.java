@@ -324,7 +324,8 @@ public class ReaderManagementService implements ReaderManagementUseCase {
                                 r.getCardStatus(),
                                 r.getCardIssuedAt(),
                                 r.getCardExpiryAt(),
-                                createdByName);
+                                createdByName,
+                                r.getCreatedAt());
         }
 
         private String resolveCreatedByName(Long createdByUserId) {

@@ -144,7 +144,7 @@ export function UserManagementPage({
         cardNumber: r.cardNumber,
         address: r.address,
         cardExpiryAt: r.cardExpiryAt,
-        createdAt: r.cardIssuedAt,
+        createdAt: r.createdAt || r.cardIssuedAt,
         createdByName: r.createdByName,
         enabled: r.cardStatus === 'ACTIVE',
         roleTitle: 'Độc giả',
@@ -196,19 +196,27 @@ export function UserManagementPage({
       );
     });
 
-    // 4. Strict Sorting logic by Creation Date
+    // 4. Strict Sorting logic by Creation Date (createdAt timestamp)
     return result.sort((a, b) => {
       if (sortBy === 'name') {
         return a.name.localeCompare(b.name, 'vi');
       }
 
-      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : (Number(String(a.id).replace(/\D/g, '')) || 0);
-      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : (Number(String(b.id).replace(/\D/g, '')) || 0);
+      const getTime = (user: UnifiedUser) => {
+        if (user.createdAt) {
+          const t = new Date(user.createdAt).getTime();
+          if (!isNaN(t)) return t;
+        }
+        return Number(String(user.id).replace(/\D/g, '')) || 0;
+      };
+
+      const timeA = getTime(a);
+      const timeB = getTime(b);
 
       if (sortBy === 'oldest') {
         return timeA - timeB;
       }
-      // 'newest' (Ngày tạo mới nhất đứng đầu)
+      // 'newest' (Mới nhất theo createdAt)
       return timeB - timeA;
     });
   }, [unifiedUsersList, activeTab, statusFilter, searchTerm, sortBy]);
