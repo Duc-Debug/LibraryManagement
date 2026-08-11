@@ -173,23 +173,12 @@ export function UserManagementPage({
     return list;
   }, [readers, librarians, isAdmin]);
 
-  // Filter & Sort list based on Tab, Status, Search term, Sort option, and Librarian Ownership
+  // Filter & Sort list based on Tab, Status, Search term, and Sort option
   const filteredUsers = useMemo(() => {
     const result = unifiedUsersList.filter((user) => {
       // 1. Tab filter
       if (activeTab === 'readers' && user.userType !== 'reader') return false;
       if (activeTab === 'librarians' && user.userType !== 'librarian') return false;
-
-      // Ownership filter for Librarians: Only show reader cards created by this specific librarian!
-      if (!isAdmin && user.userType === 'reader') {
-        const creator = user.createdByName?.toLowerCase().trim();
-        const uname = currentUsername?.toLowerCase().trim();
-        const fname = currentFullName?.toLowerCase().trim();
-        if (creator && (uname || fname)) {
-          const isMatch = (uname && creator === uname) || (fname && creator === fname);
-          if (!isMatch) return false;
-        }
-      }
 
       // 2. Status filter
       if (statusFilter === 'active' && !user.enabled) return false;
