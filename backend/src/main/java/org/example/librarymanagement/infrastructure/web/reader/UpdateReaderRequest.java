@@ -16,6 +16,10 @@ public record UpdateReaderRequest(
 
         @NotBlank(message = "Email must not be blank.")
         @Email(message = "Email format is invalid.")
+        @Pattern(
+                regexp = "^[a-zA-Z0-9]+([._%+-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\\.[a-zA-Z]{2,}$",
+                message = "Email must contain a valid domain (e.g. user@example.com)"
+        )
         @Size(
                 max = 100,
                 message = "Email must not exceed 100 characters."
