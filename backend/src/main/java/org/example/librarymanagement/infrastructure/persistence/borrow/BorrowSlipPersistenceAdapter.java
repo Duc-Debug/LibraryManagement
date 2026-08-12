@@ -9,14 +9,15 @@ import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
+import org.example.librarymanagement.port.outbound.borrow.SaveBorrowSlipPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class BorrowSlipPersistenceAdapter implements LoadBorrowSlipPort {
-
+public class BorrowSlipPersistenceAdapter
+        implements LoadBorrowSlipPort, SaveBorrowSlipPort {
     private static final int DEFAULT_PAGE_SIZE = 10;
     private static final int MAX_PAGE_SIZE = 100;
 
@@ -36,6 +37,7 @@ public class BorrowSlipPersistenceAdapter implements LoadBorrowSlipPort {
                 "BorrowSlipPersistenceMapper must not be null"
         );
     }
+    
 
     @Override
     public PageResult<BorrowSlipResponseDto> findBorrowSlips(
@@ -76,6 +78,16 @@ public class BorrowSlipPersistenceAdapter implements LoadBorrowSlipPort {
         return borrowSlipJpaRepository.findById(id)
                 .map(borrowSlipPersistenceMapper::toDomain);
     }
+    @Override
+public Optional<BorrowSlip> findByIdForUpdate(Long id) {
+    if (id == null) {
+        return Optional.empty();
+    }
+
+    return borrowSlipJpaRepository
+            .findByIdForUpdate(id)
+            .map(borrowSlipPersistenceMapper::toDomain);
+}
 
     @Override
     public boolean existsByBorrowCode(String borrowCode) {
@@ -84,4 +96,47 @@ public class BorrowSlipPersistenceAdapter implements LoadBorrowSlipPort {
         }
         return borrowSlipJpaRepository.existsByBorrowCode(borrowCode.trim());
     }
+
+    @Override
+    public Optional<BorrowSlipResponseDto> findSlipDetailById(Long id) {
+        if (id == null) {
+            return Optional.empty();
+        }
+        return borrowSlipJpaRepository.findBorrowSlipDetailById(id)
+                .map(borrowSlipPersistenceMapper::toDto);
+    }
+    @Override
+public BorrowSlip save(BorrowSlip borrowSlip) {
+
+    Objects.requireNonNull(
+            borrowSlip,
+            "BorrowSlip must not be null"
+    );
+
+    if (borrowSlip.getId() == null) {
+        throw new IllegalArgumentException(
+                "BorrowSlip ID must not be null when updating"
+        );
+    }
+
+    BorrowSlipJpaEntity entity =
+            borrowSlipJpaRepository
+                    .findById(borrowSlip.getId())
+                    .orElseThrow(() ->
+                            new IllegalStateException(
+                                    "Borrow slip not found with ID: "
+                                            + borrowSlip.getId()
+                            )
+                    );
+
+    borrowSlipPersistenceMapper.updateJpaEntity(
+            borrowSlip,
+            entity
+    );
+
+    BorrowSlipJpaEntity savedEntity =
+            borrowSlipJpaRepository.save(entity);
+
+    return borrowSlipPersistenceMapper.toDomain(savedEntity);
+}
 }

@@ -6,11 +6,10 @@ import { Dashboard } from '@/features/dashboard';
 import { BooksPage } from '@/features/books';
 import type { Book } from '@/features/books';
 import { CategoriesPage } from '@/features/categories/components/CategoriesPage';
-import { MembersPage } from '@/features/members';
-import { BorrowingReturnsPage } from '@/features/borrowing';
+import { UserManagementPage } from '@/features/users';
+import { BorrowingPage } from '@/features/borrowing';
 import { LoginPage } from '@/features/auth';
-import { AccountsPage, mockUserAccounts } from '@/features/accounts';
-import type { UserAccount } from '@/features/accounts';
+import { mockUserAccounts, type UserAccount } from '@/features/accounts';
 import { logout } from '@/api/authApi';
 import SettingsPage from '@/pages/SettingsPage';
 
@@ -75,16 +74,18 @@ export default function Page() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const pageParam = urlParams.get('page');
+      // Chuyển hướng route 'returns' cũ về chung 1 trang 'borrowing'
       const legacyPageMap: Record<string, string> = { returns: 'borrowing' };
       const normalizedPage = pageParam ? legacyPageMap[pageParam] || pageParam : null;
-      if (normalizedPage && ['dashboard', 'books', 'categories', 'members', 'borrowing', 'accounts', 'settings', 'login'].includes(normalizedPage)) {
+
+      if (normalizedPage && ['dashboard', 'books', 'categories', 'members', 'borrowing', 'returns', 'accounts', 'settings', 'login'].includes(normalizedPage)) {
         setCurrentPage(normalizedPage);
       }
 
       const handlePopState = () => {
         const params = new URLSearchParams(window.location.search);
         const p = params.get('page') || 'dashboard';
-        setCurrentPage(p);
+        setCurrentPage(legacyPageMap[p] || p);
       };
       window.addEventListener('popstate', handlePopState);
       setIsInitialized(true);
@@ -166,27 +167,19 @@ export default function Page() {
       case 'categories':
         return <CategoriesPage />;
       case 'members':
-        return <MembersPage />;
-      case 'borrowing':
-        return <BorrowingReturnsPage />;
       case 'accounts':
-        return currentUser.role === 'admin' ? (
-            <AccountsPage
-                accounts={accounts}
-                setAccounts={handleSetAccounts}
-                currentUserId={currentUser.id}
-            />
-        ) : (
-            <div className="p-12 flex flex-col items-center justify-center min-h-[500px] text-center">
-              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4 text-2xl font-bold shadow-sm border border-red-200">
-                403
-              </div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Truy cập trái phép bị chặn (403)</h2>
-              <p className="text-sm text-muted-foreground max-w-md">
-                Tài khoản hiện tại của bạn không có quyền Quản trị viên (Admin) để truy cập chức năng này.
-              </p>
-            </div>
+        return (
+          <UserManagementPage
+            currentRole={currentUser.role}
+            currentUserId={currentUser.id}
+            currentUsername={currentUser.username}
+            currentFullName={currentUser.fullName}
+          />
         );
+      // Gộp chung 2 case Mượn và Trả sách vào cùng 1 Component
+      case 'borrowing':
+      case 'returns':
+        return <BorrowingPage />;
       case 'settings':
         return (
             <SettingsPage
