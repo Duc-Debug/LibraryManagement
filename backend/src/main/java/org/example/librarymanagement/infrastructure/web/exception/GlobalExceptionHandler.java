@@ -208,6 +208,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("READER_HAS_OVERDUE_BORROW", exception.getMessage()));
     }
 
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.borrow.BorrowSlipNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBorrowSlipNotFound(org.example.librarymanagement.domain.exceptions.borrow.BorrowSlipNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("BORROW_SLIP_NOT_FOUND", exception.getMessage()));
+    }
+
     @ExceptionHandler(org.example.librarymanagement.domain.exceptions.setting.SystemSettingNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleSystemSettingNotFound(org.example.librarymanagement.domain.exceptions.setting.SystemSettingNotFoundException exception) {
         return ResponseEntity

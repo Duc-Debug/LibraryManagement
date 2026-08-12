@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 public class BorrowSlipPersistenceMapper {
 
     /**
-     * Chuyển đổi từ Projection (kết quả Query tối ưu từ DB) sang Response DTO cho Tầng Application / Web
+     * Chuyển đổi từ Projection (kết quả Query tối ưu từ DB) sang Response DTO cho
+     * Tầng Application / Web
      */
     public BorrowSlipResponseDto toDto(BorrowSlipSummaryProjection projection) {
         if (projection == null) {
@@ -40,8 +41,7 @@ public class BorrowSlipPersistenceMapper {
                 status,
                 projection.getNote(),
                 safeTotalBooks,
-                projection.getCreatedAt()
-        );
+                projection.getCreatedAt());
     }
 
     /**
@@ -54,48 +54,49 @@ public class BorrowSlipPersistenceMapper {
 
         return new BorrowSlip(
                 entity.getId(),
+                entity.getBorrowCode(),
                 entity.getReaderId(),
+                entity.getCreatedByUserId(),
                 entity.getBorrowedAt(),
                 entity.getDueAt(),
-                    entity.getReturnDate(),
+                entity.getReturnDate(),
                 entity.getStatus(),
+                entity.getNote(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
-        );
+                entity.getUpdatedAt());
     }
 
     /**
      * Chuyển đổi từ Domain Entity sang JPA Entity (để lưu vào DB khi tạo/cập nhật)
      */
-    public BorrowSlipJpaEntity toJpaEntity(BorrowSlip domain, String borrowCode, Long createdByUserId, String note) {
+    public BorrowSlipJpaEntity toJpaEntity(BorrowSlip domain) {
         if (domain == null) {
             return null;
         }
 
         return new BorrowSlipJpaEntity(
                 domain.getId(),
-                borrowCode,
+                domain.getBorrowCode(),
                 domain.getReaderId(),
-                createdByUserId,
+                domain.getCreateByUserId(),
                 domain.getBorrowDate(),
                 domain.getDueDate(),
-                   domain.getReturnDate(),
+                domain.getReturnDate(),
                 domain.getStatus(),
-                note,
+                domain.getNote(),
                 domain.getCreatedAt(),
-                domain.getUpdatedAt()
-        );
-    }
-    public void updateJpaEntity(
-        BorrowSlip domain,
-        BorrowSlipJpaEntity entity
-) {
-    if (domain == null || entity == null) {
-        return;
+                domain.getUpdatedAt());
     }
 
-    entity.setReturnDate(domain.getReturnDate());
-    entity.setStatus(domain.getStatus());
-    entity.setUpdatedAt(domain.getUpdatedAt());
-}
+    public void updateJpaEntity(
+            BorrowSlip domain,
+            BorrowSlipJpaEntity entity) {
+        if (domain == null || entity == null) {
+            return;
+        }
+
+        entity.setReturnDate(domain.getReturnDate());
+        entity.setStatus(domain.getStatus());
+        entity.setUpdatedAt(domain.getUpdatedAt());
+    }
 }

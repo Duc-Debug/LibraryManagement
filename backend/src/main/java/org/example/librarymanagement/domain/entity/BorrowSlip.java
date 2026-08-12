@@ -57,6 +57,14 @@ public class BorrowSlip {
         return create(borrowCode, readerId, createdByUserId, borrowDays, note, LocalDateTime.now());
     }
 
+    public static BorrowSlip create(Long readerId, int borrowDays, LocalDateTime borrowDate) {
+        return create("BM" + System.currentTimeMillis(), readerId, 1L, borrowDays, null, borrowDate);
+    }
+
+    public static BorrowSlip create(Long readerId, int borrowDays) {
+        return create(readerId, borrowDays, LocalDateTime.now());
+    }
+
     public BorrowSlip(
             Long id,
             String borrowCode,

@@ -52,6 +52,9 @@ class BorrowSlipManagementControllerTest {
     @Mock
     private CheckBorrowEligibilityUseCase checkBorrowEligibilityUseCase;
 
+    @Mock
+    private org.example.librarymanagement.port.inbound.borrow.CreateBorrowSlipUseCase createBorrowSlipUseCase;
+
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -61,7 +64,8 @@ class BorrowSlipManagementControllerTest {
                         borrowSlipsUseCase,
                         calculateFineUseCase,
                         returnBorrowSlipUseCase,
-                        checkBorrowEligibilityUseCase
+                        checkBorrowEligibilityUseCase,
+                        createBorrowSlipUseCase
                 );
 
         mockMvc = standaloneSetup(controller)
