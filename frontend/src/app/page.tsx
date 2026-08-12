@@ -7,7 +7,7 @@ import { BooksPage } from '@/features/books';
 import type { Book } from '@/features/books';
 import { CategoriesPage } from '@/features/categories/components/CategoriesPage';
 import { UserManagementPage } from '@/features/users';
-import { BorrowingPage } from '@/features/borrowing';
+import { BorrowingReturnsPage } from '@/features/borrowing';
 import { LoginPage } from '@/features/auth';
 import { mockUserAccounts, type UserAccount } from '@/features/accounts';
 import { logout } from '@/api/authApi';
@@ -179,7 +179,7 @@ export default function Page() {
       // Gộp chung 2 case Mượn và Trả sách vào cùng 1 Component
       case 'borrowing':
       case 'returns':
-        return <BorrowingPage />;
+        return <BorrowingReturnsPage />;
       case 'settings':
         return (
             <SettingsPage

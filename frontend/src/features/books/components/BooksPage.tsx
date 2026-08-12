@@ -13,6 +13,7 @@ import {
   UpdateBookRequestDto,
 } from '@/api/bookApi';
 import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
+import { parseErrorMessage } from '@/lib/errorDictionary';
 import { Search, Plus, Eye, EyeOff, Trash2, X, Edit3, PackagePlus, AlertTriangle, BookOpen, Upload, Image, Layers, Package, RotateCcw, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddBookModal } from './AddBookModal';
