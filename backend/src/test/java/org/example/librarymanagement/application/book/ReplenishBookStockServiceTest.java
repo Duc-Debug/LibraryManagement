@@ -7,14 +7,12 @@ import java.util.Set;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
-import org.example.librarymanagement.domain.exceptions.DomainException;
-import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
+import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
 import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.dtos.book.ReplenishBookStockCommand;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,7 +32,7 @@ public class ReplenishBookStockServiceTest {
     private ReplenishBookStockService replenishBookStockService;
 
     @BeforeEach
-    void setUp() {
+   public void setUp() {
         bookRepository = mock(BookRepositoryPort.class);
         getAuthenticatedUserPort = mock(GetAuthenticatedUserPort.class);
         replenishBookStockService = new ReplenishBookStockService(bookRepository, getAuthenticatedUserPort);

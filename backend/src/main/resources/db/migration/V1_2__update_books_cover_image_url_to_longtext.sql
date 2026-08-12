@@ -1,0 +1,1 @@
+ALTER TABLE books MODIFY COLUMN cover_image_url LONGTEXT;
