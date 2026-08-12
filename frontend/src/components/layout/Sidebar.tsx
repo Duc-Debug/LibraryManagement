@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import type { UserAccount } from '@/features/accounts';
 import { useTheme } from '@/hooks/useTheme';
