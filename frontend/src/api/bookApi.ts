@@ -30,7 +30,9 @@ export interface PageResult<T> {
 export async function fetchBooksApi(
   page: number = 0,
   size: number = 10,
-  keyword: string = ""
+  keyword: string = "",
+  categoryId?: number | null,
+  availability: "ALL" | "AVAILABLE" | "OUT_OF_STOCK" = "ALL"
 ): Promise<PageResult<BookResponseDto>> {
   const queryParams = new URLSearchParams({
     page: page.toString(),
@@ -39,6 +41,14 @@ export async function fetchBooksApi(
 
   if (keyword && keyword.trim() !== "") {
     queryParams.append("keyword", keyword.trim());
+  }
+
+  if (categoryId) {
+    queryParams.append("categoryId", categoryId.toString());
+  }
+
+  if (availability && availability !== "ALL") {
+    queryParams.append("availability", availability);
   }
 
   const raw = await apiFetch<any>(`/api/librarians/books?${queryParams.toString()}`);
