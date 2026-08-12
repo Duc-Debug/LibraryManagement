@@ -44,7 +44,7 @@ public interface BookJpaRepository extends JpaRepository<BookJpaEntity, Long> {
            OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%')) 
            OR LOWER(b.isbn) LIKE LOWER(CONCAT('%', :keyword, '%')))
       AND (:categoryId IS NULL OR b.categoryId = :categoryId)
-      AND (:availability = 'ALL' 
+      AND (:availability IS NULL OR :availability = '' OR :availability = 'ALL' 
            OR (:availability = 'AVAILABLE' AND b.availableQuantity > 0)
            OR (:availability = 'OUT_OF_STOCK' AND b.availableQuantity = 0))
 """)
