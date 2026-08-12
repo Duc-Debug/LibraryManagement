@@ -4,11 +4,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
+import org.example.librarymanagement.domain.exceptions.reader.ReaderNotFoundException;
 import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptionHandler;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipFilterQuery;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
+import org.example.librarymanagement.port.dtos.borrow.FineCalculationResponseDto;
+import org.example.librarymanagement.port.dtos.borrow.OverdueSlipSummaryDto;
+import org.example.librarymanagement.port.dtos.borrow.ReaderBorrowEligibilityDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
+import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
+import org.example.librarymanagement.port.inbound.borrow.CheckBorrowEligibilityUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,13 +38,20 @@ class BorrowSlipManagementControllerTest {
     private BorrowSlipsUseCase borrowSlipsUseCase;
 
     @Mock
-    private org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase calculateFineUseCase;
+    private CalculateFineUseCase calculateFineUseCase;
+
+    @Mock
+    private CheckBorrowEligibilityUseCase checkBorrowEligibilityUseCase;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     public void setUp() {
-        BorrowSlipManagementController controller = new BorrowSlipManagementController(borrowSlipsUseCase, calculateFineUseCase);
+        BorrowSlipManagementController controller = new BorrowSlipManagementController(
+                borrowSlipsUseCase,
+                calculateFineUseCase,
+                checkBorrowEligibilityUseCase
+        );
         mockMvc = MockMvcBuilders
                 .standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
@@ -113,8 +126,8 @@ class BorrowSlipManagementControllerTest {
     @DisplayName("GET /api/librarians/borrow-slips/{id}/fine-preview: Trả về HTTP 200 kèm kết quả tính phạt")
     void previewFine_Success() throws Exception {
         // Arrange
-        org.example.librarymanagement.port.dtos.borrow.FineCalculationResponseDto fineDto =
-                new org.example.librarymanagement.port.dtos.borrow.FineCalculationResponseDto(
+        FineCalculationResponseDto fineDto =
+                new FineCalculationResponseDto(
                         1L,
                         "PM20260810-001",
                         10L,
@@ -144,5 +157,69 @@ class BorrowSlipManagementControllerTest {
                 .andExpect(jsonPath("$.isOverdue").value(true));
 
         verify(calculateFineUseCase).calculateBorrowSlipFine(1L, null);
+    }
+
+    @Test
+    @DisplayName("GET /api/librarians/borrow-slips/eligibility/{readerId}: Trả về HTTP 200 khi độc giả đủ điều kiện mượn")
+    void checkEligibility_EligibleSuccess() throws Exception {
+        // Arrange
+        ReaderBorrowEligibilityDto dto = ReaderBorrowEligibilityDto.eligible(
+                10L, "CARD-001", "Nguyễn Văn A", 2, 5, 3
+        );
+        when(checkBorrowEligibilityUseCase.checkEligibility(10L)).thenReturn(dto);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/librarians/borrow-slips/eligibility/10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.readerId").value(10))
+                .andExpect(jsonPath("$.cardNumber").value("CARD-001"))
+                .andExpect(jsonPath("$.readerName").value("Nguyễn Văn A"))
+                .andExpect(jsonPath("$.currentBorrowingCount").value(2))
+                .andExpect(jsonPath("$.maxBorrowLimit").value(5))
+                .andExpect(jsonPath("$.remainingBorrowLimit").value(3))
+                .andExpect(jsonPath("$.hasOverdueBooks").value(false))
+                .andExpect(jsonPath("$.eligible").value(true));
+
+        verify(checkBorrowEligibilityUseCase).checkEligibility(10L);
+    }
+
+    @Test
+    @DisplayName("GET /api/librarians/borrow-slips/eligibility/{readerId}: Trả về HTTP 200 khi độc giả bị chặn do có sách quá hạn")
+    void checkEligibility_BlockedDueToOverdue() throws Exception {
+        // Arrange
+        OverdueSlipSummaryDto overdueSlip = new OverdueSlipSummaryDto(
+                1L, "PM-2026-001", LocalDateTime.now().minusDays(3), 3L, 2
+        );
+        ReaderBorrowEligibilityDto dto = ReaderBorrowEligibilityDto.rejected(
+                10L, "CARD-001", "Nguyễn Văn A", 2, 5, 3,
+                true, 2, List.of(overdueSlip),
+                "Độc giả đang có 2 cuốn sách quá hạn chưa hoàn trả."
+        );
+        when(checkBorrowEligibilityUseCase.checkEligibility(10L)).thenReturn(dto);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/librarians/borrow-slips/eligibility/10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.eligible").value(false))
+                .andExpect(jsonPath("$.hasOverdueBooks").value(true))
+                .andExpect(jsonPath("$.overdueBooksCount").value(2))
+                .andExpect(jsonPath("$.overdueSlips[0].borrowCode").value("PM-2026-001"))
+                .andExpect(jsonPath("$.rejectionReason").value("Độc giả đang có 2 cuốn sách quá hạn chưa hoàn trả."));
+
+        verify(checkBorrowEligibilityUseCase).checkEligibility(10L);
+    }
+
+    @Test
+    @DisplayName("GET /api/librarians/borrow-slips/eligibility/{readerId}: Trả về HTTP 404 khi không tìm thấy độc giả")
+    void checkEligibility_ReaderNotFound() throws Exception {
+        when(checkBorrowEligibilityUseCase.checkEligibility(999L))
+                .thenThrow(ReaderNotFoundException.withId(999L));
+
+        mockMvc.perform(get("/api/librarians/borrow-slips/eligibility/999")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("READER_NOT_FOUND"));
     }
 }
