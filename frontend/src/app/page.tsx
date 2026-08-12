@@ -7,8 +7,7 @@ import { BooksPage } from '@/features/books';
 import type { Book } from '@/features/books';
 import { CategoriesPage } from '@/features/categories/components/CategoriesPage';
 import { MembersPage } from '@/features/members';
-import { BorrowingPage } from '@/features/borrowing';
-import { ReturnsPage } from '@/features/returns';
+import { BorrowingReturnsPage } from '@/features/borrowing';
 import { LoginPage } from '@/features/auth';
 import { AccountsPage, mockUserAccounts } from '@/features/accounts';
 import type { UserAccount } from '@/features/accounts';
@@ -19,11 +18,11 @@ function isTokenExpired(token: string): boolean {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return true;
-    
+
     // Giải mã Base64 payload của JWT
     const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
     if (!payload.exp) return false;
-    
+
     const now = Math.floor(Date.now() / 1000);
     return payload.exp < now;
   } catch (e) {
@@ -57,8 +56,8 @@ export default function Page() {
         const parsed = JSON.parse(savedUser);
         const roles = parsed.roles ?? [];
         const role = roles.includes('ADMIN')
-          ? 'admin'
-          : 'thu_thu';
+            ? 'admin'
+            : 'thu_thu';
 
         setCurrentUser({
           id: String(parsed.userId || parsed.id || '1'),
@@ -76,8 +75,10 @@ export default function Page() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const pageParam = urlParams.get('page');
-      if (pageParam && ['dashboard', 'books', 'categories', 'members', 'borrowing', 'returns', 'accounts', 'settings', 'login'].includes(pageParam)) {
-        setCurrentPage(pageParam);
+      const legacyPageMap: Record<string, string> = { returns: 'borrowing' };
+      const normalizedPage = pageParam ? legacyPageMap[pageParam] || pageParam : null;
+      if (normalizedPage && ['dashboard', 'books', 'categories', 'members', 'borrowing', 'accounts', 'settings', 'login'].includes(normalizedPage)) {
+        setCurrentPage(normalizedPage);
       }
 
       const handlePopState = () => {
@@ -110,13 +111,13 @@ export default function Page() {
       window.history.replaceState({ page: 'login' }, '', '/?page=login');
     }
     return (
-      <LoginPage
-        accounts={accounts}
-        onLogin={(account) => {
-          setCurrentUser(account);
-          handlePageChange('dashboard');
-        }}
-      />
+        <LoginPage
+            accounts={accounts}
+            onLogin={(account) => {
+              setCurrentUser(account);
+              handlePageChange('dashboard');
+            }}
+        />
     );
   }
 
@@ -167,42 +168,40 @@ export default function Page() {
       case 'members':
         return <MembersPage />;
       case 'borrowing':
-        return <BorrowingPage />;
-      case 'returns':
-        return <ReturnsPage />;
+        return <BorrowingReturnsPage />;
       case 'accounts':
         return currentUser.role === 'admin' ? (
-          <AccountsPage
-            accounts={accounts}
-            setAccounts={handleSetAccounts}
-            currentUserId={currentUser.id}
-          />
+            <AccountsPage
+                accounts={accounts}
+                setAccounts={handleSetAccounts}
+                currentUserId={currentUser.id}
+            />
         ) : (
-          <div className="p-12 flex flex-col items-center justify-center min-h-[500px] text-center">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4 text-2xl font-bold shadow-sm border border-red-200">
-              403
+            <div className="p-12 flex flex-col items-center justify-center min-h-[500px] text-center">
+              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4 text-2xl font-bold shadow-sm border border-red-200">
+                403
+              </div>
+              <h2 className="text-xl font-bold text-foreground mb-2">Truy cập trái phép bị chặn (403)</h2>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Tài khoản hiện tại của bạn không có quyền Quản trị viên (Admin) để truy cập chức năng này.
+              </p>
             </div>
-            <h2 className="text-xl font-bold text-foreground mb-2">Truy cập trái phép bị chặn (403)</h2>
-            <p className="text-sm text-muted-foreground max-w-md">
-              Tài khoản hiện tại của bạn không có quyền Quản trị viên (Admin) để truy cập chức năng này.
-            </p>
-          </div>
         );
       case 'settings':
         return (
-          <SettingsPage
-            currentUser={{
-              id: currentUser.id,
-              username: currentUser.username,
-              password: '',
-              fullName: currentUser.fullName,
-              email: currentUser.email,
-              phone: currentUser.phone,
-              role: currentUser.role === 'admin' ? 'admin' : 'thu_thu',
-              active: currentUser.active ?? true,
-            }}
-            onProfileUpdated={handleProfileUpdated}
-          />
+            <SettingsPage
+                currentUser={{
+                  id: currentUser.id,
+                  username: currentUser.username,
+                  password: '',
+                  fullName: currentUser.fullName,
+                  email: currentUser.email,
+                  phone: currentUser.phone,
+                  role: currentUser.role === 'admin' ? 'admin' : 'thu_thu',
+                  active: currentUser.active ?? true,
+                }}
+                onProfileUpdated={handleProfileUpdated}
+            />
         );
       default:
         return <Dashboard />;
@@ -210,16 +209,16 @@ export default function Page() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar
-        currentPage={currentPage}
-        onPageChange={handlePageChange}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-      />
-      <main className="flex-1 overflow-auto">
-        {renderPage()}
-      </main>
-    </div>
+      <div className="flex h-screen bg-background">
+        <Sidebar
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            currentUser={currentUser}
+            onLogout={handleLogout}
+        />
+        <main className="flex-1 overflow-auto">
+          {renderPage()}
+        </main>
+      </div>
   );
 }
