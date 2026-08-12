@@ -26,9 +26,14 @@ class BorrowSlipTest {
     @Test
     @DisplayName("create: Ném DomainException khi readerId là null hoặc <= 0")
     void create_InvalidReaderId() {
-        assertThrows(DomainException.class, () -> BorrowSlip.create(null, 14));
-        assertThrows(DomainException.class, () -> BorrowSlip.create(0L, 14));
-        assertThrows(DomainException.class, () -> BorrowSlip.create(-1L, 14));
+        DomainException exNull = assertThrows(DomainException.class, () -> BorrowSlip.create(null, 14));
+        assertEquals("Reader ID must be greater than 0", exNull.getMessage());
+
+        DomainException exZero = assertThrows(DomainException.class, () -> BorrowSlip.create(0L, 14));
+        assertEquals("Reader ID must be greater than 0", exZero.getMessage());
+
+        DomainException exNeg = assertThrows(DomainException.class, () -> BorrowSlip.create(-1L, 14));
+        assertEquals("Reader ID must be greater than 0", exNeg.getMessage());
     }
 
     @Test
@@ -45,14 +50,18 @@ class BorrowSlipTest {
     @Test
     @DisplayName("create: Ném DomainException khi borrowDays <= 0")
     void create_InvalidBorrowDays() {
-        assertThrows(DomainException.class, () -> BorrowSlip.create(1L, 0));
-        assertThrows(DomainException.class, () -> BorrowSlip.create(1L, -5));
+        DomainException exZero = assertThrows(DomainException.class, () -> BorrowSlip.create(1L, 0));
+        assertEquals("Borrow days must be greater than 0", exZero.getMessage());
+
+        DomainException exNeg = assertThrows(DomainException.class, () -> BorrowSlip.create(1L, -5));
+        assertEquals("Borrow days must be greater than 0", exNeg.getMessage());
     }
 
     @Test
     @DisplayName("create: Ném DomainException khi borrowDate là null")
     void create_NullBorrowDate() {
-        assertThrows(DomainException.class, () -> BorrowSlip.create(1L, 14, null));
+        DomainException exception = assertThrows(DomainException.class, () -> BorrowSlip.create(1L, 14, null));
+        assertEquals("Borrow date must not be null", exception.getMessage());
     }
 
     @Test
