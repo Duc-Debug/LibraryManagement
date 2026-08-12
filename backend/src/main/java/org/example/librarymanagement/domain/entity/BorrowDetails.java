@@ -10,10 +10,10 @@ public class BorrowDetails {
     private final Long id;
     private final Long borrowSlipId;
     private final Long bookId;
-    private final LocalDateTime returnAt;
-    private final Long returnByUserId;
-    private final BigDecimal fineAmount;
-    private final String fineReason;
+    private LocalDateTime returnAt;
+    private Long returnByUserId;
+    private BigDecimal fineAmount;
+    private String fineReason;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -63,15 +63,15 @@ public class BorrowDetails {
      */
 
     // ==================== HELPER VALIDATIONS ====================
-    private static void validateRequiredIds(Long borrowSlipId, Long bookId) {
-        if (borrowSlipId == null) {
-            throw new DomainException("Borrow slip ID must not be null");
-        }
-        if (bookId == null) {
-            throw new DomainException("Book ID must not be null");
-        }
+  private static void validateRequiredIds(Long borrowSlipId, Long bookId) {
+    if (borrowSlipId == null || borrowSlipId <= 0) {
+        throw new DomainException("Borrow slip ID must be greater than 0");
     }
 
+    if (bookId == null || bookId <= 0) {
+        throw new DomainException("Book ID must be greater than 0");
+    }
+}
     private static void validateReturnInformation(
             LocalDateTime returnAt,
             Long returnByUserId,
@@ -87,6 +87,42 @@ public class BorrowDetails {
             throw new DomainException("Fine reason cannot exceed 255 characters");
         }
     }
+    public void markReturned(
+        Long returnedByUserId,
+        LocalDateTime returnedAt,
+        BigDecimal fineAmount,
+        String fineReason) {
+
+    if (this.returnAt != null) {
+        throw new DomainException("Borrowed book has already been returned");
+    }
+
+    if (returnedByUserId == null || returnedByUserId <= 0) {
+        throw new DomainException("Return by user ID must be greater than 0");
+    }
+
+    if (returnedAt == null) {
+        throw new DomainException("Return date must not be null");
+    }
+
+    if (fineAmount != null && fineAmount.compareTo(BigDecimal.ZERO) < 0) {
+        throw new DomainException("Fine amount cannot be negative");
+    }
+
+    if (fineReason != null && fineReason.trim().length() > 255) {
+        throw new DomainException("Fine reason cannot exceed 255 characters");
+    }
+
+    this.returnAt = returnedAt;
+    this.returnByUserId = returnedByUserId;
+    this.fineAmount = fineAmount != null ? fineAmount : BigDecimal.ZERO;
+    this.fineReason = normalizeNullable(fineReason);
+
+    touch();
+}
+public boolean isReturned() {
+    return this.returnAt != null;
+}
 
     private void touch() {
         this.updatedAt = LocalDateTime.now();

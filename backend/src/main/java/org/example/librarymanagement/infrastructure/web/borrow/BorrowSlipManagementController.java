@@ -1,22 +1,25 @@
 package org.example.librarymanagement.infrastructure.web.borrow;
 
+import java.time.LocalDateTime;
+
 import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipFilterQuery;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.borrow.FineCalculationResponseDto;
+import org.example.librarymanagement.port.dtos.borrow.ReturnBorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
+import org.example.librarymanagement.port.inbound.borrow.ReturnBorrowSlipUseCase;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -30,6 +33,7 @@ public class BorrowSlipManagementController {
 
     private final BorrowSlipsUseCase borrowSlipsUseCase;
     private final CalculateFineUseCase calculateFineUseCase;
+    private final ReturnBorrowSlipUseCase returnBorrowSlipUseCase;
 
     /**
      * API: Lấy danh sách phiếu mượn phân trang & lọc theo trạng thái
@@ -67,4 +71,13 @@ public class BorrowSlipManagementController {
         FineCalculationResponseDto result = calculateFineUseCase.calculateBorrowSlipFine(id, returnDate);
         return ResponseEntity.ok(result);
     }
+    @PostMapping("/{borrowSlipId}/return")
+public ResponseEntity<ReturnBorrowSlipResponseDto> returnBorrowSlip(
+        @PathVariable Long borrowSlipId
+) {
+    ReturnBorrowSlipResponseDto result =
+            returnBorrowSlipUseCase.returnBorrowSlip(borrowSlipId);
+
+    return ResponseEntity.ok(result);
+}
 }
