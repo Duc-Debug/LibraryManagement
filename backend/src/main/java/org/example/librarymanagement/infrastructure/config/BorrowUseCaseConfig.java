@@ -1,6 +1,7 @@
 package org.example.librarymanagement.infrastructure.config;
 
 import org.example.librarymanagement.application.borrow.CalculateFineService;
+import org.example.librarymanagement.application.borrow.CheckBorrowEligibilityService;
 import org.example.librarymanagement.application.borrow.GetBorrowSlipsService;
 import org.example.librarymanagement.application.borrow.ReturnBorrowSlipService;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalBorrowSlipsUseCase;
@@ -13,6 +14,14 @@ import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.example.librarymanagement.port.outbound.borrow.BorrowDetailsRepositoryPort;
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
 import org.example.librarymanagement.port.outbound.borrow.SaveBorrowSlipPort;
+import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalCheckBorrowEligibilityUseCase;
+import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
+import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
+import org.example.librarymanagement.port.inbound.borrow.CheckBorrowEligibilityUseCase;
+import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
+import org.example.librarymanagement.port.outbound.borrow.LoadReaderBorrowStatusPort;
+import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
+import org.example.librarymanagement.port.outbound.setting.LoadSystemSettingPort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,4 +66,20 @@ public ReturnBorrowSlipUseCase returnBorrowSlipUseCase(
 
     return new TransactionalReturnBorrowSlipUseCase(service);
 }
+
+    @Bean
+    public CheckBorrowEligibilityUseCase checkBorrowEligibilityUseCase(
+            ReaderRepositoryPort readerRepositoryPort,
+            LoadReaderBorrowStatusPort loadReaderBorrowStatusPort,
+            LoadSystemSettingPort loadSystemSettingPort,
+            GetAuthenticatedUserPort getAuthenticatedUserPort
+    ) {
+        CheckBorrowEligibilityService service = new CheckBorrowEligibilityService(
+                readerRepositoryPort,
+                loadReaderBorrowStatusPort,
+                loadSystemSettingPort,
+                getAuthenticatedUserPort
+        );
+        return new TransactionalCheckBorrowEligibilityUseCase(service);
+    }
 }

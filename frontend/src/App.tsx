@@ -9,7 +9,7 @@ import CategoriesPage from "@/pages/CategoriesPage";
 import MembersPage from "@/pages/MembersPage";
 import BorrowPage from "@/pages/BorrowPage";
 import ReturnPage from "@/pages/ReturnPage";
-import AccountsPage from "@/pages/AccountsPage";
+import { UserManagementPage } from "@/features/users";
 import SettingsPage from "@/pages/SettingsPage";
 import { logout as logoutRequest } from "@/api/authApi";
 
@@ -109,34 +109,15 @@ export default function App() {
       case "categories":
         return <CategoriesPage />;
       case "members":
-        return <MembersPage />;
-      case "borrow":
-        return (
-          <BorrowPage
-            books={books}
-            members={members}
-            records={records}
-            setRecords={setRecords}
-            setBooks={setBooks}
-          />
-        );
-      case "return":
-        return (
-          <ReturnPage
-            records={records}
-            setRecords={setRecords}
-            books={books}
-            setBooks={setBooks}
-          />
-        );
       case "accounts":
-        return currentUser.role === "admin" ? (
-          <AccountsPage
-            accounts={accounts}
-            setAccounts={handleSetAccounts}
+        return (
+          <UserManagementPage
+            currentRole={currentUser.role}
             currentUserId={currentUser.id}
+            currentUsername={currentUser.username}
+            currentFullName={currentUser.fullName}
           />
-        ) : null;
+        );
       case "settings":
         return (
           <SettingsPage
