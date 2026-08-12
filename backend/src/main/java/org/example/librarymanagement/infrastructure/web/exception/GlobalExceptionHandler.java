@@ -194,6 +194,27 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("CATEGORY_IN_USE", exception.getMessage()));
     }
 
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.borrow.BorrowLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleBorrowLimitExceeded(org.example.librarymanagement.domain.exceptions.borrow.BorrowLimitExceededException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("BORROW_LIMIT_EXCEEDED", exception.getMessage()));
+    }
+
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.borrow.ReaderHasOverdueBorrowException.class)
+    public ResponseEntity<ErrorResponse> handleReaderHasOverdueBorrow(org.example.librarymanagement.domain.exceptions.borrow.ReaderHasOverdueBorrowException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("READER_HAS_OVERDUE_BORROW", exception.getMessage()));
+    }
+
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.setting.SystemSettingNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleSystemSettingNotFound(org.example.librarymanagement.domain.exceptions.setting.SystemSettingNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("SYSTEM_SETTING_NOT_FOUND", exception.getMessage()));
+    }
+
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ErrorResponse> handleDomainException(DomainException exception) {
         return ResponseEntity

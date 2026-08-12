@@ -1,5 +1,6 @@
 'use client';
 
+import { parseErrorMessage } from "@/lib/errorDictionary";
 import { useState, useEffect } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import { IconUsers } from "@/components/icons";
@@ -23,7 +24,7 @@ export default function MembersPage() {
       const data = await fetchAllReaders(token);
       setReaders(data);
     } catch (err: any) {
-      setError(err?.message || "Không thể tải danh sách bạn đọc từ máy chủ.");
+      setError(parseErrorMessage(err, "Không thể tải danh sách bạn đọc từ máy chủ."));
     } finally {
       setLoading(false);
     }
@@ -58,7 +59,7 @@ export default function MembersPage() {
       setShowModal(false);
       await loadReaders();
     } catch (err: any) {
-      setFormError(err?.message || "Thêm bạn đọc thất bại.");
+      setFormError(parseErrorMessage(err, "Thêm bạn đọc thất bại."));
     } finally {
       setSaving(false);
     }

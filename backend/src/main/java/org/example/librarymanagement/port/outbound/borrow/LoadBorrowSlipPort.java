@@ -23,4 +23,10 @@ public interface LoadBorrowSlipPort {
      */
     boolean existsByBorrowCode(String borrowCode);
 
+        /**
+     * Lấy thông tin chi tiết phiếu mượn (kèm mã thẻ, tên độc giả, tổng số sách) theo ID
+     */
+    Optional<BorrowSlipResponseDto> findSlipDetailById(Long id);
+       Optional<BorrowSlip> findByIdForUpdate(Long id);
+
 }
