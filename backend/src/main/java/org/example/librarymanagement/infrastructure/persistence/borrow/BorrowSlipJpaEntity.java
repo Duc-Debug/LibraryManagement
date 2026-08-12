@@ -44,6 +44,8 @@ public class BorrowSlipJpaEntity {
 
     @Column(name = "due_at", nullable = false)
     private LocalDateTime dueAt;
+    @Column(name = "return_date")
+private LocalDateTime returnDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
@@ -59,7 +61,7 @@ public class BorrowSlipJpaEntity {
     private LocalDateTime updatedAt;
 
     public BorrowSlipJpaEntity(Long id, String borrowCode, Long readerId, Long createdByUserId,
-                               LocalDateTime borrowedAt, LocalDateTime dueAt, BorrowSlipStatus status,
+                               LocalDateTime borrowedAt, LocalDateTime dueAt, LocalDateTime returnDate, BorrowSlipStatus status,
                                String note, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.borrowCode = borrowCode;
@@ -67,6 +69,7 @@ public class BorrowSlipJpaEntity {
         this.createdByUserId = createdByUserId;
         this.borrowedAt = borrowedAt;
         this.dueAt = dueAt;
+            this.returnDate = returnDate;
         this.status = status;
         this.note = note;
         this.createdAt = createdAt;

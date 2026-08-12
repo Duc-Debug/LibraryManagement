@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { parseErrorMessage } from "@/lib/errorDictionary";
 import type { UserAccount } from "@/types";
 import { getProfileApi, updateProfileApi, changePasswordApi } from "@/api/authApi";
 import { Eye, EyeOff, User, Lock, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
@@ -105,7 +106,7 @@ export default function SettingsPage({
         phone: updated.phone || undefined,
       });
     } catch (err: any) {
-      setProfileError(err.message || "Không thể cập nhật thông tin cá nhân.");
+      setProfileError(parseErrorMessage(err, "Không thể cập nhật thông tin cá nhân."));
     } finally {
       setSubmittingProfile(false);
     }
@@ -150,7 +151,7 @@ export default function SettingsPage({
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-      setPasswordError(err.message || "Đổi mật khẩu thất bại. Vui lòng kiểm tra lại mật khẩu cũ.");
+      setPasswordError(parseErrorMessage(err, "Đổi mật khẩu thất bại. Vui lòng kiểm tra lại mật khẩu cũ."));
     } finally {
       setSubmittingPassword(false);
     }

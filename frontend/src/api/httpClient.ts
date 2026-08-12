@@ -1,3 +1,5 @@
+import { ApiError } from "../lib/errorDictionary";
+
 const getApiBaseUrl = (): string => {
   // 1. Kiểm tra biến môi trường được cấu hình sẵn (Vite / Next.js)
   const envUrl =
@@ -47,9 +49,12 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
   const baseUrl = getDynamicApiBaseUrl();
 
   const defaultHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
     Accept: "application/json",
   };
+
+  if (!(options.body instanceof FormData)) {
+    defaultHeaders["Content-Type"] = "application/json";
+  }
 
   if (authToken) {
     defaultHeaders["Authorization"] = `Bearer ${authToken}`;
@@ -79,7 +84,10 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
       }
     }
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    throw new ApiError(
+      errorData.code || "UNKNOWN_ERROR",
+      errorData.message || `Request failed with status ${response.status}`
+    );
   }
 
   if (response.status === 204) {
