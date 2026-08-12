@@ -448,20 +448,12 @@ class ReaderManagementServiceTest {
                         Optional.of(existingReader)
                 );
 
-        assertThrows(
-                ReaderAccessDeniedException.class,
-                () -> readerManagementService
-                        .updateReader(command)
-        );
+        when(readerRepositoryPort.save(any()))
+                .thenReturn(existingReader);
 
-        verify(readerRepositoryPort, never())
-                .existsByEmailAndIdNot(
-                        anyString(),
-                        anyLong()
-                );
-
-        verify(readerRepositoryPort, never())
-                .save(any());
+        ReaderResult result = readerManagementService.updateReader(command);
+        assertNotNull(result);
+        verify(readerRepositoryPort).save(any());
     }
 
     @Test
@@ -647,17 +639,10 @@ class ReaderManagementServiceTest {
         when(readerRepositoryPort.findById(10L))
                 .thenReturn(Optional.of(reader));
 
-        assertThrows(
-                ReaderAccessDeniedException.class,
-                () -> readerManagementService
-                        .deleteReader(10L)
-        );
+        readerManagementService.deleteReader(10L);
 
-        verify(checkActiveReaderBorrowPort, never())
-                .hasActiveBorrowByReaderId(anyLong());
-
-        verify(readerRepositoryPort, never())
-                .save(any());
+        verify(checkActiveReaderBorrowPort).hasActiveBorrowByReaderId(10L);
+        verify(readerRepositoryPort).save(any());
     }
 
     private Reader existingReader(
@@ -751,23 +736,26 @@ class ReaderManagementServiceTest {
     }
 
     @Test
-    @DisplayName("changeCardStatus - Throw exception when access denied")
-    void givenUnauthorisedUser_whenChangeCardStatus_thenThrowReaderAccessDeniedException() {
+    @DisplayName("changeCardStatus - Success for any librarian")
+    void givenLibrarianUser_whenChangeCardStatus_thenSuccess() {
         // Arrange
         Long readerId = 1L;
         Long creatorId = 10L;
-        User mockUser = mockUser(99L, "unauthorized", "LIBRARIAN");
+        User mockUser = mockUser(99L, "librarian2", "LIBRARIAN");
         when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(mockUser);
 
         Reader existingReader = existingReader(readerId, creatorId, true);
         when(readerRepositoryPort.findById(readerId)).thenReturn(Optional.of(existingReader));
+        when(readerRepositoryPort.save(any())).thenReturn(existingReader);
 
         ChangeCardStatusCommand command = new ChangeCardStatusCommand(readerId, CardStatus.LOCKED);
 
-        // Act & Assert
-        assertThrows(ReaderAccessDeniedException.class, () -> {
-            readerManagementService.changeCardStatus(command);
-        });
+        // Act
+        ReaderResult result = readerManagementService.changeCardStatus(command);
+
+        // Assert
+        assertNotNull(result);
+        verify(readerRepositoryPort).save(any());
     }
 
     @Test

@@ -49,7 +49,7 @@ class ReaderManagementControllerTest {
     void createReader_Returns201_WhenValid() throws Exception {
         ReaderResult mockResult = new ReaderResult(
                 1L, "RD-260805-1001", "Nguyễn Văn A", "nva@gmail.com", "0987654321", "Hà Nội",
-                CardStatus.ACTIVE, null, null, "Thủ thư 1"
+                CardStatus.ACTIVE, null, null, "Thủ thư 1", null
         );
 
         when(readerManagementUseCase.createReader(any(CreateReaderCommand.class))).thenReturn(mockResult);
@@ -79,7 +79,7 @@ class ReaderManagementControllerTest {
     void getAllReaders_Paginated_Returns200() throws Exception {
         ReaderResult mockResult = new ReaderResult(
                 1L, "RD-260805-1001", "Nguyễn Văn A", "nva@gmail.com", "0987654321", "Hà Nội",
-                CardStatus.ACTIVE, null, null, "Thủ thư 1"
+                CardStatus.ACTIVE, null, null, "Thủ thư 1", null
         );
 
         PageResult<ReaderResult> pageResult = PageResult.of(List.of(mockResult), 0, 10, 1);
@@ -99,7 +99,7 @@ class ReaderManagementControllerTest {
     void getAllReaders_DefaultPagination_ReturnsPageResult() throws Exception {
         ReaderResult mockResult = new ReaderResult(
                 1L, "RD-260805-1001", "Nguyen Van A", "nva@gmail.com", "0987654321", "Ha Noi",
-                CardStatus.ACTIVE, null, null, "Thu thu 1"
+                CardStatus.ACTIVE, null, null, "Thu thu 1", null
         );
 
         PageResult<ReaderResult> pageResult = PageResult.of(List.of(mockResult), 0, 20, 1);
