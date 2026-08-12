@@ -1,5 +1,6 @@
 'use client';
 
+import { parseErrorMessage } from '@/lib/errorDictionary';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchAllReaders, ReaderResponse } from '@/api/readerApi';
 import { fetchBooksApi, BookResponseDto } from '@/api/bookApi';
@@ -41,7 +42,7 @@ export function BorrowingPage() {
         setCategories(catsRes.value);
       }
     } catch (err: any) {
-      setError(err?.message || 'Không thể nạp dữ liệu từ máy chủ.');
+      setError(parseErrorMessage(err, 'Không thể nạp dữ liệu từ máy chủ.'));
     } finally {
       setLoading(false);
     }

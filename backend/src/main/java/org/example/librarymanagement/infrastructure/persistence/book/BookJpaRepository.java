@@ -36,4 +36,22 @@ public interface BookJpaRepository extends JpaRepository<BookJpaEntity, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select b from BookJpaEntity b where b.id = :id")
     Optional<BookJpaEntity> findByIdForUpdate(@Param("id") Long id);
+
+    @Query("""
+    SELECT b FROM BookJpaEntity b 
+    WHERE (:keyword IS NULL OR :keyword = '' 
+           OR LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+           OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+           OR LOWER(b.isbn) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      AND (:categoryId IS NULL OR b.categoryId = :categoryId)
+      AND (:availability IS NULL OR :availability = '' OR :availability = 'ALL' 
+           OR (:availability = 'AVAILABLE' AND b.availableQuantity > 0)
+           OR (:availability = 'OUT_OF_STOCK' AND b.availableQuantity = 0))
+""")
+    Page<BookJpaEntity> filterBooks(
+            @Param("keyword") String keyword,
+            @Param("categoryId") Long categoryId,
+            @Param("availability") String availability,
+            Pageable pageable
+    );
 }

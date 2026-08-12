@@ -1,3 +1,4 @@
+import { parseErrorMessage } from "@/lib/errorDictionary";
 import { useState } from "react";
 import { CategoryResponse, updateCategoryApi } from "../api/categoryApi";
 import { X } from "lucide-react";
@@ -45,7 +46,7 @@ export function EditCategoryModal({ category, onClose, onSuccess }: EditCategory
       });
       onSuccess();
     } catch (err: any) {
-      setError(err.message || "Cập nhật thể loại thất bại.");
+      setError(parseErrorMessage(err, "Cập nhật thể loại thất bại."));
     } finally {
       setSubmitting(false);
     }

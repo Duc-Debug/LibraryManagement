@@ -1,5 +1,6 @@
 'use client';
 
+import { parseErrorMessage } from '@/lib/errorDictionary';
 import { useState } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,7 @@ export function EditMemberModal({ member, onClose, onSuccess }: EditMemberModalP
       );
       onSuccess();
     } catch (err: any) {
-      setError(err?.message || 'Cập nhật thông tin độc giả thất bại.');
+      setError(parseErrorMessage(err, 'Cập nhật thông tin độc giả thất bại.'));
     } finally {
       setSaving(false);
     }

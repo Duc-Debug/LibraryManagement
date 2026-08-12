@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.Book;
+import org.example.librarymanagement.port.dtos.book.BookFilterQuery;
 import org.example.librarymanagement.domain.exceptions.DuplicateResourceException;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
@@ -26,10 +27,10 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
 
     public BookPersistenceAdapter(
             BookJpaRepository bookJpaRepository,
-            BookPersistenceMapper bookPersistenceMapper) {
+            BookPersistenceMapper bookPersistenceMapper
+    ) {
         this.bookJpaRepository = Objects.requireNonNull(bookJpaRepository, "BookJpaRepository must not be null");
-        this.bookPersistenceMapper = Objects.requireNonNull(bookPersistenceMapper,
-                "BookPersistenceMapper must not be null");
+        this.bookPersistenceMapper = Objects.requireNonNull(bookPersistenceMapper, "BookPersistenceMapper must not be null");
     }
 
     // ==================== CHECK ACTIVE BORROW PORT ====================
@@ -89,7 +90,8 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
     private BookJpaEntity update(Book book) {
         BookJpaEntity entity = bookJpaRepository.findById(book.getId())
                 .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.book.BookNotFoundException(
-                        "Book not found with ID: " + book.getId()));
+                        "Book not found with ID: " + book.getId()
+                ));
 
         bookPersistenceMapper.updateJpaEntity(book, entity);
         return entity;
@@ -167,5 +169,23 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
                 .map(bookPersistenceMapper::toDomain)
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    @Override
+    public PageResult<Book> findAll(BookFilterQuery query) {
+        Pageable pageable = PageRequest.of(query.page(), query.size(), Sort.by(Sort.Direction.DESC, "id"));
+
+        Page<BookJpaEntity> jpaPage = bookJpaRepository.filterBooks(
+                query.keyword(),
+                query.categoryId(),
+                query.availability() != null ? query.availability().name() : "ALL",
+                pageable
+        );
+
+        List<Book> domainBooks = jpaPage.getContent().stream()
+                .map(bookPersistenceMapper::toDomain)
+                .toList();
+
+        return new PageResult<>(domainBooks, jpaPage.getNumber(), jpaPage.getSize(), jpaPage.getTotalElements(), jpaPage.getTotalPages());
     }
 }
