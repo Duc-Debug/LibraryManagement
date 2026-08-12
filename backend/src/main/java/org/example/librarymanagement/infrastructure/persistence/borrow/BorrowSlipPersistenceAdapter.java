@@ -84,4 +84,13 @@ public class BorrowSlipPersistenceAdapter implements LoadBorrowSlipPort {
         }
         return borrowSlipJpaRepository.existsByBorrowCode(borrowCode.trim());
     }
+
+    @Override
+    public Optional<BorrowSlipResponseDto> findSlipDetailById(Long id) {
+        if (id == null) {
+            return Optional.empty();
+        }
+        return borrowSlipJpaRepository.findBorrowSlipDetailById(id)
+                .map(borrowSlipPersistenceMapper::toDto);
+    }
 }
