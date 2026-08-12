@@ -131,16 +131,6 @@ public class ReaderManagementService implements ReaderManagementUseCase {
                                 .findById(readerId)
                                 .orElseThrow(() -> ReaderNotFoundException.withId(readerId));
 
-                boolean admin = isAdmin(currentUser);
-
-                boolean owner = currentUser.getId() != null
-                                && currentUser.getId().equals(
-                                                reader.getCreatedByUserId());
-
-                if (!admin && !owner) {
-                        throw ReaderAccessDeniedException.forReader(
-                                        readerId);
-                }
                 if (checkActiveReaderBorrowPort
                                 .hasActiveBorrowByReaderId(readerId)) {
                         throw ReaderHasActiveBorrowException
@@ -175,16 +165,6 @@ public class ReaderManagementService implements ReaderManagementUseCase {
                                 .findById(command.readerId())
                                 .orElseThrow(() -> ReaderNotFoundException.withId(
                                                 command.readerId()));
-
-                boolean isAdmin = isAdmin(currentUser);
-                boolean isOwner = currentUser.getId() != null
-                                && currentUser.getId().equals(
-                                                reader.getCreatedByUserId());
-
-                if (!isAdmin && !isOwner) {
-                        throw ReaderAccessDeniedException.forReader(
-                                        reader.getId());
-                }
 
                 String normalizedEmail = normalizeEmail(command.email());
 
@@ -261,14 +241,6 @@ public class ReaderManagementService implements ReaderManagementUseCase {
                 Reader reader = readerRepositoryPort.findById(command.readerId())
                                 .orElseThrow(() -> ReaderNotFoundException.withId(command.readerId()));
 
-                boolean isAdmin = isAdmin(currentUser);
-                boolean isOwner = currentUser.getId() != null
-                                && currentUser.getId().equals(reader.getCreatedByUserId());
-
-                if (!isAdmin && !isOwner) {
-                        throw ReaderAccessDeniedException.forReader(reader.getId());
-                }
-
                 reader.changeCardStatus(command.newStatus());
                 Reader updatedReader = readerRepositoryPort.save(reader);
 
@@ -307,9 +279,7 @@ public class ReaderManagementService implements ReaderManagementUseCase {
         }
 
         private Long scopedCreatedByUserId(User currentUser) {
-                return isAdmin(currentUser)
-                                ? null
-                                : currentUser.getId();
+                return null;
         }
 
         private boolean isAdmin(User user) {
@@ -340,6 +310,9 @@ public class ReaderManagementService implements ReaderManagementUseCase {
         }
 
         private ReaderResult mapToResult(Reader r) {
+                if (r == null) {
+                        return null;
+                }
                 String createdByName = resolveCreatedByName(r.getCreatedByUserId());
                 return new ReaderResult(
                                 r.getId(),
@@ -351,7 +324,8 @@ public class ReaderManagementService implements ReaderManagementUseCase {
                                 r.getCardStatus(),
                                 r.getCardIssuedAt(),
                                 r.getCardExpiryAt(),
-                                createdByName);
+                                createdByName,
+                                r.getCreatedAt());
         }
 
         private String resolveCreatedByName(Long createdByUserId) {

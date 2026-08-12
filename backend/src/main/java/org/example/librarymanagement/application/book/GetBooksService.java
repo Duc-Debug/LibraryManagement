@@ -9,16 +9,13 @@ import java.util.stream.Collectors;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
+import org.example.librarymanagement.port.dtos.book.BookFilterQuery;
 import org.example.librarymanagement.port.dtos.book.BookResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.category.LoadCategoryPort;
 
-/**
- * Application Service: GetBooksService
- * Pure Java 100% - Hexagonal Architecture Implementation
- */
 public class GetBooksService implements GetBooksUseCase {
 
     private final LoadBookPort loadBookPort;
@@ -56,6 +53,23 @@ public class GetBooksService implements GetBooksUseCase {
                 domainPageResult.size(),
                 domainPageResult.totalElements()
         );
+    }
+
+    @Override
+    public PageResult<BookResponseDto> getBooks(BookFilterQuery query) {
+
+        PageResult<Book> domainPageResult = loadBookPort.findAll(query);
+
+        Set<Long> categoryIds = domainPageResult.content().stream()
+                .map(Book::getCategoryId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, String> categoryNameMap = loadCategoryPort.findCategoryNamesByIds(categoryIds);
+
+        List<BookResponseDto> dtoList = domainPageResult.content().stream()
+                .map(book -> mapToResponseDto(book, categoryNameMap.get(book.getCategoryId())))
+                .toList();
+        return PageResult.of(dtoList, domainPageResult.page(), domainPageResult.size(), domainPageResult.totalElements());
     }
 
     @Override
