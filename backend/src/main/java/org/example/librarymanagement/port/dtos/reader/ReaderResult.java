@@ -1,6 +1,7 @@
 package org.example.librarymanagement.port.dtos.reader;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.example.librarymanagement.domain.enums.CardStatus;
 
@@ -14,7 +15,8 @@ public record ReaderResult(
         CardStatus cardStatus,
         LocalDate cardIssuedAt,
         LocalDate cardExpiryAt,
-        String createdByName
+        String createdByName,
+        LocalDateTime createdAt
         ) {
 
 }

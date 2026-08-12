@@ -1,6 +1,7 @@
 package org.example.librarymanagement.infrastructure.web.reader;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.port.dtos.reader.ReaderResult;
@@ -15,7 +16,8 @@ public record ReaderResponse(
         CardStatus cardStatus,
         LocalDate cardIssuedAt,
         LocalDate cardExpiryAt,
-        String createdByName
+        String createdByName,
+        LocalDateTime createdAt
 ) {
 
     public static ReaderResponse fromResult(
@@ -31,7 +33,8 @@ public record ReaderResponse(
                 result.cardStatus(),
                 result.cardIssuedAt(),
                 result.cardExpiryAt(),
-                result.createdByName()
+                result.createdByName(),
+                result.createdAt()
         );
     }
 }

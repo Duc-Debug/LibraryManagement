@@ -1,5 +1,6 @@
 'use client';
 
+import { parseErrorMessage } from "@/lib/errorDictionary";
 import { useState, useEffect, useCallback } from "react";
 import { CategoryResponse, fetchCategoriesApi, updateCategoryApi } from "../api/categoryApi";
 import { fetchBooksApi, BookResponseDto } from "@/api/bookApi";
@@ -39,7 +40,7 @@ export function CategoriesPage() {
         setBooks(booksData.value.content || booksData.value.items || []);
       }
     } catch (err: any) {
-      setError(err.message || "Không thể tải danh sách thể loại từ máy chủ.");
+      setError(parseErrorMessage(err, "Không thể tải danh sách thể loại từ máy chủ."));
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,7 @@ export function CategoriesPage() {
       );
       loadCategoriesAndBooks();
     } catch (err: any) {
-      setError(err.message || "Thao tác ẩn/khôi phục thể loại thất bại.");
+      setError(parseErrorMessage(err, "Thao tác ẩn/khôi phục thể loại thất bại."));
     }
   };
 

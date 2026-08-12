@@ -48,10 +48,9 @@ const ALL_NAV_ITEMS: { id: Page; label: string; icon: ReactNode; adminOnly?: boo
   { id: "dashboard", label: "Bảng điều khiển", icon: <IconGrid /> },
   { id: "books", label: "Quản lý Sách", icon: <IconBook /> },
   { id: "categories", label: "Thể loại sách", icon: <IconFolder /> },
-  { id: "members", label: "Độc Giả", icon: <IconUsers /> },
+  { id: "members", label: "Quản lý Người dùng", icon: <IconUsers /> },
   { id: "borrow", label: "Mượn sách", icon: <IconArrowIn /> },
   { id: "return", label: "Trả sách", icon: <IconRefresh /> },
-  { id: "accounts", label: "Quản lý Tài khoản", icon: <IconShield />, adminOnly: true },
   { id: "settings", label: "Cài đặt cá nhân", icon: <IconUser /> },
 ];
 
