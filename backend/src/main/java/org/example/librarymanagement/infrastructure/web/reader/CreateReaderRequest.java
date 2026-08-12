@@ -1,5 +1,6 @@
 package org.example.librarymanagement.infrastructure.web.reader;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -14,10 +15,7 @@ public record CreateReaderRequest(
         String name,
 
         @NotBlank(message = "Email must not be blank.")
-        @Pattern(
-                regexp = "^[A-Za-z0-9._%+-]+@gmail\\.com$",
-                message = "Email must be a valid Gmail address."
-        )
+        @Email(message = "Email format is invalid.")
         @Size(
                 max = 100,
                 message = "Email must not exceed 100 characters."
