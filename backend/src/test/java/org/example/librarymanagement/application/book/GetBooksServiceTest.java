@@ -9,6 +9,8 @@ import java.util.Set;
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.book.BookNotFoundException;
 import org.example.librarymanagement.domain.exceptions.book.InvalidBookDataException;
+import org.example.librarymanagement.port.dtos.book.BookAvailabilityStatus;
+import org.example.librarymanagement.port.dtos.book.BookFilterQuery;
 import org.example.librarymanagement.port.dtos.book.BookResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
@@ -61,6 +63,29 @@ class GetBooksServiceTest {
                 LocalDateTime.now(),
                 LocalDateTime.now()
         );
+    }
+
+    @Test
+    @DisplayName("getBooks(BookFilterQuery): Lọc sách theo từ khóa, thể loại và tình trạng kho thành công")
+    void getBooks_WithFilterQuery_Success() {
+        // Arrange
+        Book book1 = createSampleBook(1L, "Clean Code");
+        PageResult<Book> mockDomainPage = new PageResult<>(List.of(book1), 0, 10, 1L, 1);
+        BookFilterQuery query = new BookFilterQuery(0, 10, "Clean", 1L, BookAvailabilityStatus.AVAILABLE);
+
+        when(loadBookPort.findAll(query)).thenReturn(mockDomainPage);
+        when(loadCategoryPort.findCategoryNamesByIds(Set.of(1L))).thenReturn(Map.of(1L, "Công nghệ & Phần mềm"));
+
+        // Act
+        PageResult<BookResponseDto> result = getBooksService.getBooks(query);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.content().size());
+        assertEquals("Clean Code", result.content().get(0).title());
+        assertEquals("Công nghệ & Phần mềm", result.content().get(0).categoryName());
+        verify(loadBookPort).findAll(query);
+        verify(loadCategoryPort).findCategoryNamesByIds(Set.of(1L));
     }
 
     @Test

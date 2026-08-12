@@ -13,7 +13,7 @@ import {
   UpdateBookRequestDto,
 } from '@/api/bookApi';
 import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
-import { Search, Plus, Eye, EyeOff, Trash2, X, Edit3, PackagePlus, AlertTriangle, BookOpen, Upload, Image } from 'lucide-react';
+import { Search, Plus, Eye, EyeOff, Trash2, X, Edit3, PackagePlus, AlertTriangle, BookOpen, Upload, Image, Layers, Package, RotateCcw, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddBookModal } from './AddBookModal';
 
@@ -66,6 +66,10 @@ export function BooksPage() {
   const [replenishBook, setReplenishBook] = useState<BookResponseDto | null>(null);
   const [replenishQuantity, setReplenishQuantity] = useState<number | "">(1);
 
+  // States cho bộ lọc đa tiêu chí
+  const [selectedCategory, setSelectedCategory] = useState<number | "">("");
+  const [availabilityFilter, setAvailabilityFilter] = useState<"ALL" | "AVAILABLE" | "OUT_OF_STOCK">("ALL");
+
   // Debounce 300ms cho Live Search
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -80,7 +84,13 @@ export function BooksPage() {
     setError(null);
     try {
       const [res, cats] = await Promise.allSettled([
-        fetchBooksApi(page, size, debouncedSearch),
+        fetchBooksApi(
+          page,
+          size,
+          debouncedSearch,
+          selectedCategory ? Number(selectedCategory) : null,
+          availabilityFilter
+        ),
         fetchCategoriesApi()
       ]);
       if (res.status === 'fulfilled') {
@@ -94,7 +104,7 @@ export function BooksPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, size, debouncedSearch]);
+  }, [page, size, debouncedSearch, selectedCategory, availabilityFilter]);
 
   useEffect(() => {
     loadBooks();
@@ -272,16 +282,84 @@ export function BooksPage() {
         </div>
       )}
 
-      {/* Live Search Input */}
-      <div className="mb-6 relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Tìm theo tên sách, tác giả hoặc ISBN..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-        />
+      {/* Executive Search & Filter Toolbar */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        {/* Search Box */}
+        <div className="flex-1 min-w-[260px] relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Tìm theo tên sách, tác giả hoặc ISBN..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-card text-foreground text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/80 focus:border-primary transition-all shadow-2xs"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => { setSearchTerm(''); setPage(0); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Category Filter */}
+        <div className="relative">
+          <Layers className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary pointer-events-none" />
+          <select
+            value={selectedCategory}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value ? Number(e.target.value) : "");
+              setPage(0);
+            }}
+            className="pl-9 pr-8 py-2 border border-border rounded-lg bg-card text-foreground text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/80 focus:border-primary cursor-pointer hover:bg-muted/40 transition-colors shadow-2xs appearance-none"
+          >
+            <option value="">Tất cả thể loại</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name} {!cat.active ? ' (Đã ẩn)' : ''}
+              </option>
+            ))}
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground text-xs">▼</div>
+        </div>
+
+        {/* Availability Filter */}
+        <div className="relative">
+          <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary pointer-events-none" />
+          <select
+            value={availabilityFilter}
+            onChange={(e) => {
+              setAvailabilityFilter(e.target.value as any);
+              setPage(0);
+            }}
+            className="pl-9 pr-8 py-2 border border-border rounded-lg bg-card text-foreground text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/80 focus:border-primary cursor-pointer hover:bg-muted/40 transition-colors shadow-2xs appearance-none"
+          >
+            <option value="ALL">Tất cả trạng thái kho</option>
+            <option value="AVAILABLE">Còn sách trong kho</option>
+            <option value="OUT_OF_STOCK">Hết sách trong kho</option>
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground text-xs">▼</div>
+        </div>
+
+        {/* Reset Filter Button */}
+        {(selectedCategory !== "" || availabilityFilter !== "ALL" || searchTerm !== "") && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedCategory("");
+              setAvailabilityFilter("ALL");
+              setSearchTerm("");
+              setPage(0);
+            }}
+            className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg hover:border-destructive/30 transition-colors"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Đặt lại</span>
+          </Button>
+        )}
       </div>
 
       {/* Books Table */}

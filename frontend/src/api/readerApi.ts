@@ -25,6 +25,7 @@ export type ReaderResponse = {
   cardIssuedAt: string;
   cardExpiryAt: string;
   createdByName?: string;
+  createdAt?: string;
 };
 
 export type ReaderPageResult = {
