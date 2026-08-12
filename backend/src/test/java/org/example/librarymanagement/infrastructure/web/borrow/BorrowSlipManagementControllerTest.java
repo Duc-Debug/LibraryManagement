@@ -10,29 +10,27 @@ import org.example.librarymanagement.infrastructure.web.exception.GlobalExceptio
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipFilterQuery;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.borrow.FineCalculationResponseDto;
+import org.example.librarymanagement.port.dtos.borrow.OverdueSlipSummaryDto;
+import org.example.librarymanagement.port.dtos.borrow.ReaderBorrowEligibilityDto;
 import org.example.librarymanagement.port.dtos.borrow.ReturnBorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
-import org.example.librarymanagement.port.inbound.borrow.ReturnBorrowSlipUseCase;
-import org.example.librarymanagement.port.dtos.borrow.OverdueSlipSummaryDto;
-import org.example.librarymanagement.port.dtos.borrow.ReaderBorrowEligibilityDto;
-import org.example.librarymanagement.port.dtos.common.PageResult;
-import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
-import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CheckBorrowEligibilityUseCase;
+import org.example.librarymanagement.port.inbound.borrow.ReturnBorrowSlipUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import org.mockito.Mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,6 +48,8 @@ class BorrowSlipManagementControllerTest {
 
     @Mock
     private ReturnBorrowSlipUseCase returnBorrowSlipUseCase;
+
+    @Mock
     private CheckBorrowEligibilityUseCase checkBorrowEligibilityUseCase;
 
     private MockMvc mockMvc;
@@ -60,18 +60,11 @@ class BorrowSlipManagementControllerTest {
                 new BorrowSlipManagementController(
                         borrowSlipsUseCase,
                         calculateFineUseCase,
-                        returnBorrowSlipUseCase
+                        returnBorrowSlipUseCase,
+                        checkBorrowEligibilityUseCase
                 );
 
         mockMvc = standaloneSetup(controller)
-    public void setUp() {
-        BorrowSlipManagementController controller = new BorrowSlipManagementController(
-                borrowSlipsUseCase,
-                calculateFineUseCase,
-                checkBorrowEligibilityUseCase
-        );
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -86,22 +79,21 @@ class BorrowSlipManagementControllerTest {
                 code,
                 10L,
                 "CARD-001",
-                "Nguyễn Văn A",
+                "Nguyen Van A",
                 1L,
-                "Thủ thư B",
+                "Thu thu B",
                 LocalDateTime.of(2026, 8, 10, 10, 0),
                 LocalDateTime.of(2026, 8, 24, 10, 0),
                 status,
-                "Ghi chú",
+                "Ghi chu",
                 2,
                 LocalDateTime.of(2026, 8, 10, 10, 0)
         );
     }
 
     @Test
-    @DisplayName("GET /api/librarians/borrow-slips: Trả về HTTP 200 kèm danh sách phân trang")
+    @DisplayName("GET /api/librarians/borrow-slips returns paged borrow slips")
     void getBorrowSlips_Success() throws Exception {
-
         BorrowSlipResponseDto dto =
                 createSampleDto(
                         1L,
@@ -140,7 +132,7 @@ class BorrowSlipManagementControllerTest {
                 )
                 .andExpect(
                         jsonPath("$.content[0].readerName")
-                                .value("Nguyễn Văn A")
+                                .value("Nguyen Van A")
                 )
                 .andExpect(
                         jsonPath("$.content[0].status")
@@ -169,9 +161,8 @@ class BorrowSlipManagementControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/librarians/borrow-slips: Dùng giá trị mặc định khi không truyền tham số")
+    @DisplayName("GET /api/librarians/borrow-slips uses default params")
     void getBorrowSlips_DefaultParams() throws Exception {
-
         PageResult<BorrowSlipResponseDto> mockResult =
                 new PageResult<>(
                         List.of(),
@@ -207,17 +198,15 @@ class BorrowSlipManagementControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/librarians/borrow-slips/{id}/fine-preview: Trả về HTTP 200 kèm kết quả tính phạt")
+    @DisplayName("GET /api/librarians/borrow-slips/{id}/fine-preview returns fine preview")
     void previewFine_Success() throws Exception {
-
-        // Arrange
         FineCalculationResponseDto fineDto =
                 new FineCalculationResponseDto(
                         1L,
                         "PM20260810-001",
                         10L,
                         "CARD-001",
-                        "Nguyễn Văn A",
+                        "Nguyen Van A",
                         LocalDateTime.of(2026, 8, 1, 10, 0),
                         LocalDateTime.of(2026, 8, 15, 10, 0),
                         LocalDateTime.of(2026, 8, 18, 10, 0),
@@ -227,7 +216,7 @@ class BorrowSlipManagementControllerTest {
                         BigDecimal.valueOf(30000),
                         BigDecimal.valueOf(30000),
                         true,
-                        "[Trả quá hạn] Quá hạn 3 ngày (2 cuốn sách)"
+                        "Qua han 3 ngay"
                 );
 
         when(
@@ -267,9 +256,8 @@ class BorrowSlipManagementControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/librarians/borrow-slips/{id}/return: Trả sách thành công")
+    @DisplayName("POST /api/librarians/borrow-slips/{id}/return returns success response")
     void returnBorrowSlip_Success() throws Exception {
-
         LocalDateTime returnedAt =
                 LocalDateTime.of(
                         2026,
@@ -321,65 +309,92 @@ class BorrowSlipManagementControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/librarians/borrow-slips/eligibility/{readerId}: Trả về HTTP 200 khi độc giả đủ điều kiện mượn")
+    @DisplayName("GET /api/librarians/borrow-slips/eligibility/{readerId} returns eligible reader")
     void checkEligibility_EligibleSuccess() throws Exception {
-        // Arrange
         ReaderBorrowEligibilityDto dto = ReaderBorrowEligibilityDto.eligible(
-                10L, "CARD-001", "Nguyễn Văn A", 2, 5, 3
+                10L,
+                "CARD-001",
+                "Nguyen Van A",
+                2,
+                5,
+                3
         );
-        when(checkBorrowEligibilityUseCase.checkEligibility(10L)).thenReturn(dto);
 
-        // Act & Assert
-        mockMvc.perform(get("/api/librarians/borrow-slips/eligibility/10")
-                        .contentType(MediaType.APPLICATION_JSON))
+        when(checkBorrowEligibilityUseCase.checkEligibility(10L))
+                .thenReturn(dto);
+
+        mockMvc.perform(
+                        get("/api/librarians/borrow-slips/eligibility/10")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.readerId").value(10))
                 .andExpect(jsonPath("$.cardNumber").value("CARD-001"))
-                .andExpect(jsonPath("$.readerName").value("Nguyễn Văn A"))
+                .andExpect(jsonPath("$.readerName").value("Nguyen Van A"))
                 .andExpect(jsonPath("$.currentBorrowingCount").value(2))
                 .andExpect(jsonPath("$.maxBorrowLimit").value(5))
                 .andExpect(jsonPath("$.remainingBorrowLimit").value(3))
                 .andExpect(jsonPath("$.hasOverdueBooks").value(false))
                 .andExpect(jsonPath("$.eligible").value(true));
 
-        verify(checkBorrowEligibilityUseCase).checkEligibility(10L);
+        verify(checkBorrowEligibilityUseCase)
+                .checkEligibility(10L);
     }
 
     @Test
-    @DisplayName("GET /api/librarians/borrow-slips/eligibility/{readerId}: Trả về HTTP 200 khi độc giả bị chặn do có sách quá hạn")
+    @DisplayName("GET /api/librarians/borrow-slips/eligibility/{readerId} returns overdue rejection")
     void checkEligibility_BlockedDueToOverdue() throws Exception {
-        // Arrange
         OverdueSlipSummaryDto overdueSlip = new OverdueSlipSummaryDto(
-                1L, "PM-2026-001", LocalDateTime.now().minusDays(3), 3L, 2
+                1L,
+                "PM-2026-001",
+                LocalDateTime.now().minusDays(3),
+                3L,
+                2
         );
         ReaderBorrowEligibilityDto dto = ReaderBorrowEligibilityDto.rejected(
-                10L, "CARD-001", "Nguyễn Văn A", 2, 5, 3,
-                true, 2, List.of(overdueSlip),
-                "Độc giả đang có 2 cuốn sách quá hạn chưa hoàn trả."
+                10L,
+                "CARD-001",
+                "Nguyen Van A",
+                2,
+                5,
+                3,
+                true,
+                2,
+                List.of(overdueSlip),
+                "Doc gia dang co 2 cuon sach qua han chua hoan tra."
         );
-        when(checkBorrowEligibilityUseCase.checkEligibility(10L)).thenReturn(dto);
 
-        // Act & Assert
-        mockMvc.perform(get("/api/librarians/borrow-slips/eligibility/10")
-                        .contentType(MediaType.APPLICATION_JSON))
+        when(checkBorrowEligibilityUseCase.checkEligibility(10L))
+                .thenReturn(dto);
+
+        mockMvc.perform(
+                        get("/api/librarians/borrow-slips/eligibility/10")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.eligible").value(false))
                 .andExpect(jsonPath("$.hasOverdueBooks").value(true))
                 .andExpect(jsonPath("$.overdueBooksCount").value(2))
                 .andExpect(jsonPath("$.overdueSlips[0].borrowCode").value("PM-2026-001"))
-                .andExpect(jsonPath("$.rejectionReason").value("Độc giả đang có 2 cuốn sách quá hạn chưa hoàn trả."));
+                .andExpect(
+                        jsonPath("$.rejectionReason")
+                                .value("Doc gia dang co 2 cuon sach qua han chua hoan tra.")
+                );
 
-        verify(checkBorrowEligibilityUseCase).checkEligibility(10L);
+        verify(checkBorrowEligibilityUseCase)
+                .checkEligibility(10L);
     }
 
     @Test
-    @DisplayName("GET /api/librarians/borrow-slips/eligibility/{readerId}: Trả về HTTP 404 khi không tìm thấy độc giả")
+    @DisplayName("GET /api/librarians/borrow-slips/eligibility/{readerId} returns 404 when reader is missing")
     void checkEligibility_ReaderNotFound() throws Exception {
         when(checkBorrowEligibilityUseCase.checkEligibility(999L))
                 .thenThrow(ReaderNotFoundException.withId(999L));
 
-        mockMvc.perform(get("/api/librarians/borrow-slips/eligibility/999")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(
+                        get("/api/librarians/borrow-slips/eligibility/999")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("READER_NOT_FOUND"));
     }
