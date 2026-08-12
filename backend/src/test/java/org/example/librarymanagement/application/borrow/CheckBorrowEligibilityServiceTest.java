@@ -110,7 +110,7 @@ class CheckBorrowEligibilityServiceTest {
         when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(createLibrarianUser());
         Reader reader = createReader(1L, CardStatus.ACTIVE, true);
         when(readerRepositoryPort.findById(1L)).thenReturn(Optional.of(reader));
-        when(loadSystemSettingPort.getIntSetting(eq(CheckBorrowEligibilityService.SETTING_KEY_MAX_BORROW_LIMIT), anyInt())).thenReturn(5);
+        when(loadSystemSettingPort.getIntSetting(eq(org.example.librarymanagement.domain.constant.SystemSettingKeys.MAX_CONCURRENT_BORROW_BOOKS), anyInt())).thenReturn(5);
         when(loadReaderBorrowStatusPort.countCurrentBorrowingBooks(1L)).thenReturn(2);
         when(loadReaderBorrowStatusPort.findOverdueSlipsByReaderId(eq(1L), any(LocalDateTime.class))).thenReturn(List.of());
 

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.example.librarymanagement.application.shared.ValidationException;
+import org.example.librarymanagement.domain.constant.SystemSettingKeys;
 import org.example.librarymanagement.domain.entity.Reader;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.enums.CardStatus;
@@ -22,8 +23,6 @@ import org.example.librarymanagement.port.outbound.setting.LoadSystemSettingPort
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
 public class CheckBorrowEligibilityService implements CheckBorrowEligibilityUseCase {
-
-    public static final String SETTING_KEY_MAX_BORROW_LIMIT = "MAX_CONCURRENT_BORROW_BOOKS";
 
     private final ReaderRepositoryPort readerRepositoryPort;
     private final LoadReaderBorrowStatusPort loadReaderBorrowStatusPort;
@@ -54,7 +53,7 @@ public class CheckBorrowEligibilityService implements CheckBorrowEligibilityUseC
                 .orElseThrow(() -> ReaderNotFoundException.withId(readerId));
 
         int maxLimit = loadSystemSettingPort.getIntSetting(
-                SETTING_KEY_MAX_BORROW_LIMIT,
+                SystemSettingKeys.MAX_CONCURRENT_BORROW_BOOKS,
                 BorrowSlipCreationPolicy.DEFAULT_MAX_CONCURRENT_BORROW_LIMIT
         );
 
@@ -147,7 +146,7 @@ public class CheckBorrowEligibilityService implements CheckBorrowEligibilityUseC
 
         // 3. Chặn nếu số sách mượn đồng thời vượt hạn mức
         int maxLimit = loadSystemSettingPort.getIntSetting(
-                SETTING_KEY_MAX_BORROW_LIMIT,
+                SystemSettingKeys.MAX_CONCURRENT_BORROW_BOOKS,
                 BorrowSlipCreationPolicy.DEFAULT_MAX_CONCURRENT_BORROW_LIMIT
         );
         int currentBorrowingCount = loadReaderBorrowStatusPort.countCurrentBorrowingBooks(readerId);

@@ -3,8 +3,8 @@ package org.example.librarymanagement.application.setting;
 import java.util.List;
 import java.util.Objects;
 
-import org.example.librarymanagement.application.borrow.CheckBorrowEligibilityService;
 import org.example.librarymanagement.application.shared.ValidationException;
+import org.example.librarymanagement.domain.constant.SystemSettingKeys;
 import org.example.librarymanagement.domain.entity.SystemSetting;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.setting.SystemSettingNotFoundException;
@@ -99,7 +99,7 @@ public class ManageSystemSettingService implements ManageSystemSettingUseCase {
         }
 
         // Kiểm tra hợp lệ cho giới hạn mượn sách đồng thời
-        if (CheckBorrowEligibilityService.SETTING_KEY_MAX_BORROW_LIMIT.equalsIgnoreCase(key)) {
+        if (SystemSettingKeys.MAX_CONCURRENT_BORROW_BOOKS.equalsIgnoreCase(key)) {
             try {
                 int limit = Integer.parseInt(value.trim());
                 if (limit <= 0) {

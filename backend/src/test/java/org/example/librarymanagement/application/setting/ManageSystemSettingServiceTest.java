@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.example.librarymanagement.application.borrow.CheckBorrowEligibilityService;
 import org.example.librarymanagement.application.shared.ValidationException;
+import org.example.librarymanagement.domain.constant.SystemSettingKeys;
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.SystemSetting;
 import org.example.librarymanagement.domain.entity.User;
@@ -189,20 +189,20 @@ class ManageSystemSettingServiceTest {
         // Giá trị <= 0
         ValidationException ex1 = assertThrows(
                 ValidationException.class,
-                () -> service.updateSetting(CheckBorrowEligibilityService.SETTING_KEY_MAX_BORROW_LIMIT, "0", "Limit 0")
+                () -> service.updateSetting(SystemSettingKeys.MAX_CONCURRENT_BORROW_BOOKS, "0", "Limit 0")
         );
         assertNotNull(ex1.getMessage());
 
         ValidationException ex2 = assertThrows(
                 ValidationException.class,
-                () -> service.updateSetting(CheckBorrowEligibilityService.SETTING_KEY_MAX_BORROW_LIMIT, "-3", "Limit -3")
+                () -> service.updateSetting(SystemSettingKeys.MAX_CONCURRENT_BORROW_BOOKS, "-3", "Limit -3")
         );
         assertNotNull(ex2.getMessage());
 
         // Không phải số
         ValidationException ex3 = assertThrows(
                 ValidationException.class,
-                () -> service.updateSetting(CheckBorrowEligibilityService.SETTING_KEY_MAX_BORROW_LIMIT, "abc", "Invalid number")
+                () -> service.updateSetting(SystemSettingKeys.MAX_CONCURRENT_BORROW_BOOKS, "abc", "Invalid number")
         );
         assertNotNull(ex3.getMessage());
     }
