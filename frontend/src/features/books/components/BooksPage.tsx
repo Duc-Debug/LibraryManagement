@@ -100,7 +100,7 @@ export function BooksPage() {
         setCategories(cats.value);
       }
     } catch (err: any) {
-      setError(err.message || 'Không thể tải danh sách sách từ máy chủ.');
+      setError(parseErrorMessage(err, 'Không thể tải danh sách sách từ máy chủ.'));
     } finally {
       setLoading(false);
     }
@@ -122,7 +122,7 @@ export function BooksPage() {
       setSelectedBook(null);
       loadBooks();
     } catch (err: any) {
-      setError(err.message || 'Không thể xóa sách.');
+      setError(parseErrorMessage(err, 'Không thể xóa sách.'));
       setBookToDelete(null);
     } finally {
       setDeleting(false);
@@ -145,7 +145,7 @@ export function BooksPage() {
         setSelectedBook({ ...selectedBook, active: !selectedBook.active });
       }
     } catch (err: any) {
-      setError(err.message || 'Thao tác ẩn/hiện sách thất bại.');
+      setError(parseErrorMessage(err, 'Thao tác ẩn/hiện sách thất bại.'));
     }
   };
 
@@ -177,7 +177,7 @@ export function BooksPage() {
       setIsEditing(true);
       setSelectedBook(null); 
     } catch (err: any) {
-      setError(err.message || "Không thể nạp dữ liệu chỉnh sửa.");
+      setError(parseErrorMessage(err, "Không thể nạp dữ liệu chỉnh sửa."));
     }
   };
 
@@ -221,7 +221,7 @@ export function BooksPage() {
       setIsEditing(false); // Đóng modal
       loadBooks();        // Tải lại danh sách sách
     } catch (err: any) {
-      setError(err.message || "Cập nhật sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
+      setError(parseErrorMessage(err, "Cập nhật sách thất bại. Vui lòng kiểm tra lại dữ liệu."));
     } finally {
       setLoading(false);
     }
@@ -243,7 +243,7 @@ export function BooksPage() {
       setShowReplenishModal(false);
       loadBooks();
     } catch (err: any) {
-      setError(err.message || 'Cập nhật số lượng nhập kho thất bại.');
+      setError(parseErrorMessage(err, 'Cập nhật số lượng nhập kho thất bại.'));
     } finally {
       setLoading(false);
     }

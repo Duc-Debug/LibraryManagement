@@ -1,5 +1,6 @@
 'use client';
 
+import { parseErrorMessage } from '@/lib/errorDictionary';
 import { useState } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,12 +25,7 @@ export function ConfirmDeleteMemberModal({ member, onClose, onSuccess }: Confirm
       await deleteReaderApi(member.id, token);
       onSuccess();
     } catch (err: any) {
-      // Backend ném lỗi 400 kèm thông báo "ReaderHasActiveBorrowException" khi độc giả đang mượn sách
-      if (err.message && (err.message.includes("borrow") || err.message.includes("phiếu mượn") || err.message.includes("400"))) {
-        setError("Không thể khóa/xóa độc giả này vì hiện tại họ vẫn còn sách mượn chưa trả!");
-      } else {
-        setError(err?.message || "Khóa/xóa độc giả thất bại.");
-      }
+      setError(parseErrorMessage(err, "Khóa/xóa độc giả thất bại."));
     } finally {
       setDeleting(false);
     }

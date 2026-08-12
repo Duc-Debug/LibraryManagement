@@ -15,14 +15,10 @@ export type LoginResponse = {
 };
 
 export async function login(request: LoginRequest): Promise<LoginResponse> {
-  try {
-    return await apiFetch<LoginResponse>("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify(request),
-    });
-  } catch (err: any) {
-    throw new Error(err.message || "Tên đăng nhập hoặc mật khẩu không đúng.");
-  }
+  return apiFetch<LoginResponse>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
 }
 
 export async function logout(accessToken: string): Promise<void> {
