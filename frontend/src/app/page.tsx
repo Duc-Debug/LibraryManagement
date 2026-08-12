@@ -13,7 +13,6 @@ import { AccountsPage, mockUserAccounts } from '@/features/accounts';
 import type { UserAccount } from '@/features/accounts';
 import { logout } from '@/api/authApi';
 import SettingsPage from '@/pages/SettingsPage';
-
 function isTokenExpired(token: string): boolean {
   try {
     const parts = token.split('.');
