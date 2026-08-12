@@ -1,3 +1,5 @@
+import { ApiError } from "../lib/errorDictionary";
+
 const getApiBaseUrl = (): string => {
   // 1. Kiểm tra biến môi trường được cấu hình sẵn (Vite / Next.js)
   const envUrl =
@@ -79,7 +81,10 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
       }
     }
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    throw new ApiError(
+      errorData.code || "UNKNOWN_ERROR",
+      errorData.message || `Request failed with status ${response.status}`
+    );
   }
 
   if (response.status === 204) {

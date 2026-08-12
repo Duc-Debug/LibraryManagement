@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { login } from '@/api/authApi';
 import type { UserAccount } from '@/features/accounts';
 import { useTheme } from '@/hooks/useTheme';
+import { parseErrorMessage } from '@/lib/errorDictionary';
 import { BookOpen, Lock, User, Eye, EyeOff, LogIn, AlertCircle, Sun, Moon } from 'lucide-react';
 
 interface LoginPageProps {
@@ -56,7 +57,7 @@ export function LoginPage({ accounts, onLogin }: LoginPageProps) {
 
       onLogin(account);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Tên đăng nhập hoặc mật khẩu không chính xác.');
+      setError(parseErrorMessage(err, 'Tên đăng nhập hoặc mật khẩu không chính xác.'));
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,4 @@
+import { parseErrorMessage } from "@/lib/errorDictionary";
 import { useState } from "react";
 import { CategoryResponse, deleteCategoryApi } from "../api/categoryApi";
 import { X } from "lucide-react";
@@ -21,12 +22,7 @@ export function ConfirmDeleteCategoryModal({ category, onClose, onSuccess }: Con
       await deleteCategoryApi(category.id);
       onSuccess();
     } catch (err: any) {
-      // Bắt lỗi HTTP 409 CONFLICT nếu thể loại đang chứa sách
-      if (err.message && err.message.includes("409")) {
-        setError("Không thể xóa thể loại này vì đang có sách thuộc thể loại trong hệ thống!");
-      } else {
-        setError(err.message || "Xóa thể loại thất bại.");
-      }
+      setError(parseErrorMessage(err, "Xóa thể loại thất bại."));
     } finally {
       setDeleting(false);
     }
