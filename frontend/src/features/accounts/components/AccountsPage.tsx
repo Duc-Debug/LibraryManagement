@@ -55,7 +55,7 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
       const data = await fetchAllLibrarians();
       setLibrarians(data);
     } catch (err: any) {
-      setPageError(err?.message || 'Không thể tải danh sách thủ thư từ máy chủ.');
+      setPageError(parseErrorMessage(err, 'Không thể tải danh sách thủ thư từ máy chủ.'));
     } finally {
       setLoading(false);
     }
@@ -129,7 +129,7 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
       setShowModal(false);
       await loadData();
     } catch (err: any) {
-      setFormError(err?.message || 'Có lỗi xảy ra khi lưu thông tin.');
+      setFormError(parseErrorMessage(err, 'Có lỗi xảy ra khi lưu thông tin.'));
     } finally {
       setSaving(false);
     }
@@ -151,7 +151,7 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
       }
       await loadData();
     } catch (err: any) {
-      alert(err?.message || 'Không thể thay đổi trạng thái tài khoản.');
+      alert(parseErrorMessage(err, 'Không thể thay đổi trạng thái tài khoản.'));
     } finally {
       setTogglingId(null);
     }

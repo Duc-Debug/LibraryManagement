@@ -12,6 +12,7 @@ import {
 } from '@/api/readerApi';
 import { EditMemberModal } from './EditMemberModal';
 import { ConfirmDeleteMemberModal } from './ConfirmDeleteMemberModal';
+import { parseErrorMessage } from '@/lib/errorDictionary';
 
 export function MembersPage() {
   const [readersPage, setReadersPage] = useState<ReaderPageResult>({
@@ -52,7 +53,7 @@ export function MembersPage() {
       const data = await fetchReadersPage(token, page, size);
       setReadersPage(data);
     } catch (err: any) {
-      setError(err?.message || 'Không thể tải danh sách bạn đọc từ máy chủ.');
+      setError(parseErrorMessage(err, 'Không thể tải danh sách bạn đọc từ máy chủ.'));
     } finally {
       setLoading(false);
     }
@@ -97,7 +98,7 @@ export function MembersPage() {
       setSuccessMessage('Cấp thẻ độc giả mới thành công!');
       await loadReaders();
     } catch (err: any) {
-      setFormError(err?.message || 'Thêm bạn đọc thất bại.');
+      setFormError(parseErrorMessage(err, 'Thêm bạn đọc thất bại.'));
     } finally {
       setSaving(false);
     }
@@ -114,7 +115,7 @@ export function MembersPage() {
       setSuccessMessage(`Đã ${newStatus === 'ACTIVE' ? 'kích hoạt lại' : 'tạm khóa'} thẻ của độc giả "${reader.name}" thành công.`);
       await loadReaders();
     } catch (err: any) {
-      setError(err?.message || 'Thay đổi trạng thái thẻ độc giả thất bại (Có thể do API backend chưa được triển khai).');
+      setError(parseErrorMessage(err, 'Thay đổi trạng thái thẻ độc giả thất bại.'));
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { parseErrorMessage } from "@/lib/errorDictionary";
 import {
   fetchBooksApi,
   fetchBookByIdApi,
@@ -72,7 +73,7 @@ export default function BooksPage() {
       const data = await fetchBooksApi(page, size, debouncedSearch);
       setBooksPage(data);
     } catch (err: any) {
-      setError(err.message || "Không thể tải danh sách sách.");
+      setError(parseErrorMessage(err, "Không thể tải danh sách sách."));
     } finally {
       setLoading(false);
     }
@@ -89,7 +90,7 @@ export default function BooksPage() {
       const bookDetail = await fetchBookByIdApi(bookId);
       setSelectedBook(bookDetail);
     } catch (err: any) {
-      setError(err.message || "Không thể nạp chi tiết sách.");
+      setError(parseErrorMessage(err, "Không thể nạp chi tiết sách."));
     }
   };
 
@@ -110,7 +111,7 @@ export default function BooksPage() {
         setSelectedBook({ ...selectedBook, active: !selectedBook.active });
       }
     } catch (err: any) {
-      setError(err.message || "Thao tác ẩn/hiện sách thất bại.");
+      setError(parseErrorMessage(err, "Thao tác ẩn/hiện sách thất bại."));
     }
   };
 
@@ -127,7 +128,7 @@ export default function BooksPage() {
       setSelectedBook(null);
       loadBooks();
     } catch (err: any) {
-      setError(err.message || "Không thể xóa sách.");
+      setError(parseErrorMessage(err, "Không thể xóa sách."));
       setBookToDelete(null);
     } finally {
       setDeleting(false);
@@ -162,7 +163,7 @@ export default function BooksPage() {
       setIsEditing(true);
       setSelectedBook(null); 
     } catch (err: any) {
-      setError(err.message || "Không thể nạp dữ liệu chỉnh sửa.");
+      setError(parseErrorMessage(err, "Không thể nạp dữ liệu chỉnh sửa."));
     }
   };
 
@@ -194,7 +195,7 @@ export default function BooksPage() {
       setIsEditing(false); // Đóng modal
       loadBooks();        // Tải lại danh sách sách
     } catch (err: any) {
-      setError(err.message || "Cập nhật sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
+      setError(parseErrorMessage(err, "Cập nhật sách thất bại. Vui lòng kiểm tra lại dữ liệu."));
     } finally {
       setLoading(false);
     }
