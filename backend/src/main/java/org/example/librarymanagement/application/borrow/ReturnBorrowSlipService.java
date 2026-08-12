@@ -11,11 +11,13 @@ import org.example.librarymanagement.domain.entity.BorrowDetails;
 import org.example.librarymanagement.domain.entity.BorrowSlip;
 import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
+import org.example.librarymanagement.domain.enums.FineType;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.borrow.BorrowSlipNotFoundException;
 import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
+import org.example.librarymanagement.domain.policies.FineCalculationPolicy;
 import org.example.librarymanagement.port.dtos.borrow.ReturnBorrowSlipResponseDto;
 import org.example.librarymanagement.port.inbound.borrow.ReturnBorrowSlipUseCase;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
@@ -95,6 +97,18 @@ public class ReturnBorrowSlipService implements ReturnBorrowSlipUseCase {
         int returnedBooks = 0;
         BigDecimal totalFine =
                 BigDecimal.ZERO;
+                long overdueDays =
+        FineCalculationPolicy.calculateOverdueDays(
+                borrowSlip.getDueDate(),
+                returnTime
+        );
+
+BigDecimal finePerBook =
+        FineCalculationPolicy.calculateOverdueFine(
+                borrowSlip.getDueDate(),
+                returnTime,
+                1
+        );
 
         for (BorrowDetails detail : details) {
 
@@ -114,10 +128,17 @@ public class ReturnBorrowSlipService implements ReturnBorrowSlipUseCase {
                                     )
                             );
 
-            BigDecimal fineAmount =
-                    BigDecimal.ZERO;
+            BigDecimal fineAmount = finePerBook;
 
-            String fineReason = null;
+String fineReason = null;
+
+if (fineAmount.compareTo(BigDecimal.ZERO) > 0) {
+    fineReason =
+            FineCalculationPolicy.formatFineReason(
+                    FineType.OVERDUE,
+                    "Quá hạn " + overdueDays + " ngày"
+            );
+}
 
             detail.markReturned(
                     currentUser.getId(),
