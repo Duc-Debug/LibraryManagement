@@ -57,6 +57,7 @@ public class BorrowSlipPersistenceMapper {
                 entity.getReaderId(),
                 entity.getBorrowedAt(),
                 entity.getDueAt(),
+                    entity.getReturnDate(),
                 entity.getStatus(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
@@ -78,10 +79,23 @@ public class BorrowSlipPersistenceMapper {
                 createdByUserId,
                 domain.getBorrowDate(),
                 domain.getDueDate(),
+                   domain.getReturnDate(),
                 domain.getStatus(),
                 note,
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()
         );
     }
+    public void updateJpaEntity(
+        BorrowSlip domain,
+        BorrowSlipJpaEntity entity
+) {
+    if (domain == null || entity == null) {
+        return;
+    }
+
+    entity.setReturnDate(domain.getReturnDate());
+    entity.setStatus(domain.getStatus());
+    entity.setUpdatedAt(domain.getUpdatedAt());
+}
 }
