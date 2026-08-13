@@ -7,22 +7,20 @@ import { BooksPage } from '@/features/books';
 import type { Book } from '@/features/books';
 import { CategoriesPage } from '@/features/categories/components/CategoriesPage';
 import { UserManagementPage } from '@/features/users';
-import { BorrowingPage } from '@/features/borrowing';
-import { ReturnsPage } from '@/features/returns';
+import { BorrowingReturnsPage } from '@/features/borrowing';
 import { LoginPage } from '@/features/auth';
 import { mockUserAccounts, type UserAccount } from '@/features/accounts';
 import { logout } from '@/api/authApi';
 import SettingsPage from '@/pages/SettingsPage';
-
 function isTokenExpired(token: string): boolean {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return true;
-    
+
     // Giải mã Base64 payload của JWT
     const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
     if (!payload.exp) return false;
-    
+
     const now = Math.floor(Date.now() / 1000);
     return payload.exp < now;
   } catch (e) {
@@ -56,8 +54,8 @@ export default function Page() {
         const parsed = JSON.parse(savedUser);
         const roles = parsed.roles ?? [];
         const role = roles.includes('ADMIN')
-          ? 'admin'
-          : 'thu_thu';
+            ? 'admin'
+            : 'thu_thu';
 
         setCurrentUser({
           id: String(parsed.userId || parsed.id || '1'),
@@ -75,14 +73,18 @@ export default function Page() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const pageParam = urlParams.get('page');
-      if (pageParam && ['dashboard', 'books', 'categories', 'members', 'borrowing', 'returns', 'accounts', 'settings', 'login'].includes(pageParam)) {
-        setCurrentPage(pageParam);
+      // Chuyển hướng route 'returns' cũ về chung 1 trang 'borrowing'
+      const legacyPageMap: Record<string, string> = { returns: 'borrowing' };
+      const normalizedPage = pageParam ? legacyPageMap[pageParam] || pageParam : null;
+
+      if (normalizedPage && ['dashboard', 'books', 'categories', 'members', 'borrowing', 'returns', 'accounts', 'settings', 'login'].includes(normalizedPage)) {
+        setCurrentPage(normalizedPage);
       }
 
       const handlePopState = () => {
         const params = new URLSearchParams(window.location.search);
         const p = params.get('page') || 'dashboard';
-        setCurrentPage(p);
+        setCurrentPage(legacyPageMap[p] || p);
       };
       window.addEventListener('popstate', handlePopState);
       setIsInitialized(true);
@@ -109,13 +111,13 @@ export default function Page() {
       window.history.replaceState({ page: 'login' }, '', '/?page=login');
     }
     return (
-      <LoginPage
-        accounts={accounts}
-        onLogin={(account) => {
-          setCurrentUser(account);
-          handlePageChange('dashboard');
-        }}
-      />
+        <LoginPage
+            accounts={accounts}
+            onLogin={(account) => {
+              setCurrentUser(account);
+              handlePageChange('dashboard');
+            }}
+        />
     );
   }
 
@@ -173,25 +175,25 @@ export default function Page() {
             currentFullName={currentUser.fullName}
           />
         );
+      // Gộp chung 2 case Mượn và Trả sách vào cùng 1 Component
       case 'borrowing':
-        return <BorrowingPage />;
       case 'returns':
-        return <ReturnsPage />;
+        return <BorrowingReturnsPage />;
       case 'settings':
         return (
-          <SettingsPage
-            currentUser={{
-              id: currentUser.id,
-              username: currentUser.username,
-              password: '',
-              fullName: currentUser.fullName,
-              email: currentUser.email,
-              phone: currentUser.phone,
-              role: currentUser.role === 'admin' ? 'admin' : 'thu_thu',
-              active: currentUser.active ?? true,
-            }}
-            onProfileUpdated={handleProfileUpdated}
-          />
+            <SettingsPage
+                currentUser={{
+                  id: currentUser.id,
+                  username: currentUser.username,
+                  password: '',
+                  fullName: currentUser.fullName,
+                  email: currentUser.email,
+                  phone: currentUser.phone,
+                  role: currentUser.role === 'admin' ? 'admin' : 'thu_thu',
+                  active: currentUser.active ?? true,
+                }}
+                onProfileUpdated={handleProfileUpdated}
+            />
         );
       default:
         return <Dashboard />;
@@ -199,16 +201,16 @@ export default function Page() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar
-        currentPage={currentPage}
-        onPageChange={handlePageChange}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-      />
-      <main className="flex-1 overflow-auto">
-        {renderPage()}
-      </main>
-    </div>
+      <div className="flex h-screen bg-background">
+        <Sidebar
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            currentUser={currentUser}
+            onLogout={handleLogout}
+        />
+        <main className="flex-1 overflow-auto">
+          {renderPage()}
+        </main>
+      </div>
   );
 }
