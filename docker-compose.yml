@@ -1,0 +1,70 @@
+services:
+  # 1. Dịch vụ Database MySQL 8.0
+  mysql-db:
+    image: mysql:8.0
+    container_name: library_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: library_management
+      MYSQL_ROOT_PASSWORD: rootpassword123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - "./database/Dump20260728 (1) (1).sql:/docker-entrypoint-initdb.d/01-init.sql:ro"
+    networks:
+      - library_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Dịch vụ Backend Spring Boot (Java 21)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: library_backend
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - PORT=8080
+      - DB_URL=jdbc:mysql://mysql-db:3306/library_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootpassword123
+      - JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      - JWT_ACCESS_TOKEN_EXPIRATION_MS=3600000
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - library_network
+
+  # 3. Dịch vụ Frontend Next.js (React 19)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: library_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - library_network
+
+volumes:
+  mysql_data:
+
+networks:
+  library_network:
+    driver: bridge
