@@ -56,19 +56,26 @@ public class CreateBorrowSlipService implements CreateBorrowSlipUseCase {
 
     @Override
     public BorrowSlipResponseDto createBorrowSlip(CreateBorrowSlipCommand command) {
-        User currentUser = requireStaff();
-
         if (command == null) {
             throw new ValidationException("Command must not be null");
         }
+        User currentUser = requireStaff();
 
         Reader reader = readerRepositoryPort.findById(command.readerId())
                 .orElseThrow(() -> ReaderNotFoundException.withId(command.readerId()));
 
-        checkBorrowUseCase.validateBorrowEligibility(command.readerId(), command.bookIds().size());
+        List<Long> uniqueBookIds = (command.bookIds() != null)
+                ? command.bookIds().stream().filter(Objects::nonNull).distinct().toList()
+                : List.of();
+
+        if (uniqueBookIds.isEmpty()) {
+            throw new ValidationException("Book IDs list must not be empty");
+        }
+
+        checkBorrowUseCase.validateBorrowEligibility(command.readerId(), uniqueBookIds.size());
 
         List<Book> booksToBorrow = new ArrayList<>();
-        for (Long bookId : command.bookIds()) {
+        for (Long bookId : uniqueBookIds) {
             Book book = bookRepositoryPort.findByIdForUpdate(bookId)
                     .orElseThrow(() -> new BookNotFoundException(bookId));
 
@@ -77,9 +84,11 @@ public class CreateBorrowSlipService implements CreateBorrowSlipUseCase {
             }
 
             book.decreaseAvailableQuantity();
-            bookRepositoryPort.save(book);
             booksToBorrow.add(book);
         }
+
+        // Batch save all updated books to avoid N+1 queries inside loop
+        bookRepositoryPort.saveAll(booksToBorrow);
 
         // Sinh mã phiếu(VD: BM202608121415001)
         String borrowCode = generateBorrowCode();

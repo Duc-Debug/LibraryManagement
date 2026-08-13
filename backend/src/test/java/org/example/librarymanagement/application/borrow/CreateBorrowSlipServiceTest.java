@@ -142,9 +142,44 @@ class CreateBorrowSlipServiceTest {
         assertEquals("RD-001", response.readerCardNumber());
         assertEquals(1, response.totalBooks());
 
-        verify(bookRepositoryPort).save(sampleBook);
+        verify(bookRepositoryPort).saveAll(any());
         verify(saveBorrowSlipPort).save(any(BorrowSlip.class));
         verify(borrowDetailsRepositoryPort).saveAll(any());
+    }
+
+    @Test
+    @DisplayName("createBorrowSlip: Tự động lọc trùng (distinct) bookIds khi command truyền ID trùng nhau")
+    void createBorrowSlip_DuplicateBookIdsInCommand_DeduplicatedSuccessfully() {
+        CreateBorrowSlipCommand command = new CreateBorrowSlipCommand(10L, List.of(100L, 100L), 1L, 14, "Ghi chu trùng");
+
+        when(getAuthenticatedUserPort.getCurrentUser()).thenReturn(sampleStaff);
+        when(readerRepositoryPort.findById(10L)).thenReturn(Optional.of(sampleReader));
+        doNothing().when(checkBorrowEligibilityUseCase).validateBorrowEligibility(10L, 1);
+        when(bookRepositoryPort.findByIdForUpdate(100L)).thenReturn(Optional.of(sampleBook));
+
+        LocalDateTime now = LocalDateTime.now();
+        BorrowSlip mockSavedSlip = new BorrowSlip(
+                1000L,
+                "BM12345",
+                10L,
+                1L,
+                now,
+                now.plusDays(14),
+                null,
+                org.example.librarymanagement.domain.enums.BorrowSlipStatus.BORROWING,
+                "Ghi chu trùng",
+                now,
+                now
+        );
+        when(saveBorrowSlipPort.save(any(BorrowSlip.class))).thenReturn(mockSavedSlip);
+
+        BorrowSlipResponseDto response = createBorrowSlipService.createBorrowSlip(command);
+
+        assertNotNull(response);
+        assertEquals(1, response.totalBooks());
+
+        verify(bookRepositoryPort).findByIdForUpdate(100L);
+        verify(bookRepositoryPort).saveAll(any());
     }
 
     @Test

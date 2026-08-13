@@ -11,7 +11,7 @@ public class BorrowSlip {
     private Long id;
     private String borrowCode;
     private Long readerId;
-    private Long createByUserId;
+    private Long createdByUserId;
     private LocalDateTime borrowDate;
     private LocalDateTime dueDate;
     private LocalDateTime returnDate;
@@ -57,14 +57,6 @@ public class BorrowSlip {
         return create(borrowCode, readerId, createdByUserId, borrowDays, note, LocalDateTime.now());
     }
 
-    public static BorrowSlip create(Long readerId, int borrowDays, LocalDateTime borrowDate) {
-        return create("BM" + System.currentTimeMillis(), readerId, 1L, borrowDays, null, borrowDate);
-    }
-
-    public static BorrowSlip create(Long readerId, int borrowDays) {
-        return create(readerId, borrowDays, LocalDateTime.now());
-    }
-
     public BorrowSlip(
             Long id,
             String borrowCode,
@@ -82,7 +74,7 @@ public class BorrowSlip {
         this.id = id;
         this.borrowCode = borrowCode != null ? borrowCode.trim() : null;
         this.readerId = readerId;
-        this.createByUserId = createdByUserId;
+        this.createdByUserId = createdByUserId;
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
         this.returnDate = returnDate;
@@ -223,8 +215,8 @@ public class BorrowSlip {
         return borrowCode;
     }
 
-    public Long getCreateByUserId() {
-        return createByUserId;
+    public Long getCreatedByUserId() {
+        return createdByUserId;
     }
 
     public String getNote() {
