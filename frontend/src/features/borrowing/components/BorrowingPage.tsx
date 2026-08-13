@@ -5,13 +5,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchAllReaders, ReaderResponse } from '@/api/readerApi';
 import { fetchBooksApi, BookResponseDto } from '@/api/bookApi';
 import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
+import { createBorrowSlipApi, fetchBorrowSlipsApi, BorrowSlipResponseDto } from '@/api/borrowSlipApi';
 import { Plus, RefreshCw, BookOpen, Clock, AlertCircle, CheckCircle2, UserCheck, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BorrowingForm } from './BorrowingForm';
 
 export function BorrowingPage() {
   const [showForm, setShowForm] = useState(false);
-  const [borrowingRecords, setBorrowingRecords] = useState<any[]>([]);
+  const [borrowingRecords, setBorrowingRecords] = useState<BorrowSlipResponseDto[]>([]);
 
   // Real DB States
   const [readers, setReaders] = useState<ReaderResponse[]>([]);
@@ -26,10 +27,11 @@ export function BorrowingPage() {
     setLoading(true);
     setError(null);
     try {
-      const [readersRes, booksRes, catsRes] = await Promise.allSettled([
+      const [readersRes, booksRes, catsRes, slipsRes] = await Promise.allSettled([
         fetchAllReaders(),
         fetchBooksApi(0, 100),
-        fetchCategoriesApi()
+        fetchCategoriesApi(),
+        fetchBorrowSlipsApi({ page: 0, size: 50 })
       ]);
 
       if (readersRes.status === 'fulfilled') {
@@ -40,6 +42,9 @@ export function BorrowingPage() {
       }
       if (catsRes.status === 'fulfilled') {
         setCategories(catsRes.value);
+      }
+      if (slipsRes.status === 'fulfilled' && slipsRes.value) {
+        setBorrowingRecords(slipsRes.value.content || []);
       }
     } catch (err: any) {
       setError(parseErrorMessage(err, 'Không thể nạp dữ liệu từ máy chủ.'));
@@ -52,26 +57,27 @@ export function BorrowingPage() {
     loadData();
   }, [loadData]);
 
-  const handleCreateBorrow = (record: any) => {
-    const newRecord = {
-      ...record,
-      id: `BRW-${Date.now().toString().slice(-6)}`,
-      status: 'BORROWING',
-    };
-    
-    setBorrowingRecords([newRecord, ...borrowingRecords]);
-    
-    // Update local available stock quantity for all borrowed books in this slip
-    const borrowedBookIds = new Set((record.books || []).map((b: any) => b.bookId));
-    setBooks(prev => prev.map(b => {
-      if (borrowedBookIds.has(b.bookId)) {
-        return { ...b, availableQuantity: Math.max(0, b.availableQuantity - 1) };
-      }
-      return b;
-    }));
+  const handleCreateBorrow = async (commandData: any) => {
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      const bookIds = commandData.bookIds || (commandData.books || []).map((b: any) => b.bookId);
+      const createdSlip = await createBorrowSlipApi({
+        readerId: commandData.readerId,
+        bookIds: bookIds,
+        borrowDays: commandData.borrowDays || 14,
+        note: commandData.note,
+      });
 
-    setSuccessMessage(`Tạo thành công phiếu mượn mã #${newRecord.id} gồm ${record.books.length} cuốn sách cho độc giả "${record.readerName}"!`);
-    setShowForm(false);
+      setSuccessMessage(`Tạo thành công phiếu mượn mã "${createdSlip.borrowCode}" gồm ${createdSlip.totalBooks} cuốn sách cho độc giả "${createdSlip.readerName}"!`);
+      setShowForm(false);
+      await loadData();
+    } catch (err: any) {
+      setError(parseErrorMessage(err, 'Không thể tạo phiếu mượn sách. Vui lòng thử lại.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -166,7 +172,7 @@ export function BorrowingPage() {
                 {borrowingRecords.map((record) => (
                   <tr key={record.id} className="hover:bg-muted/20 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs font-bold text-primary whitespace-nowrap">
-                      #{record.id}
+                      {record.borrowCode || `#${record.id}`}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="font-semibold text-foreground">{record.readerName}</div>
@@ -174,24 +180,38 @@ export function BorrowingPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="font-bold text-foreground flex items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-mono">
-                          {record.books?.length || 1} cuốn
+                        <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-mono font-bold">
+                          {record.totalBooks} cuốn
                         </span>
-                        <span className="text-xs text-muted-foreground line-clamp-1 max-w-xs">
-                          {(record.books || []).map((b: any) => b.title).join(', ')}
-                        </span>
+                        {record.note && (
+                          <span className="text-xs text-muted-foreground italic line-clamp-1 max-w-xs">
+                            ({record.note})
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-xs text-muted-foreground whitespace-nowrap">
-                      {record.borrowDate}
+                      {record.borrowedAt ? new Date(record.borrowedAt).toLocaleDateString('vi-VN') : 'N/A'}
                     </td>
                     <td className="px-6 py-4 text-xs font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
-                      {record.dueDate}
+                      {record.dueAt ? new Date(record.dueAt).toLocaleDateString('vi-VN') : 'N/A'}
                     </td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 whitespace-nowrap">
-                        <Clock className="w-3 h-3" /> Đang mượn
-                      </span>
+                      {record.status === 'BORROWING' && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 whitespace-nowrap">
+                          <Clock className="w-3 h-3" /> Đang mượn
+                        </span>
+                      )}
+                      {record.status === 'OVERDUE' && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 whitespace-nowrap">
+                          <AlertCircle className="w-3 h-3" /> Quá hạn
+                        </span>
+                      )}
+                      {record.status === 'RETURNED' && (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                          <CheckCircle2 className="w-3 h-3" /> Đã trả
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}

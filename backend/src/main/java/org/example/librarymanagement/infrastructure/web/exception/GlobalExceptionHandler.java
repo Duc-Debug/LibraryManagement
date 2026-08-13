@@ -69,10 +69,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleMalformedJson() {
+    public ResponseEntity<ErrorResponse> handleMalformedJson(HttpMessageNotReadableException exception) {
+        String message = "Malformed request body";
+        Throwable rootCause = exception.getRootCause();
+        if (rootCause != null && rootCause.getMessage() != null && !rootCause.getMessage().isBlank()) {
+            message = rootCause.getMessage();
+        } else if (exception.getMessage() != null && exception.getMessage().contains("problem:")) {
+            int problemIdx = exception.getMessage().indexOf("problem:");
+            message = exception.getMessage().substring(problemIdx + 8).trim();
+        }
+
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of("MALFORMED_JSON", "Malformed request body"));
+                .body(ErrorResponse.of("VALIDATION_ERROR", message));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
@@ -206,6 +215,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of("READER_HAS_OVERDUE_BORROW", exception.getMessage()));
+    }
+
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.borrow.BorrowSlipNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBorrowSlipNotFound(org.example.librarymanagement.domain.exceptions.borrow.BorrowSlipNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("BORROW_SLIP_NOT_FOUND", exception.getMessage()));
     }
 
     @ExceptionHandler(org.example.librarymanagement.domain.exceptions.setting.SystemSettingNotFoundException.class)

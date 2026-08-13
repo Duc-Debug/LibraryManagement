@@ -12,5 +12,6 @@ public interface BookRepositoryPort {
     boolean existsByIsbn(String isbn);
     boolean existsByIsbnAndIdNot(String isbn, Long id);
     Book save(Book book);
+    List<Book> saveAll(List<Book> books);
     List<Book> findAll(int page, int size);
 }

@@ -3,3 +3,10 @@ target/
 .idea/
 *.log
 .mvn/wrapper/maven-wrapper.jar
+.mvn/
+mvnw
+mvnw.cmd
+.git/
+.gitignore
+.idea/
+*.iml
