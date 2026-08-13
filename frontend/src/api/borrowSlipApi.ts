@@ -109,3 +109,50 @@ export async function returnBorrowSlipApi(
     }
   );
 }
+
+export interface CreateBorrowSlipCommand {
+  readerId: number;
+  bookIds: number[];
+  createdByUserId?: number;
+  borrowDays?: number;
+  note?: string;
+}
+
+export interface OverdueSlipSummaryDto {
+  borrowSlipId: number;
+  borrowCode: string;
+  borrowedAt: string;
+  overdueDays: number;
+  totalBooks: number;
+}
+
+export interface ReaderBorrowEligibilityDto {
+  readerId: number;
+  cardNumber: string;
+  readerName: string;
+  currentBorrowingCount: number;
+  maxBorrowLimit: number;
+  remainingBorrowLimit: number;
+  hasOverdueBooks: boolean;
+  overdueBooksCount: number;
+  overdueSlips: OverdueSlipSummaryDto[];
+  eligible: boolean;
+  rejectionReason: string | null;
+}
+
+export async function checkReaderEligibilityApi(
+  readerId: number
+): Promise<ReaderBorrowEligibilityDto> {
+  return apiFetch<ReaderBorrowEligibilityDto>(
+    `/api/librarians/borrow-slips/eligibility/${readerId}`
+  );
+}
+
+export async function createBorrowSlipApi(
+  command: CreateBorrowSlipCommand
+): Promise<BorrowSlipResponseDto> {
+  return apiFetch<BorrowSlipResponseDto>("/api/librarians/borrow-slips", {
+    method: "POST",
+    body: JSON.stringify(command),
+  });
+}

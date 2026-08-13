@@ -9,17 +9,27 @@ import org.example.librarymanagement.domain.exceptions.DomainException;
 public class BorrowSlip {
 
     private Long id;
+    private String borrowCode;
     private Long readerId;
+    private Long createdByUserId;
     private LocalDateTime borrowDate;
     private LocalDateTime dueDate;
     private LocalDateTime returnDate;
     private BorrowSlipStatus status;
+    private String note;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static BorrowSlip create(Long readerId, int borrowDays, LocalDateTime borrowDate) {
+    public static BorrowSlip create(String borrowCode, Long readerId, Long createdByUserId, int borrowDays, String note,
+            LocalDateTime borrowDate) {
+        if (borrowCode == null || borrowCode.isBlank()) {
+            throw new DomainException("Borrow code must not be blank");
+        }
         if (readerId == null || readerId <= 0) {
             throw new DomainException("Reader ID must be greater than 0");
+        }
+        if (createdByUserId == null || createdByUserId <= 0) {
+            throw new DomainException("Created by user ID must be greater than 0");
         }
         if (borrowDays <= 0) {
             throw new DomainException("Borrow days must be greater than 0");
@@ -30,49 +40,62 @@ public class BorrowSlip {
         LocalDateTime calculatedDueDate = borrowDate.plusDays(borrowDays);
         return new BorrowSlip(
                 null,
+                borrowCode.trim().toUpperCase(),
                 readerId,
+                createdByUserId,
                 borrowDate,
                 calculatedDueDate,
                 null,
                 BorrowSlipStatus.BORROWING,
+                note != null ? note.trim() : null,
                 borrowDate,
                 borrowDate);
     }
 
-    public static BorrowSlip create(Long readerId, int borrowDays) {
-        return create(readerId, borrowDays, LocalDateTime.now());
+    public static BorrowSlip create(String borrowCode, Long readerId, Long createdByUserId, int borrowDays,
+            String note) {
+        return create(borrowCode, readerId, createdByUserId, borrowDays, note, LocalDateTime.now());
     }
 
     public BorrowSlip(
             Long id,
+            String borrowCode,
             Long readerId,
+            Long createdByUserId,
             LocalDateTime borrowDate,
             LocalDateTime dueDate,
             LocalDateTime returnDate,
             BorrowSlipStatus status,
+            String note,
             LocalDateTime createdAt,
             LocalDateTime updatedAt) {
-        validateRequiredIds(readerId);
+        validateRequiredIds(readerId, createdByUserId);
         validateDates(borrowDate, dueDate, returnDate);
         this.id = id;
+        this.borrowCode = borrowCode != null ? borrowCode.trim() : null;
         this.readerId = readerId;
+        this.createdByUserId = createdByUserId;
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
         this.returnDate = returnDate;
         this.status = status;
+        this.note = note != null ? note.trim() : null;
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
     }
 
     public BorrowSlip(
             Long id,
+            String borrowCode,
             Long readerId,
+            Long createdByUserId,
             LocalDateTime borrowDate,
             LocalDateTime dueDate,
             BorrowSlipStatus status,
+            String note,
             LocalDateTime createdAt,
             LocalDateTime updatedAt) {
-        this(id, readerId, borrowDate, dueDate, null, status, createdAt, updatedAt);
+        this(id, borrowCode, readerId, createdByUserId, borrowDate, dueDate, null, status, note, createdAt, updatedAt);
     }
 
     // ==================== DOMAIN BUSINESS BEHAVIORS ====================
@@ -104,9 +127,12 @@ public class BorrowSlip {
     }
 
     // ==================== HELPER VALIDATIONS ====================
-    private static void validateRequiredIds(Long readerId) {
+    private static void validateRequiredIds(Long readerId, Long createdByUserId) {
         if (readerId == null || readerId <= 0) {
             throw new DomainException("Reader ID must be greater than 0");
+        }
+        if (createdByUserId == null || createdByUserId <= 0) {
+            throw new DomainException("Created User Id must be greater than 0");
         }
     }
 
@@ -183,5 +209,17 @@ public class BorrowSlip {
                 + ", createdAt=" + createdAt
                 + ", updatedAt=" + updatedAt
                 + '}';
+    }
+
+    public String getBorrowCode() {
+        return borrowCode;
+    }
+
+    public Long getCreatedByUserId() {
+        return createdByUserId;
+    }
+
+    public String getNote() {
+        return note;
     }
 }

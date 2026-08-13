@@ -66,6 +66,20 @@ public class BookPersistenceAdapter implements LoadBookPort, SaveBookPort, Check
         }
     }
 
+    @Override
+    public List<Book> saveAll(List<Book> books) {
+        if (books == null || books.isEmpty()) {
+            return List.of();
+        }
+        List<BookJpaEntity> entities = books.stream()
+                .map(b -> b.getId() == null ? create(b) : update(b))
+                .toList();
+        List<BookJpaEntity> savedEntities = bookJpaRepository.saveAllAndFlush(entities);
+        return savedEntities.stream()
+                .map(bookPersistenceMapper::toDomain)
+                .toList();
+    }
+
     private boolean isIsbnConstraintViolation(DataIntegrityViolationException e, Book book) {
         String msg = e.getMessage();
         Throwable rootCause = e.getRootCause();

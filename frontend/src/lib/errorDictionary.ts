@@ -40,9 +40,17 @@ export const VIETNAMESE_ERROR_MAP: Record<string, string> = {
   DUPLICATE_CATEGORY_NAME: "Tên thể loại sách này đã tồn tại trong hệ thống.",
   CATEGORY_IN_USE: "Không thể xóa thể loại này vì đang có sách thuộc danh mục.",
 
-  // --- Quản lý Tài khoản & Hệ thống ---
+  // --- Quản lý Mượn / Trả Sách ---
+  BORROW_LIMIT_EXCEEDED: "Số lượng sách mượn vượt quá giới hạn cho phép của hệ thống.",
+  READER_HAS_OVERDUE_BORROW: "Độc giả đang có sách quá hạn chưa hoàn trả. Vui lòng hoàn trả sách cũ trước khi tạo phiếu mượn mới.",
+  BORROW_SLIP_NOT_FOUND: "Không tìm thấy thông tin phiếu mượn sách này trong hệ thống.",
+
+  // --- Quản lý Tài khoản & Cấu hình Hệ thống ---
   USER_NOT_FOUND: "Không tìm thấy thông tin tài khoản người dùng.",
   ROLE_NOT_FOUND: "Vai trò người dùng không tồn tại.",
+  SYSTEM_SETTING_NOT_FOUND: "Không tìm thấy cấu hình hệ thống yêu cầu.",
+  RESOURCE_NOT_FOUND: "Tài nguyên yêu cầu không tồn tại trong hệ thống.",
+  DUPLICATE_RESOURCE: "Tài nguyên này đã tồn tại trong hệ thống.",
   VALIDATION_ERROR: "Dữ liệu nhập vào không hợp lệ. Vui lòng kiểm tra lại.",
   MALFORMED_JSON: "Cấu trúc dữ liệu yêu cầu không đúng định dạng.",
   DOMAIN_ERROR: "Vi phạm quy định nghiệp vụ của hệ thống.",

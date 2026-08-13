@@ -2,6 +2,7 @@ package org.example.librarymanagement.infrastructure.config;
 
 import org.example.librarymanagement.application.borrow.CalculateFineService;
 import org.example.librarymanagement.application.borrow.CheckBorrowEligibilityService;
+import org.example.librarymanagement.application.borrow.CreateBorrowSlipService;
 import org.example.librarymanagement.application.borrow.GetBorrowSlipsService;
 import org.example.librarymanagement.application.borrow.ReturnBorrowSlipService;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalBorrowSlipsUseCase;
@@ -15,10 +16,9 @@ import org.example.librarymanagement.port.outbound.borrow.BorrowDetailsRepositor
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
 import org.example.librarymanagement.port.outbound.borrow.SaveBorrowSlipPort;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalCheckBorrowEligibilityUseCase;
-import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
-import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
+import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalCreateBorrowSlipUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CheckBorrowEligibilityUseCase;
-import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
+import org.example.librarymanagement.port.inbound.borrow.CreateBorrowSlipUseCase;
 import org.example.librarymanagement.port.outbound.borrow.LoadReaderBorrowStatusPort;
 import org.example.librarymanagement.port.outbound.reader.ReaderRepositoryPort;
 import org.example.librarymanagement.port.outbound.setting.LoadSystemSettingPort;
@@ -29,57 +29,69 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BorrowUseCaseConfig {
 
-    @Bean
-    public BorrowSlipsUseCase borrowSlipsUseCase(
-            LoadBorrowSlipPort loadBorrowSlipPort,
-            GetAuthenticatedUserPort getAuthenticatedUserPort
-    ) {
-        GetBorrowSlipsService service = new GetBorrowSlipsService(loadBorrowSlipPort, getAuthenticatedUserPort);
-        return new TransactionalBorrowSlipsUseCase(service);
-    }
+        @Bean
+        public BorrowSlipsUseCase borrowSlipsUseCase(
+                        LoadBorrowSlipPort loadBorrowSlipPort,
+                        GetAuthenticatedUserPort getAuthenticatedUserPort) {
+                GetBorrowSlipsService service = new GetBorrowSlipsService(loadBorrowSlipPort, getAuthenticatedUserPort);
+                return new TransactionalBorrowSlipsUseCase(service);
+        }
 
-    @Bean
-    public CalculateFineUseCase calculateFineUseCase(
-            LoadBorrowSlipPort loadBorrowSlipPort,
-            GetAuthenticatedUserPort getAuthenticatedUserPort
-    ) {
-        CalculateFineService service = new CalculateFineService(loadBorrowSlipPort, getAuthenticatedUserPort);
-        return new TransactionalCalculateFineUseCase(service);
-    }
-  @Bean
-public ReturnBorrowSlipUseCase returnBorrowSlipUseCase(
-        LoadBorrowSlipPort loadBorrowSlipPort,
-        SaveBorrowSlipPort saveBorrowSlipPort,
-        BorrowDetailsRepositoryPort borrowDetailsRepositoryPort,
-        BookRepositoryPort bookRepositoryPort,
-        GetAuthenticatedUserPort getAuthenticatedUserPort
-) {
+        @Bean
+        public CalculateFineUseCase calculateFineUseCase(
+                        LoadBorrowSlipPort loadBorrowSlipPort,
+                        GetAuthenticatedUserPort getAuthenticatedUserPort) {
+                CalculateFineService service = new CalculateFineService(loadBorrowSlipPort, getAuthenticatedUserPort);
+                return new TransactionalCalculateFineUseCase(service);
+        }
 
-    ReturnBorrowSlipUseCase service =
-            new ReturnBorrowSlipService(
-                    loadBorrowSlipPort,
-                    saveBorrowSlipPort,
-                    borrowDetailsRepositoryPort,
-                    bookRepositoryPort,
-                    getAuthenticatedUserPort
-            );
+        @Bean
+        public ReturnBorrowSlipUseCase returnBorrowSlipUseCase(
+                        LoadBorrowSlipPort loadBorrowSlipPort,
+                        SaveBorrowSlipPort saveBorrowSlipPort,
+                        BorrowDetailsRepositoryPort borrowDetailsRepositoryPort,
+                        BookRepositoryPort bookRepositoryPort,
+                        GetAuthenticatedUserPort getAuthenticatedUserPort) {
 
-    return new TransactionalReturnBorrowSlipUseCase(service);
-}
+                ReturnBorrowSlipUseCase service = new ReturnBorrowSlipService(
+                                loadBorrowSlipPort,
+                                saveBorrowSlipPort,
+                                borrowDetailsRepositoryPort,
+                                bookRepositoryPort,
+                                getAuthenticatedUserPort);
 
-    @Bean
-    public CheckBorrowEligibilityUseCase checkBorrowEligibilityUseCase(
-            ReaderRepositoryPort readerRepositoryPort,
-            LoadReaderBorrowStatusPort loadReaderBorrowStatusPort,
-            LoadSystemSettingPort loadSystemSettingPort,
-            GetAuthenticatedUserPort getAuthenticatedUserPort
-    ) {
-        CheckBorrowEligibilityService service = new CheckBorrowEligibilityService(
-                readerRepositoryPort,
-                loadReaderBorrowStatusPort,
-                loadSystemSettingPort,
-                getAuthenticatedUserPort
-        );
-        return new TransactionalCheckBorrowEligibilityUseCase(service);
-    }
+                return new TransactionalReturnBorrowSlipUseCase(service);
+        }
+
+        @Bean
+        public CheckBorrowEligibilityUseCase checkBorrowEligibilityUseCase(
+                        ReaderRepositoryPort readerRepositoryPort,
+                        LoadReaderBorrowStatusPort loadReaderBorrowStatusPort,
+                        LoadSystemSettingPort loadSystemSettingPort,
+                        GetAuthenticatedUserPort getAuthenticatedUserPort) {
+                CheckBorrowEligibilityService service = new CheckBorrowEligibilityService(
+                                readerRepositoryPort,
+                                loadReaderBorrowStatusPort,
+                                loadSystemSettingPort,
+                                getAuthenticatedUserPort);
+                return new TransactionalCheckBorrowEligibilityUseCase(service);
+        }
+
+        @Bean
+        public CreateBorrowSlipUseCase createBorrowSlipUseCase(
+                        CheckBorrowEligibilityUseCase checkBorrowEligibilityUseCase,
+                        ReaderRepositoryPort readerRepositoryPort,
+                        BookRepositoryPort bookRepositoryPort,
+                        SaveBorrowSlipPort saveBorrowSlipPort,
+                        BorrowDetailsRepositoryPort borrowDetailsRepositoryPort,
+                        GetAuthenticatedUserPort getAuthenticatedUserPort) {
+                CreateBorrowSlipUseCase service = new CreateBorrowSlipService(
+                                checkBorrowEligibilityUseCase,
+                                readerRepositoryPort,
+                                bookRepositoryPort,
+                                saveBorrowSlipPort,
+                                borrowDetailsRepositoryPort,
+                                getAuthenticatedUserPort);
+                return new TransactionalCreateBorrowSlipUseCase(service);
+        }
 }
