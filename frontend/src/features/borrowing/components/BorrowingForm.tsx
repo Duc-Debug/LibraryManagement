@@ -5,7 +5,7 @@ import type { ReaderResponse } from '@/api/readerApi';
 import type { BookResponseDto } from '@/api/bookApi';
 import type { CategoryResponse } from '@/api/categoryApi';
 import { Button } from '@/components/ui/button';
-import { Search, BookOpen, CreditCard, Calendar, AlertTriangle, Check, X, Image as ImageIcon, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { Search, BookOpen, CreditCard, Calendar, AlertTriangle, Check, X, Image as ImageIcon, Plus, Trash2, ShoppingBag, FileText } from 'lucide-react';
 
 const MAX_BOOKS_PER_SLIP = 5;
 
@@ -23,6 +23,7 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
   
   const [readerSearch, setReaderSearch] = useState('');
   const [bookSearch, setBookSearch] = useState('');
+  const [note, setNote] = useState('');
   
   const [isReaderDropdownOpen, setIsReaderDropdownOpen] = useState(false);
   const [isBookDropdownOpen, setIsBookDropdownOpen] = useState(false);
@@ -121,6 +122,9 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
 
     onSubmit({
       readerId: selectedReader.id,
+      bookIds: selectedBooks.map((b) => b.bookId),
+      note: note.trim() || undefined,
+      borrowDays: 14,
       readerName: selectedReader.name,
       readerCardNumber: selectedReader.cardNumber,
       books: selectedBooks.map((b) => ({
@@ -378,7 +382,7 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
         )}
       </div>
 
-      {/* DATES SELECTION */}
+      {/* DATES SELECTION & NOTE */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
@@ -405,6 +409,21 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
         </div>
       </div>
 
+      {/* NOTE INPUT */}
+      <div>
+        <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-primary" />
+          <span>Ghi Chú Phiếu Mượn (Không bắt buộc)</span>
+        </label>
+        <input
+          type="text"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Nhập ghi chú thêm nếu có (Ví dụ: Độc giả mượn làm đồ án, xin hẹn trả sớm...)"
+          className="w-full px-3.5 py-2 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-xs"
+        />
+      </div>
+
       {/* BORROW SLIP SUMMARY PREVIEW */}
       {selectedReader && selectedBooks.length > 0 && (
         <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-foreground space-y-2">
@@ -416,6 +435,7 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
             <div>• Tổng số cuốn mượn: <span className="font-bold text-primary">{selectedBooks.length} cuốn</span></div>
             <div>• Hạn hẹn trả: <span className="font-bold text-emerald-600 dark:text-emerald-400">{dueDate}</span></div>
             <div>• Các cuốn sách: <span className="font-semibold">{selectedBooks.map(b => b.title).join(', ')}</span></div>
+            {note.trim() && <div>• Ghi chú: <span className="font-semibold italic text-foreground">&quot;{note.trim()}&quot;</span></div>}
           </div>
         </div>
       )}

@@ -9,15 +9,16 @@ public record CreateBorrowSlipCommand(
     Integer borrowDays,
     String note
 ) {
-    public CreateBorrowSlipCommand{
-        if(readerId ==null||readerId<=0){
-            throw new IllegalArgumentException("Reader Id must be greater than 0");
+    public CreateBorrowSlipCommand {
+        if (readerId == null || readerId <= 0) {
+            throw new IllegalArgumentException("Reader ID must be greater than 0");
         }
-        if(bookIds ==null ||bookIds.isEmpty()){
+        if (bookIds == null || bookIds.isEmpty()) {
             throw new IllegalArgumentException("Book IDs list must not be empty");
         }
-        if(createdByUserId==null ||createdByUserId <=0){
-            throw new IllegalArgumentException("Created by user Id must be greater than 0");
-        }
+    }
+
+    public CreateBorrowSlipCommand(Long readerId, List<Long> bookIds, Integer borrowDays, String note) {
+        this(readerId, bookIds, null, borrowDays, note);
     }
 }

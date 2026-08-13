@@ -62,9 +62,10 @@ export function BorrowingPage() {
     setError(null);
     setSuccessMessage(null);
     try {
+      const bookIds = commandData.bookIds || (commandData.books || []).map((b: any) => b.bookId);
       const createdSlip = await createBorrowSlipApi({
         readerId: commandData.readerId,
-        bookIds: commandData.bookIds,
+        bookIds: bookIds,
         borrowDays: commandData.borrowDays || 14,
         note: commandData.note,
       });

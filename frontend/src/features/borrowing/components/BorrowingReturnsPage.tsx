@@ -91,9 +91,10 @@ export function BorrowingReturnsPage() {
         setError(null);
         setSuccessMessage(null);
         try {
+            const bookIds = record.bookIds || (record.books || []).map((b: any) => b.bookId);
             const createdSlip = await createBorrowSlipApi({
                 readerId: record.readerId,
-                bookIds: record.bookIds,
+                bookIds: bookIds,
                 borrowDays: record.borrowDays || 14,
                 note: record.note,
             });

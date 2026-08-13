@@ -69,10 +69,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleMalformedJson() {
+    public ResponseEntity<ErrorResponse> handleMalformedJson(HttpMessageNotReadableException exception) {
+        String message = "Malformed request body";
+        Throwable rootCause = exception.getRootCause();
+        if (rootCause != null && rootCause.getMessage() != null && !rootCause.getMessage().isBlank()) {
+            message = rootCause.getMessage();
+        } else if (exception.getMessage() != null && exception.getMessage().contains("problem:")) {
+            int problemIdx = exception.getMessage().indexOf("problem:");
+            message = exception.getMessage().substring(problemIdx + 8).trim();
+        }
+
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of("MALFORMED_JSON", "Malformed request body"));
+                .body(ErrorResponse.of("VALIDATION_ERROR", message));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
