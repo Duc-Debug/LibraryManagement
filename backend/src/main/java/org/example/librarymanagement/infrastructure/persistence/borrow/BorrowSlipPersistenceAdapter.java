@@ -1,5 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.borrow;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
 import org.example.librarymanagement.port.outbound.borrow.SaveBorrowSlipPort;
+import org.example.librarymanagement.port.outbound.borrow.UpdateOverdueBorrowSlipsPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +20,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class BorrowSlipPersistenceAdapter
-                implements LoadBorrowSlipPort, SaveBorrowSlipPort {
+                implements LoadBorrowSlipPort, SaveBorrowSlipPort, UpdateOverdueBorrowSlipsPort {
         private static final int DEFAULT_PAGE_SIZE = 10;
         private static final int MAX_PAGE_SIZE = 100;
 
@@ -132,5 +134,11 @@ public class BorrowSlipPersistenceAdapter
                                 borrowSlip,
                                 entity);
                 return entity;
+        }
+
+        @Override
+        public int updateOverdueStatus(LocalDateTime asOfDate) {
+                LocalDateTime effectiveDate = asOfDate != null ? asOfDate : LocalDateTime.now();
+                return borrowSlipJpaRepository.updateOverdueStatus(effectiveDate);
         }
 }

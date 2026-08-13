@@ -94,4 +94,12 @@ public class BorrowUseCaseConfig {
                                 getAuthenticatedUserPort);
                 return new TransactionalCreateBorrowSlipUseCase(service);
         }
+
+        @Bean
+        public org.example.librarymanagement.port.inbound.borrow.UpdateOverdueBorrowSlipsUseCase updateOverdueBorrowSlipsUseCase(
+                        org.example.librarymanagement.port.outbound.borrow.UpdateOverdueBorrowSlipsPort updateOverdueBorrowSlipsPort) {
+                org.example.librarymanagement.application.borrow.UpdateOverdueBorrowSlipsService service =
+                                new org.example.librarymanagement.application.borrow.UpdateOverdueBorrowSlipsService(updateOverdueBorrowSlipsPort);
+                return new org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalUpdateOverdueBorrowSlipsUseCase(service);
+        }
 }
