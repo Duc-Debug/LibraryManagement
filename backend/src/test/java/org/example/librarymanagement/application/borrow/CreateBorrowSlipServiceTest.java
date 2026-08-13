@@ -9,6 +9,7 @@ import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.entity.BorrowSlip;
 import org.example.librarymanagement.domain.entity.Reader;
 import org.example.librarymanagement.domain.entity.User;
+import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.enums.CardStatus;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.reader.ReaderNotFoundException;
@@ -73,7 +74,8 @@ class CreateBorrowSlipServiceTest {
                 getAuthenticatedUserPort
         );
 
-        sampleStaff = new User(1L, "staff", "hash", "Staff Name", "staff@test.com", "0912345678", true, null, LocalDateTime.now(), LocalDateTime.now(), java.util.Collections.emptySet());
+        Role librarianRole = new Role(1L, "LIBRARIAN", "Librarian Role");
+        sampleStaff = new User(1L, "staff", "hash", "Staff Name", "staff@test.com", "0912345678", true, null, LocalDateTime.now(), LocalDateTime.now(), java.util.Set.of(librarianRole));
 
         sampleReader = Reader.builder()
                 .id(10L)
@@ -117,7 +119,20 @@ class CreateBorrowSlipServiceTest {
         doNothing().when(checkBorrowEligibilityUseCase).validateBorrowEligibility(10L, 1);
         when(bookRepositoryPort.findByIdForUpdate(100L)).thenReturn(Optional.of(sampleBook));
 
-        BorrowSlip mockSavedSlip = BorrowSlip.create("BM12345", 10L, 1L, 14, "Ghi chu");
+        LocalDateTime now = LocalDateTime.now();
+        BorrowSlip mockSavedSlip = new BorrowSlip(
+                1000L,
+                "BM12345",
+                10L,
+                1L,
+                now,
+                now.plusDays(14),
+                null,
+                org.example.librarymanagement.domain.enums.BorrowSlipStatus.BORROWING,
+                "Ghi chu",
+                now,
+                now
+        );
         when(saveBorrowSlipPort.save(any(BorrowSlip.class))).thenReturn(mockSavedSlip);
 
         BorrowSlipResponseDto response = createBorrowSlipService.createBorrowSlip(command);
@@ -158,6 +173,6 @@ class CreateBorrowSlipServiceTest {
         when(bookRepositoryPort.findByIdForUpdate(101L)).thenReturn(Optional.of(outOfStockBook));
 
         DomainException ex = assertThrows(DomainException.class, () -> createBorrowSlipService.createBorrowSlip(command));
-        assertEquals("Book 'OutOfStock Book' is out of stock or inactive.", ex.getMessage());
+        assertEquals("Book 'OutOfStock Book' is out of stock or inactive", ex.getMessage());
     }
 }
