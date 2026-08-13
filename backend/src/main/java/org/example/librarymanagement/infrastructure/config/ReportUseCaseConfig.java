@@ -17,10 +17,11 @@ public class ReportUseCaseConfig {
             ReportExporterPort reportExporterPort,
             GetAuthenticatedUserPort getAuthenticatedUserPort
     ) {
-        return new GetBorrowReportService(
+        GetBorrowReportService service = new GetBorrowReportService(
                 loadBorrowReportPort,
                 reportExporterPort,
                 getAuthenticatedUserPort
         );
+        return new org.example.librarymanagement.infrastructure.transaction.report.TransactionalGetBorrowReportUseCase(service);
     }
 }
