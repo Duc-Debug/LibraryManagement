@@ -29,6 +29,7 @@ import {
 import { fetchBooksApi, BookResponseDto } from '@/api/bookApi';
 import { fetchAllReaders, ReaderResponse } from '@/api/readerApi';
 import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
+import { fetchBorrowSlipsApi } from '@/api/borrowSlipApi';
 
 const CATEGORY_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#3B82F6', '#14B8A6'];
 
@@ -40,14 +41,16 @@ export function Dashboard() {
   const [books, setBooks] = useState<BookResponseDto[]>([]);
   const [readers, setReaders] = useState<ReaderResponse[]>([]);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [overdueCount, setOverdueCount] = useState(0);
 
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const [booksData, readersData, categoriesData] = await Promise.allSettled([
+      const [booksData, readersData, categoriesData, slipsData] = await Promise.allSettled([
         fetchBooksApi(0, 100),
         fetchAllReaders(),
         fetchCategoriesApi(),
+        fetchBorrowSlipsApi({ page: 0, size: 100 }),
       ]);
 
       if (booksData.status === 'fulfilled' && booksData.value) {
@@ -61,6 +64,12 @@ export function Dashboard() {
 
       if (categoriesData.status === 'fulfilled' && categoriesData.value) {
         setCategories(Array.isArray(categoriesData.value) ? categoriesData.value : []);
+      }
+
+      if (slipsData.status === 'fulfilled' && slipsData.value) {
+        const slips = slipsData.value.content || [];
+        const count = slips.filter((s) => s.status === 'OVERDUE').length;
+        setOverdueCount(count);
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -225,14 +234,18 @@ export function Dashboard() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold tracking-tight text-rose-600 dark:text-rose-400">0</span>
-            <span className="inline-flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              An toàn 100%
+            <span className="text-3xl font-extrabold tracking-tight text-rose-600 dark:text-rose-400">
+              {loading ? '...' : overdueCount}
+            </span>
+            <span className={`inline-flex items-center text-xs font-semibold ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400 animate-pulse' : 'text-emerald-600 dark:text-emerald-400'}`}>
+              {overdueCount > 0 ? 'Cần xử lý gấp' : 'An toàn 100%'}
             </span>
           </div>
           <div className="mt-3 pt-3 border-t border-rose-500/20 flex items-center justify-between text-xs text-muted-foreground">
             <span>Trạng thái hệ thống:</span>
-            <span className="font-bold text-emerald-600 dark:text-emerald-400">Ổn định</span>
+            <span className={`font-bold ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+              {overdueCount > 0 ? 'Cảnh báo' : 'Ổn định'}
+            </span>
           </div>
         </div>
       </div>

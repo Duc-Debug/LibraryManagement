@@ -11,6 +11,9 @@ import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.LockModeType;
 
+import java.time.LocalDateTime;
+import org.springframework.data.jpa.repository.Modifying;
+
 @Repository
 public interface BorrowSlipJpaRepository extends JpaRepository<BorrowSlipJpaEntity, Long> {
 
@@ -93,4 +96,8 @@ Optional<BorrowSlipJpaEntity> findByIdForUpdate(
 );
 
     boolean existsByBorrowCode(String borrowCode);
+
+    @Modifying
+    @Query(value = "UPDATE borrow_slips SET status = 'OVERDUE' WHERE status = 'BORROWING' AND DATE(due_at) < DATE(:now)", nativeQuery = true)
+    int updateOverdueStatus(@Param("now") LocalDateTime now);
 }
