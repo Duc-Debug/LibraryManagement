@@ -18,26 +18,22 @@ import {
 import { Button } from '@/components/ui/button';
 import { BorrowingForm } from './BorrowingForm';
 
+import { parseErrorMessage } from '@/lib/errorDictionary';
+import {
+    fetchBorrowSlipsApi,
+    createBorrowSlipApi,
+    previewBorrowSlipFineApi,
+    returnBorrowSlipApi,
+    BorrowSlipResponseDto
+} from '@/api/borrowSlipApi';
+
 const FINE_PER_DAY = 5000; // 5.000 VNĐ / ngày trả muộn
-
-type SlipStatus = 'BORROWING' | 'OVERDUE' | 'RETURNED';
-
-interface BorrowSlip {
-    id: string;
-    readerName: string;
-    readerCardNumber: string;
-    books: { bookId: number; title: string; isbn: string }[];
-    borrowDate: string;
-    dueDate: string;
-    returnDate?: string;
-    status: SlipStatus;
-}
 
 type TabKey = 'created' | 'pending' | 'history';
 
 export function BorrowingReturnsPage() {
     const [showForm, setShowForm] = useState(false);
-    const [slips, setSlips] = useState<BorrowSlip[]>([]);
+    const [slips, setSlips] = useState<BorrowSlipResponseDto[]>([]);
     const [activeTab, setActiveTab] = useState<TabKey>('created');
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -51,7 +47,7 @@ export function BorrowingReturnsPage() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const [returnConfirmModal, setReturnConfirmModal] = useState<{
-        slip: BorrowSlip;
+        slip: BorrowSlipResponseDto;
         overdueDays: number;
         fineAmount: number;
     } | null>(null);
@@ -60,10 +56,11 @@ export function BorrowingReturnsPage() {
         setLoading(true);
         setError(null);
         try {
-            const [readersRes, booksRes, catsRes] = await Promise.allSettled([
+            const [readersRes, booksRes, catsRes, slipsRes] = await Promise.allSettled([
                 fetchAllReaders(),
                 fetchBooksApi(0, 100),
                 fetchCategoriesApi(),
+                fetchBorrowSlipsApi({ page: 0, size: 100 }),
             ]);
 
             if (readersRes.status === 'fulfilled') {
@@ -75,8 +72,11 @@ export function BorrowingReturnsPage() {
             if (catsRes.status === 'fulfilled') {
                 setCategories(catsRes.value);
             }
+            if (slipsRes.status === 'fulfilled' && slipsRes.value) {
+                setSlips(slipsRes.value.content || []);
+            }
         } catch (err: any) {
-            setError(err?.message || 'Không thể nạp dữ liệu từ máy chủ.');
+            setError(parseErrorMessage(err, 'Không thể nạp dữ liệu từ máy chủ.'));
         } finally {
             setLoading(false);
         }
@@ -86,105 +86,97 @@ export function BorrowingReturnsPage() {
         loadData();
     }, [loadData]);
 
-    const calculateOverdueDays = (dueDateStr: string): number => {
-        const due = new Date(dueDateStr);
-        const now = new Date();
-        if (now <= due) return 0;
-        const diffTime = Math.abs(now.getTime() - due.getTime());
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    };
+    const handleCreateBorrow = async (record: any) => {
+        setLoading(true);
+        setError(null);
+        setSuccessMessage(null);
+        try {
+            const createdSlip = await createBorrowSlipApi({
+                readerId: record.readerId,
+                bookIds: record.bookIds,
+                borrowDays: record.borrowDays || 14,
+                note: record.note,
+            });
 
-    // Auto-derive OVERDUE status for slips still borrowing but past due date
-    const derivedSlips = useMemo(() => {
-        return slips.map((s) => {
-            if (s.status === 'BORROWING' && calculateOverdueDays(s.dueDate) > 0) {
-                return { ...s, status: 'OVERDUE' as SlipStatus };
-            }
-            return s;
-        });
-    }, [slips]);
-
-    const handleCreateBorrow = (record: any) => {
-        const newSlip: BorrowSlip = {
-            id: `BRW-${Date.now().toString().slice(-6)}`,
-            readerName: record.readerName,
-            readerCardNumber: record.readerCardNumber,
-            books: record.books,
-            borrowDate: record.borrowDate,
-            dueDate: record.dueDate,
-            status: 'BORROWING',
-        };
-
-        setSlips((prev) => [newSlip, ...prev]);
-
-        // Cập nhật tồn kho tạm thời cho các sách vừa mượn
-        const borrowedBookIds = new Set((record.books || []).map((b: any) => b.bookId));
-        setBooks((prev) =>
-            prev.map((b) =>
-                borrowedBookIds.has(b.bookId)
-                    ? { ...b, availableQuantity: Math.max(0, b.availableQuantity - 1) }
-                    : b
-            )
-        );
-
-        setSuccessMessage(
-            `Tạo thành công phiếu mượn mã #${newSlip.id} gồm ${record.books.length} cuốn sách cho độc giả "${record.readerName}"!`
-        );
-        setShowForm(false);
-        setActiveTab('created');
-    };
-
-    const handleInitiateReturn = (slip: BorrowSlip) => {
-        const overdueDays = calculateOverdueDays(slip.dueDate);
-        const fineAmount = overdueDays * FINE_PER_DAY;
-
-        if (overdueDays > 0) {
-            setReturnConfirmModal({ slip, overdueDays, fineAmount });
-        } else {
-            executeReturn(slip.id);
+            setSuccessMessage(
+                `Tạo thành công phiếu mượn mã "${createdSlip.borrowCode}" gồm ${createdSlip.totalBooks} cuốn sách cho độc giả "${createdSlip.readerName}"!`
+            );
+            setShowForm(false);
+            setActiveTab('created');
+            await loadData();
+        } catch (err: any) {
+            setError(parseErrorMessage(err, 'Không thể tạo phiếu mượn. Vui lòng thử lại.'));
+        } finally {
+            setLoading(false);
         }
     };
 
-    const executeReturn = (slipId: string) => {
-        setSlips((prev) =>
-            prev.map((s) =>
-                s.id === slipId
-                    ? { ...s, status: 'RETURNED', returnDate: new Date().toISOString().split('T')[0] }
-                    : s
-            )
-        );
-        setReturnConfirmModal(null);
+    const handleInitiateReturn = async (slip: BorrowSlipResponseDto) => {
+        try {
+            setLoading(true);
+            setError(null);
+            const finePreview = await previewBorrowSlipFineApi(slip.id);
+            if (finePreview.isOverdue) {
+                setReturnConfirmModal({
+                    slip,
+                    overdueDays: finePreview.overdueDays,
+                    fineAmount: Number(finePreview.totalFineAmount) || 0,
+                });
+            } else {
+                await executeReturn(slip.id);
+            }
+        } catch (err: any) {
+            setError(parseErrorMessage(err, 'Không thể kiểm tra thông tin trả phạt.'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const executeReturn = async (slipId: number) => {
+        try {
+            setLoading(true);
+            setError(null);
+            await returnBorrowSlipApi(slipId);
+            setSuccessMessage(`Đã xác nhận trả sách thành công cho phiếu mượn #${slipId}!`);
+            setReturnConfirmModal(null);
+            await loadData();
+        } catch (err: any) {
+            setError(parseErrorMessage(err, 'Không thể thực hiện trả sách. Vui lòng thử lại.'));
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Stats
-    const countBorrowing = derivedSlips.filter((s) => s.status === 'BORROWING').length;
-    const countOverdue = derivedSlips.filter((s) => s.status === 'OVERDUE').length;
-    const countReturned = derivedSlips.filter((s) => s.status === 'RETURNED').length;
+    const countBorrowing = slips.filter((s) => s.status === 'BORROWING').length;
+    const countOverdue = slips.filter((s) => s.status === 'OVERDUE').length;
+    const countReturned = slips.filter((s) => s.status === 'RETURNED').length;
 
     // Filtered lists per tab
-    const matchesSearch = (slip: BorrowSlip) => {
+    const matchesSearch = (slip: BorrowSlipResponseDto) => {
         const term = searchTerm.toLowerCase().trim();
         if (!term) return true;
         return (
-            slip.id.toLowerCase().includes(term) ||
-            slip.readerName.toLowerCase().includes(term) ||
-            slip.books.some((b) => b.title.toLowerCase().includes(term))
+            String(slip.id).toLowerCase().includes(term) ||
+            (slip.borrowCode && slip.borrowCode.toLowerCase().includes(term)) ||
+            (slip.readerName && slip.readerName.toLowerCase().includes(term)) ||
+            (slip.readerCardNumber && slip.readerCardNumber.toLowerCase().includes(term))
         );
     };
 
-    const createdSlips = derivedSlips.filter(matchesSearch);
-    const pendingSlips = derivedSlips
+    const createdSlips = slips.filter(matchesSearch);
+    const pendingSlips = slips
         .filter((s) => s.status === 'BORROWING' || s.status === 'OVERDUE')
         .filter(matchesSearch);
-    const historySlips = derivedSlips.filter((s) => s.status === 'RETURNED').filter(matchesSearch);
+    const historySlips = slips.filter((s) => s.status === 'RETURNED').filter(matchesSearch);
 
     const tabs: { key: TabKey; label: string; count: number }[] = [
-        { key: 'created', label: 'Phiếu Mượn Vừa Tạo', count: createdSlips.length },
+        { key: 'created', label: 'Tất Cả Phiếu Mượn', count: createdSlips.length },
         { key: 'pending', label: 'Danh Sách Chờ Trả', count: pendingSlips.length },
-        { key: 'history', label: 'Lịch Sử', count: historySlips.length },
+        { key: 'history', label: 'Lịch Sử Trả Sách', count: historySlips.length },
     ];
 
-    const renderStatusBadge = (status: SlipStatus) => {
+    const renderStatusBadge = (status: string) => {
         if (status === 'OVERDUE') {
             return (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 whitespace-nowrap">
@@ -206,14 +198,14 @@ export function BorrowingReturnsPage() {
         );
     };
 
-    const renderTable = (list: BorrowSlip[], showReturnAction: boolean, showReturnDate: boolean) => {
+    const renderTable = (list: BorrowSlipResponseDto[], showReturnAction: boolean, showReturnDate: boolean) => {
         if (list.length === 0) {
             return (
                 <div className="p-12 text-center text-muted-foreground text-sm space-y-2">
                     <p>
                         {searchTerm
-                            ? 'Không tìm thấy phiếu phù hợp.'
-                            : 'Chưa có phiếu nào trong danh sách này.'}
+                            ? 'Không tìm thấy phiếu mượn nào phù hợp.'
+                            : 'Chưa có phiếu mượn nào trong danh sách này.'}
                     </p>
                     {!searchTerm && activeTab === 'created' && (
                         <p className="text-xs text-muted-foreground">
@@ -231,7 +223,7 @@ export function BorrowingReturnsPage() {
                     <tr>
                         <th className="px-6 py-4 whitespace-nowrap">Mã Phiếu</th>
                         <th className="px-6 py-4 whitespace-nowrap">Độc Giả</th>
-                        <th className="px-6 py-4 whitespace-nowrap">Sách Mượn</th>
+                        <th className="px-6 py-4 whitespace-nowrap">Số Sách Mượn</th>
                         <th className="px-6 py-4 whitespace-nowrap">Ngày Mượn</th>
                         <th className="px-6 py-4 whitespace-nowrap">
                             {showReturnDate ? 'Ngày Trả' : 'Ngày Hẹn Trả'}
@@ -249,7 +241,7 @@ export function BorrowingReturnsPage() {
                             }`}
                         >
                             <td className="px-6 py-4 font-mono text-xs font-bold text-primary whitespace-nowrap">
-                                #{slip.id}
+                                {slip.borrowCode || `#${slip.id}`}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="font-semibold text-foreground">{slip.readerName}</div>
@@ -257,28 +249,26 @@ export function BorrowingReturnsPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="font-bold text-foreground flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-mono">
-                      {slip.books.length} cuốn
-                    </span>
-                                    <span className="text-xs text-muted-foreground line-clamp-1 max-w-xs">
-                      {slip.books.map((b) => b.title).join(', ')}
-                    </span>
+                                    <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-mono font-bold">
+                                      {slip.totalBooks} cuốn
+                                    </span>
+                                    {slip.note && (
+                                        <span className="text-xs text-muted-foreground italic line-clamp-1 max-w-xs">
+                                          ({slip.note})
+                                        </span>
+                                    )}
                                 </div>
                             </td>
                             <td className="px-6 py-4 text-xs text-muted-foreground whitespace-nowrap">
-                                {slip.borrowDate}
+                                {slip.borrowedAt ? new Date(slip.borrowedAt).toLocaleDateString('vi-VN') : 'N/A'}
                             </td>
                             <td className="px-6 py-4 text-xs font-semibold whitespace-nowrap">
-                                {showReturnDate ? (
-                                    <span className="text-emerald-600 dark:text-emerald-400">{slip.returnDate}</span>
-                                ) : (
-                                    <span className={slip.status === 'OVERDUE' ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-muted-foreground'}>
-                      {slip.dueDate}
-                    </span>
-                                )}
+                                <span className={slip.status === 'OVERDUE' ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-emerald-600 dark:text-emerald-400'}>
+                                    {slip.dueAt ? new Date(slip.dueAt).toLocaleDateString('vi-VN') : 'N/A'}
+                                </span>
                             </td>
                             <td className="px-6 py-4 text-center whitespace-nowrap">{renderStatusBadge(slip.status)}</td>
-                            {showReturnAction && (
+                            {showReturnAction && slip.status !== 'RETURNED' && (
                                 <td className="px-6 py-4 text-right whitespace-nowrap">
                                     <Button
                                         onClick={() => handleInitiateReturn(slip)}
@@ -457,9 +447,9 @@ export function BorrowingReturnsPage() {
                                 <span className="font-bold text-foreground">{returnConfirmModal.slip.readerName}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Sách mượn:</span>
+                                <span className="text-muted-foreground">Số sách mượn:</span>
                                 <span className="font-bold text-foreground text-right">
-                  {returnConfirmModal.slip.books.map((b) => b.title).join(', ')}
+                  {returnConfirmModal.slip.totalBooks} cuốn sách
                 </span>
                             </div>
                             <div className="flex justify-between">

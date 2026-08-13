@@ -14,6 +14,7 @@ import {
 } from '@/api/bookApi';
 import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
 import { parseErrorMessage } from '@/lib/errorDictionary';
+import { compressImage } from '@/lib/imageCompressor';
 import { Search, Plus, Eye, EyeOff, Trash2, X, Edit3, PackagePlus, AlertTriangle, BookOpen, Upload, Image, Layers, Package, RotateCcw, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddBookModal } from './AddBookModal';
@@ -815,15 +816,15 @@ export function BooksPage() {
                         accept="image/*"
                         id="edit-cover-file"
                         className="hidden"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              const result = event.target?.result as string;
-                              setEditForm((prev) => ({ ...prev, coverImageUrl: result }));
-                            };
-                            reader.readAsDataURL(file);
+                            try {
+                              const compressedDataUrl = await compressImage(file, 600, 600, 0.75);
+                              setEditForm((prev) => ({ ...prev, coverImageUrl: compressedDataUrl }));
+                            } catch (err) {
+                              console.error('Lỗi năm nén ảnh:', err);
+                            }
                           }
                         }}
                       />
