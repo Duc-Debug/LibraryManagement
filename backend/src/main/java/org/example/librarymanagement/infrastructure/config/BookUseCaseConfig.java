@@ -54,8 +54,9 @@ public CreateBookUseCase createBookUseCase(
     public DeleteBookUseCase deleteBookUseCase(
             LoadBookPort loadBookPort,
             SaveBookPort saveBookPort,
-            CheckActiveBorrowPort checkActiveBorrowPort) {
-        DeleteBookUseCase deleteBookService = new DeleteBookService(loadBookPort, saveBookPort, checkActiveBorrowPort);
+            CheckActiveBorrowPort checkActiveBorrowPort,
+            FileStoragePort fileStoragePort) {
+        DeleteBookUseCase deleteBookService = new DeleteBookService(loadBookPort, saveBookPort, checkActiveBorrowPort, fileStoragePort);
         return new TransactionalDeleteBookUseCase(deleteBookService);
     }
 
