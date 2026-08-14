@@ -46,4 +46,36 @@ $jwtSecret = [Convert]::ToBase64String($bytes)
     "User"
 )
 ==================================
-Sau khi cấu hình enviroment thì tắt VS CODE sau đó mở lại thì mới cập nhật được các biến môi trường mới lưu.
+# CẤU HÌNH CLOUDFLARE R2 STORAGE (NHẬP KEY CỦA BẠN VÀO)
+[Environment]::SetEnvironmentVariable(
+    "R2_ACCESS_KEY",
+    "CAC_KY_TU_ACCESS_KEY_32_CHAR_CUA_BAN",
+    "User"
+)
+
+[Environment]::SetEnvironmentVariable(
+    "R2_SECRET_KEY",
+    "CAC_KY_TU_SECRET_KEY_CUA_BAN",
+    "User"
+)
+
+[Environment]::SetEnvironmentVariable(
+    "R2_BUCKET_NAME",
+    "library-management",
+    "User"
+)
+
+[Environment]::SetEnvironmentVariable(
+    "R2_PUBLIC_URL",
+    "https://pub-21b3e7ec426b49d29c3f815a5312ac5f.r2.dev",
+    "User"
+)
+
+[Environment]::SetEnvironmentVariable(
+    "R2_ENDPOINT",
+    "https://8ab691aba9a8e084f6f68a2036b4a19a.r2.cloudflarestorage.com",
+    "User"
+)
+
+==================================
+LƯU Ý: Sau khi chạy các câu lệnh PowerShell cấu hình enviroment ở trên, bạn cần TẮT VS CODE / TERMINAL sau đó MỞ LẠI thì mới cập nhật và nhận được các biến môi trường mới lưu.

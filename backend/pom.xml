@@ -131,8 +131,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Danh cho Maven -->
-        
+
+        <!-- AWS S3 SDK for Cloudflare R2 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.25.20</version>
+        </dependency>
 
     </dependencies>
 

@@ -17,6 +17,10 @@ import org.example.librarymanagement.domain.exceptions.reader.ReaderNotFoundExce
 import org.example.librarymanagement.domain.exceptions.shared.AccessDeniedException;
 import org.example.librarymanagement.domain.exceptions.shared.InvalidCredentialsException;
 import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
+import org.example.librarymanagement.infrastructure.file.FileStorageException;
+import org.example.librarymanagement.infrastructure.file.FileTooLargeException;
+import org.example.librarymanagement.infrastructure.file.InvalidFileException;
+import org.example.librarymanagement.infrastructure.file.UnsupportedFileTypeException;
 import org.example.librarymanagement.infrastructure.web.auth.InvalidAuthorizationHeaderException;
 import org.example.librarymanagement.port.outbound.auth.token.InvalidAccessTokenException;
 import org.slf4j.Logger;
@@ -37,6 +41,35 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(FileTooLargeException.class)
+    public ResponseEntity<ErrorResponse> handleFileTooLarge(FileTooLargeException exception) {
+        return ResponseEntity
+                .status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ErrorResponse.of("FILE_TOO_LARGE", exception.getMessage()));
+    }
+
+    @ExceptionHandler(UnsupportedFileTypeException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedFileType(UnsupportedFileTypeException exception) {
+        return ResponseEntity
+                .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(ErrorResponse.of("UNSUPPORTED_FILE_TYPE", exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidFile(InvalidFileException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("INVALID_FILE", exception.getMessage()));
+    }
+
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<ErrorResponse> handleFileStorage(FileStorageException exception) {
+        log.error("File storage error", exception);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.of("FILE_STORAGE_ERROR", exception.getMessage()));
+    }
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidation(ValidationException exception) {
