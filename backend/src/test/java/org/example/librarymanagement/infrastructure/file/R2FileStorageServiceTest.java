@@ -36,11 +36,11 @@ class R2FileStorageServiceTest {
     @BeforeEach
     void setUp() {
         properties = new R2Properties();
-        properties.setEndpoint("https://8ab691.r2.cloudflarestorage.com");
+        properties.setEndpoint("https://example.r2.cloudflarestorage.com");
         properties.setAccessKey("access-key");
         properties.setSecretKey("secret-key");
         properties.setBucketName("library-bucket");
-        properties.setPublicUrl("https://pub-21b3e7.r2.dev/");
+        properties.setPublicUrl("https://example.r2.dev/");
 
         fileStorageService = new R2FileStorageService(s3Client, properties);
         org.springframework.test.util.ReflectionTestUtils.setField(fileStorageService, "maxFileSize", maxFileSize);
@@ -101,7 +101,7 @@ class R2FileStorageServiceTest {
         String result = fileStorageService.storeBookImage(is, "test.jpg", data.length);
 
         assertNotNull(result);
-        assertTrue(result.startsWith("https://pub-21b3e7.r2.dev/books/"));
+        assertTrue(result.startsWith("https://example.r2.dev/books/"));
         assertTrue(result.endsWith(".jpg"));
         verify(s3Client).putObject(any(PutObjectRequest.class), any(RequestBody.class));
     }
@@ -116,7 +116,7 @@ class R2FileStorageServiceTest {
         String result = fileStorageService.storeBookImage(is, "test.png", data.length);
 
         assertNotNull(result);
-        assertTrue(result.startsWith("https://pub-21b3e7.r2.dev/books/"));
+        assertTrue(result.startsWith("https://example.r2.dev/books/"));
         assertTrue(result.endsWith(".png"));
         verify(s3Client).putObject(any(PutObjectRequest.class), any(RequestBody.class));
     }
@@ -131,7 +131,7 @@ class R2FileStorageServiceTest {
         String result = fileStorageService.storeBookImage(is, "test.webp", data.length);
 
         assertNotNull(result);
-        assertTrue(result.startsWith("https://pub-21b3e7.r2.dev/books/"));
+        assertTrue(result.startsWith("https://example.r2.dev/books/"));
         assertTrue(result.endsWith(".webp"));
         verify(s3Client).putObject(any(PutObjectRequest.class), any(RequestBody.class));
     }
@@ -218,7 +218,7 @@ class R2FileStorageServiceTest {
     @Test
     @DisplayName("deleteFile: Xóa tệp tin thành công gọi s3Client.deleteObject")
     void deleteFile_Success() {
-        String fileUrl = "https://pub-21b3e7.r2.dev/books/test-uuid.jpg";
+        String fileUrl = "https://example.r2.dev/books/test-uuid.jpg";
         when(s3Client.deleteObject(any(software.amazon.awssdk.services.s3.model.DeleteObjectRequest.class))).thenReturn(null);
 
         fileStorageService.deleteFile(fileUrl);
@@ -229,7 +229,7 @@ class R2FileStorageServiceTest {
     @Test
     @DisplayName("deleteFile: Thất bại khi gọi S3 -> ném FileStorageException")
     void deleteFile_ThrowsFileStorageException_WhenS3Fails() {
-        String fileUrl = "https://pub-21b3e7.r2.dev/books/test-uuid.jpg";
+        String fileUrl = "https://example.r2.dev/books/test-uuid.jpg";
         when(s3Client.deleteObject(any(software.amazon.awssdk.services.s3.model.DeleteObjectRequest.class)))
                 .thenThrow(new RuntimeException("S3 connection timeout"));
 
@@ -239,5 +239,18 @@ class R2FileStorageServiceTest {
         );
 
         verify(s3Client).deleteObject(any(software.amazon.awssdk.services.s3.model.DeleteObjectRequest.class));
+    }
+
+    @Test
+    @DisplayName("deleteFile: Key ngoài phạm vi books/ -> ném InvalidFileException")
+    void deleteFile_ThrowsInvalidFileException_WhenKeyNotInBooksNamespace() {
+        String fileUrl = "https://example.r2.dev/other/test-uuid.jpg";
+
+        assertThrows(
+                InvalidFileException.class,
+                () -> fileStorageService.deleteFile(fileUrl)
+        );
+
+        verify(s3Client, never()).deleteObject(any(software.amazon.awssdk.services.s3.model.DeleteObjectRequest.class));
     }
 }

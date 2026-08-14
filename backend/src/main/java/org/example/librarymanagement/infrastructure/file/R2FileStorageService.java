@@ -117,12 +117,18 @@ public class R2FileStorageService implements FileStoragePort {
 
         try {
             String key = extractObjectKey(fileUrl);
+            if (!key.startsWith("books/")) {
+                throw new InvalidFileException("Phát hiện cố gắng xóa file ngoài phạm vi quản lý!");
+            }
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                     .bucket(properties.getBucketName())
                     .key(key)
                     .build();
 
             s3Client.deleteObject(deleteObjectRequest);
+        } catch (FileStorageException e) {
+            log.error("Xóa tệp tin trên Cloudflare R2 thất bại (Validation/R2 error): {}", fileUrl, e);
+            throw e;
         } catch (Exception e) {
             log.error("Xóa tệp tin trên Cloudflare R2 thất bại: {}", fileUrl, e);
             throw new FileStorageException("Failed to delete stored file from Cloudflare R2: " + fileUrl, e);
