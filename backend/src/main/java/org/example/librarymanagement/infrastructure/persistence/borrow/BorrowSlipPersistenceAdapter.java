@@ -1,6 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.borrow;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -12,7 +12,6 @@ import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
 import org.example.librarymanagement.port.outbound.borrow.SaveBorrowSlipPort;
-import org.example.librarymanagement.port.outbound.borrow.UpdateOverdueBorrowSlipsPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +19,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class BorrowSlipPersistenceAdapter
-                implements LoadBorrowSlipPort, SaveBorrowSlipPort, UpdateOverdueBorrowSlipsPort {
+                implements LoadBorrowSlipPort, SaveBorrowSlipPort {
         private static final int DEFAULT_PAGE_SIZE = 10;
         private static final int MAX_PAGE_SIZE = 100;
 
@@ -104,6 +103,17 @@ public class BorrowSlipPersistenceAdapter
         }
 
         @Override
+        public List<BorrowSlip> findAllActivePastDue(LocalDate referenceDate) {
+                if (referenceDate == null) {
+                        referenceDate = LocalDate.now();
+                }
+                return borrowSlipJpaRepository.findAllActivePastDue(referenceDate)
+                                .stream()
+                                .map(borrowSlipPersistenceMapper::toDomain)
+                                .toList();
+        }
+
+        @Override
         public BorrowSlip save(BorrowSlip borrowSlip) {
 
                 Objects.requireNonNull(
@@ -121,6 +131,27 @@ public class BorrowSlipPersistenceAdapter
 
         }
 
+        @Override
+        public List<BorrowSlip> saveAll(List<BorrowSlip> borrowSlips) {
+                Objects.requireNonNull(borrowSlips, "BorrowSlip list must not be null");
+                List<BorrowSlipJpaEntity> entities = borrowSlips.stream()
+                                .map(slip -> {
+                                        if (slip.getId() == null) {
+                                                return borrowSlipPersistenceMapper.toJpaEntity(slip);
+                                        }
+                                        BorrowSlipJpaEntity entity = borrowSlipJpaRepository
+                                                        .findById(slip.getId())
+                                                        .orElseThrow(() -> new BorrowSlipNotFoundException(slip.getId()));
+                                        borrowSlipPersistenceMapper.updateJpaEntity(slip, entity);
+                                        return entity;
+                                })
+                                .toList();
+                return borrowSlipJpaRepository.saveAll(entities)
+                                .stream()
+                                .map(borrowSlipPersistenceMapper::toDomain)
+                                .toList();
+        }
+
         private BorrowSlipJpaEntity create(BorrowSlip borrowSlip) {
                 return borrowSlipPersistenceMapper.toJpaEntity(borrowSlip);
         }
@@ -134,11 +165,5 @@ public class BorrowSlipPersistenceAdapter
                                 borrowSlip,
                                 entity);
                 return entity;
-        }
-
-        @Override
-        public int updateOverdueStatus(LocalDateTime asOfDate) {
-                LocalDateTime effectiveDate = asOfDate != null ? asOfDate : LocalDateTime.now();
-                return borrowSlipJpaRepository.updateOverdueStatus(effectiveDate);
         }
 }

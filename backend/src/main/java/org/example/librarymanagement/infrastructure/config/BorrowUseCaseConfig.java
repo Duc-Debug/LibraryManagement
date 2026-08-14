@@ -5,12 +5,14 @@ import org.example.librarymanagement.application.borrow.CheckBorrowEligibilitySe
 import org.example.librarymanagement.application.borrow.CreateBorrowSlipService;
 import org.example.librarymanagement.application.borrow.GetBorrowSlipsService;
 import org.example.librarymanagement.application.borrow.ReturnBorrowSlipService;
+import org.example.librarymanagement.application.borrow.UpdateOverdueBorrowSlipsService;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalBorrowSlipsUseCase;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalCalculateFineUseCase;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalReturnBorrowSlipUseCase;
 import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
 import org.example.librarymanagement.port.inbound.borrow.ReturnBorrowSlipUseCase;
+import org.example.librarymanagement.port.inbound.borrow.UpdateOverdueBorrowSlipsUseCase;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.example.librarymanagement.port.outbound.borrow.BorrowDetailsRepositoryPort;
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
@@ -96,10 +98,9 @@ public class BorrowUseCaseConfig {
         }
 
         @Bean
-        public org.example.librarymanagement.port.inbound.borrow.UpdateOverdueBorrowSlipsUseCase updateOverdueBorrowSlipsUseCase(
-                        org.example.librarymanagement.port.outbound.borrow.UpdateOverdueBorrowSlipsPort updateOverdueBorrowSlipsPort) {
-                org.example.librarymanagement.application.borrow.UpdateOverdueBorrowSlipsService service =
-                                new org.example.librarymanagement.application.borrow.UpdateOverdueBorrowSlipsService(updateOverdueBorrowSlipsPort);
-                return new org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalUpdateOverdueBorrowSlipsUseCase(service);
+        public UpdateOverdueBorrowSlipsUseCase updateOverdueBorrowSlipsUseCase(
+                        LoadBorrowSlipPort loadBorrowSlipPort,
+                        SaveBorrowSlipPort saveBorrowSlipPort) {
+                return new UpdateOverdueBorrowSlipsService(loadBorrowSlipPort, saveBorrowSlipPort);
         }
 }

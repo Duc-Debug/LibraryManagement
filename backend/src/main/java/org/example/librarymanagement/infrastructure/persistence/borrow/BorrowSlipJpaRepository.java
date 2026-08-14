@@ -1,4 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.borrow;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -10,9 +12,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.LockModeType;
-
-import java.time.LocalDateTime;
-import org.springframework.data.jpa.repository.Modifying;
 
 @Repository
 public interface BorrowSlipJpaRepository extends JpaRepository<BorrowSlipJpaEntity, Long> {
@@ -97,7 +96,14 @@ Optional<BorrowSlipJpaEntity> findByIdForUpdate(
 
     boolean existsByBorrowCode(String borrowCode);
 
-    @Modifying
-    @Query(value = "UPDATE borrow_slips SET status = 'OVERDUE' WHERE status = 'BORROWING' AND DATE(due_at) < DATE(:now)", nativeQuery = true)
-    int updateOverdueStatus(@Param("now") LocalDateTime now);
+    /**
+     * Tìm tất cả phiếu BORROWING có dueAt trước ngày tham chiếu (quá hạn chưa cập nhật).
+     * DATE(:referenceDate) đảm bảo so sánh ở mức ngày, bỏ qua phần giờ/phút/giây.
+     */
+    @Query("""
+        SELECT bs FROM BorrowSlipJpaEntity bs
+        WHERE bs.status = 'BORROWING'
+        AND CAST(bs.dueAt AS date) < :referenceDate
+        """)
+    List<BorrowSlipJpaEntity> findAllActivePastDue(@Param("referenceDate") LocalDate referenceDate);
 }
