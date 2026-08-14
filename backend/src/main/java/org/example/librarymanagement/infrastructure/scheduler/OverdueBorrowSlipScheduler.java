@@ -5,15 +5,16 @@ import java.util.Objects;
 import org.example.librarymanagement.port.inbound.borrow.UpdateOverdueBorrowSlipsUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
  * Scheduler tự động quét và cập nhật phiếu mượn quá hạn.
  *
- * <p>Chạy lúc 01:00 AM mỗi ngày (cron: {@code 0 0 1 * * *}).
- * Thời điểm này đảm bảo chạy sau nửa đêm, sau khi ngày mới đã thực sự bắt đầu,
- * tránh race condition nếu scheduler chạy đúng 00:00:00.</p>
+ * <p>- Tự động quét 1 lần ngay khi ứng dụng khởi động (ApplicationReadyEvent).
+ * - Tự động quét định kỳ lúc 01:00 AM mỗi ngày (cron: {@code 0 0 1 * * *}).</p>
  */
 @Component
 public class OverdueBorrowSlipScheduler {
@@ -26,6 +27,15 @@ public class OverdueBorrowSlipScheduler {
         this.updateOverdueBorrowSlipsUseCase = Objects.requireNonNull(
                 updateOverdueBorrowSlipsUseCase,
                 "UpdateOverdueBorrowSlipsUseCase must not be null");
+    }
+
+    /**
+     * Tự động quét kiểm tra phiếu mượn quá hạn ngay khi ứng dụng khởi động thành công.
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void onStartupCheck() {
+        log.info("[Startup Scheduler] Tự động quét kiểm tra phiếu mượn quá hạn khi ứng dụng khởi động...");
+        updateOverdueSlips();
     }
 
     /**
