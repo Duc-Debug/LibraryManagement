@@ -1,18 +1,26 @@
-# Secrets and Local configurations
+# Environment files
 .env
 .env.local
 .env.*.local
 
-# IDE and Editors
+# IDEs and Editors
 .idea/
 .vscode/
-*.iml
-*.sublime-project
-*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# OS files
+# JVM & System Crash Logs
+*.log
+hs_err_pid*
+replay_pid*
 .DS_Store
 Thumbs.db
 
-# Log files
-*.log
+# Dependencies & Build Outputs (if run in root)
+node_modules/
+dist/
+build/
+target/
