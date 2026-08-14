@@ -120,11 +120,18 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
       return;
     }
 
+    // Calculate actual borrowDays from chosen borrowDate and dueDate
+    const start = new Date(borrowDate);
+    const end = new Date(dueDate);
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const calculatedDays = diffDays > 0 ? diffDays : 14;
+
     onSubmit({
       readerId: selectedReader.id,
       bookIds: selectedBooks.map((b) => b.bookId),
       note: note.trim() || undefined,
-      borrowDays: 14,
+      borrowDays: calculatedDays,
       readerName: selectedReader.name,
       readerCardNumber: selectedReader.cardNumber,
       books: selectedBooks.map((b) => ({
@@ -391,7 +398,15 @@ export function BorrowingForm({ readers, books, categories, onSubmit, onCancel }
           <input
             type="date"
             value={borrowDate}
-            onChange={(e) => setBorrowDate(e.target.value)}
+            onChange={(e) => {
+              const newBorrowDate = e.target.value;
+              setBorrowDate(newBorrowDate);
+              if (newBorrowDate) {
+                const bDate = new Date(newBorrowDate);
+                bDate.setDate(bDate.getDate() + 14);
+                setDueDate(bDate.toISOString().split('T')[0]);
+              }
+            }}
             className="w-full px-3.5 py-2 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-xs"
           />
         </div>
