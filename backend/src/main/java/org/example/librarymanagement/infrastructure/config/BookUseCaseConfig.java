@@ -67,8 +67,9 @@ public CreateBookUseCase createBookUseCase(
     @Bean
     public UpdateBookUseCase updateBookUseCase(
             BookRepositoryPort bookRepository,
-            GetAuthenticatedUserPort getAuthenticatedUserPort) {
-        UpdateBookService service = new UpdateBookService(bookRepository, getAuthenticatedUserPort);
+            GetAuthenticatedUserPort getAuthenticatedUserPort,
+            FileStoragePort fileStoragePort) {
+        UpdateBookService service = new UpdateBookService(bookRepository, getAuthenticatedUserPort, fileStoragePort);
         return new TransactionalUpdateBookUseCase(service);
     }
 

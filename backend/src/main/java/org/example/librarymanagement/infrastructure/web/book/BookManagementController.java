@@ -1,5 +1,8 @@
 package org.example.librarymanagement.infrastructure.web.book;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.example.librarymanagement.infrastructure.web.book.dto.ReplenishStockRequest;
 import org.example.librarymanagement.infrastructure.web.book.dto.UpdateBookRequest;
 import org.example.librarymanagement.port.dtos.book.BookAvailabilityStatus;
@@ -13,9 +16,11 @@ import org.example.librarymanagement.port.inbound.book.DeleteBookUseCase;
 import org.example.librarymanagement.port.inbound.book.GetBooksUseCase;
 import org.example.librarymanagement.port.inbound.book.ReplenishBookStockUseCase;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -77,7 +83,42 @@ public class BookManagementController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BookResult> updateBookWithMultipart(
+            @PathVariable("id") Long bookId,
+            @Valid @ModelAttribute UpdateBookRequest request,
+            @RequestParam(required = false) MultipartFile coverImage) throws IOException {
+
+        InputStream imageStream = (coverImage != null && !coverImage.isEmpty())
+                ? coverImage.getInputStream()
+                : null;
+
+        try (InputStream stream = imageStream) {
+            String originalFilename = coverImage != null ? coverImage.getOriginalFilename() : null;
+            long size = coverImage != null ? coverImage.getSize() : 0;
+
+            UpdateBookCommand commandToExecute = new UpdateBookCommand(
+                    bookId,
+                    request.title(),
+                    request.author(),
+                    request.isbn(),
+                    request.description(),
+                    request.coverImageUrl(),
+                    request.publisher(),
+                    request.publishedYear(),
+                    request.shelfLocation(),
+                    request.totalQuantity(),
+                    request.categoryId(),
+                    stream,
+                    originalFilename,
+                    size
+            );
+            BookResult result = updateBookUseCase.updateBook(commandToExecute);
+            return ResponseEntity.ok(result);
+        }
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BookResult> updateBook(
             @PathVariable("id") Long bookId,
             @Valid @RequestBody UpdateBookRequest request) {

@@ -14,6 +14,7 @@ import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.dtos.book.UpdateBookCommand;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
+import org.example.librarymanagement.port.outbound.file.FileStoragePort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
 /**
@@ -24,10 +25,20 @@ public class UpdateBookService implements UpdateBookUseCase {
 
     private final BookRepositoryPort bookRepository;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
+    private final FileStoragePort fileStoragePort;
 
     public UpdateBookService(BookRepositoryPort bookRepository, GetAuthenticatedUserPort getAuthenticatedUserPort) {
+        this(bookRepository, getAuthenticatedUserPort, null);
+    }
+
+    public UpdateBookService(
+            BookRepositoryPort bookRepository,
+            GetAuthenticatedUserPort getAuthenticatedUserPort,
+            FileStoragePort fileStoragePort
+    ) {
         this.bookRepository = Objects.requireNonNull(bookRepository, "BookRepositoryPort must not be null");
         this.getAuthenticatedUserPort = Objects.requireNonNull(getAuthenticatedUserPort, "GetAuthenticatedUserPort must not be null");
+        this.fileStoragePort = fileStoragePort;
     }
 
     @Override
@@ -44,12 +55,30 @@ public class UpdateBookService implements UpdateBookUseCase {
         boolean isIsbnExisted = bookRepository.existsByIsbnAndIdNot(command.isbn(), command.bookId());
         UniqueIsbnPolicy.validateIsbnForUpdate(isIsbnExisted, command.isbn());
 
+        String finalCoverImageUrl = command.coverImageUrl();
+
+        if (fileStoragePort != null && command.imageStream() != null && command.originalFilename() != null && command.size() > 0) {
+            String uploadedUrl = fileStoragePort.storeBookImage(
+                    command.imageStream(),
+                    command.originalFilename(),
+                    command.size()
+            );
+
+            if (book.getCoverImageUrl() != null && !book.getCoverImageUrl().isBlank()) {
+                try {
+                    fileStoragePort.deleteFile(book.getCoverImageUrl());
+                } catch (Exception ignored) {}
+            }
+
+            finalCoverImageUrl = uploadedUrl;
+        }
+
         book.updateDetails(
                 command.title(),
                 command.author(),
                 command.isbn(),
                 command.description(),
-                command.coverImageUrl(),
+                finalCoverImageUrl,
                 command.publisher(),
                 command.publishedYear(),
                 command.shelfLocation(),
