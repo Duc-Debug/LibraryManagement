@@ -14,6 +14,7 @@ import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.dtos.book.UpdateBookCommand;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
+import org.example.librarymanagement.port.outbound.file.FileCleanupPort;
 import org.example.librarymanagement.port.outbound.file.FileStoragePort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
@@ -26,15 +27,18 @@ public class UpdateBookService implements UpdateBookUseCase {
     private final BookRepositoryPort bookRepository;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
     private final FileStoragePort fileStoragePort;
+    private final FileCleanupPort fileCleanupPort;
 
     public UpdateBookService(
             BookRepositoryPort bookRepository,
             GetAuthenticatedUserPort getAuthenticatedUserPort,
-            FileStoragePort fileStoragePort
+            FileStoragePort fileStoragePort,
+            FileCleanupPort fileCleanupPort
     ) {
         this.bookRepository = Objects.requireNonNull(bookRepository, "BookRepositoryPort must not be null");
         this.getAuthenticatedUserPort = Objects.requireNonNull(getAuthenticatedUserPort, "GetAuthenticatedUserPort must not be null");
         this.fileStoragePort = Objects.requireNonNull(fileStoragePort, "FileStoragePort must not be null");
+        this.fileCleanupPort = Objects.requireNonNull(fileCleanupPort, "FileCleanupPort must not be null");
     }
 
     @Override
@@ -61,9 +65,7 @@ public class UpdateBookService implements UpdateBookUseCase {
             );
 
             if (book.getCoverImageUrl() != null && !book.getCoverImageUrl().isBlank()) {
-                try {
-                    fileStoragePort.deleteFile(book.getCoverImageUrl());
-                } catch (Exception ignored) {}
+                fileCleanupPort.queueFileForDeletion(book.getCoverImageUrl());
             }
 
             finalCoverImageUrl = uploadedUrl;

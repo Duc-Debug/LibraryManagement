@@ -10,8 +10,9 @@ import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.dtos.book.UpdateBookCommand;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
+import org.example.librarymanagement.port.outbound.file.FileCleanupPort;
+import org.example.librarymanagement.port.outbound.file.FileStoragePort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,13 +25,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.example.librarymanagement.port.outbound.file.FileStoragePort;
-
 public class UpdateBookServiceTest {
  
     private BookRepositoryPort bookRepository;
     private GetAuthenticatedUserPort getAuthenticatedUserPort;
     private FileStoragePort fileStoragePort;
+    private FileCleanupPort fileCleanupPort;
 
     // đối tượng cần test
     private UpdateBookService updateBookService;
@@ -41,9 +41,10 @@ public class UpdateBookServiceTest {
         bookRepository = mock(BookRepositoryPort.class);
         getAuthenticatedUserPort = mock(GetAuthenticatedUserPort.class);
         fileStoragePort = mock(FileStoragePort.class);
+        fileCleanupPort = mock(FileCleanupPort.class);
 
         // khởi tạo Service cần test
-        updateBookService = new UpdateBookService(bookRepository, getAuthenticatedUserPort, fileStoragePort);
+        updateBookService = new UpdateBookService(bookRepository, getAuthenticatedUserPort, fileStoragePort, fileCleanupPort);
     }
 
     @Test
