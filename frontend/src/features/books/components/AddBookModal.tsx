@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { fetchCategoriesApi, type CategoryResponse } from '@/api/categoryApi';
 import { createBookApi } from '@/api/bookApi';
 import { parseErrorMessage } from '@/lib/errorDictionary';
+import { compressImageToFile } from '@/lib/imageCompressor';
 
 interface AddBookModalProps {
   onClose: () => void;
@@ -65,11 +66,12 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setCoverImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      const compressedFile = await compressImageToFile(file);
+      setCoverImageFile(compressedFile);
+      setImagePreview(URL.createObjectURL(compressedFile));
     }
   };
 

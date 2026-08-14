@@ -14,7 +14,7 @@ import {
 } from '@/api/bookApi';
 import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
 import { parseErrorMessage } from '@/lib/errorDictionary';
-import { compressImage } from '@/lib/imageCompressor';
+import { compressImage, compressImageToFile } from '@/lib/imageCompressor';
 import { Search, Plus, Eye, EyeOff, Trash2, X, Edit3, PackagePlus, AlertTriangle, BookOpen, Upload, Image, Layers, Package, RotateCcw, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddBookModal } from './AddBookModal';
@@ -836,11 +836,12 @@ export function BooksPage() {
                         accept="image/*"
                         id="edit-cover-file"
                         className="hidden"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            setEditCoverFile(file);
-                            setEditForm((prev) => ({ ...prev, coverImageUrl: URL.createObjectURL(file) }));
+                            const compressedFile = await compressImageToFile(file);
+                            setEditCoverFile(compressedFile);
+                            setEditForm((prev) => ({ ...prev, coverImageUrl: URL.createObjectURL(compressedFile) }));
                           }
                         }}
                       />
