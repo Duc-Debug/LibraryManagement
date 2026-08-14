@@ -56,9 +56,10 @@ public class UpdateBookService implements UpdateBookUseCase {
         UniqueIsbnPolicy.validateIsbnForUpdate(isIsbnExisted, command.isbn());
 
         String finalCoverImageUrl = command.coverImageUrl();
+        String uploadedUrl = null;
 
         if (command.imageStream() != null && command.originalFilename() != null && command.size() > 0) {
-            String uploadedUrl = fileStoragePort.storeBookImage(
+            uploadedUrl = fileStoragePort.storeBookImage(
                     command.imageStream(),
                     command.originalFilename(),
                     command.size()
@@ -71,22 +72,31 @@ public class UpdateBookService implements UpdateBookUseCase {
             finalCoverImageUrl = uploadedUrl;
         }
 
-        book.updateDetails(
-                command.title(),
-                command.author(),
-                command.isbn(),
-                command.description(),
-                finalCoverImageUrl,
-                command.publisher(),
-                command.publishedYear(),
-                command.shelfLocation(),
-                command.totalQuantity(),
-                command.categoryId()
-        );
+        try {
+            book.updateDetails(
+                    command.title(),
+                    command.author(),
+                    command.isbn(),
+                    command.description(),
+                    finalCoverImageUrl,
+                    command.publisher(),
+                    command.publishedYear(),
+                    command.shelfLocation(),
+                    command.totalQuantity(),
+                    command.categoryId()
+            );
 
-        Book updatedBook = bookRepository.save(book);
+            Book updatedBook = bookRepository.save(book);
 
-        return mapToResult(updatedBook);
+            return mapToResult(updatedBook);
+        } catch (Exception e) {
+            if (uploadedUrl != null) {
+                try {
+                    fileStoragePort.deleteFile(uploadedUrl);
+                } catch (Exception ignored) {}
+            }
+            throw e;
+        }
     }
 
     private void verifyStaffAccess() {

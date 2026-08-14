@@ -63,6 +63,7 @@ public class Book {
         validateIsbn(isbn);
         validatePublishedYear(publishedYear);
         validateQuantities(totalQuantity, availableQuantity);
+        validateCoverImageUrl(coverImageUrl);
 
         this.id = id;
         this.title = title.trim();
@@ -96,6 +97,7 @@ public class Book {
         validateBasicInfo(title, author, categoryId);
         validateIsbn(isbn);
         validatePublishedYear(publishedYear);
+        validateCoverImageUrl(coverImageUrl);
 
         int borrowedQuantity = this.totalQuantity - this.availableQuantity;
         if (newTotalQuantity < borrowedQuantity) {
@@ -215,6 +217,14 @@ public class Book {
         }
         if (available > total) {
             throw new InvalidBookDataException("Available quantity cannot exceed total quantity");
+        }
+    }
+
+    private static void validateCoverImageUrl(String coverImageUrl) {
+        if (coverImageUrl != null && coverImageUrl.trim().toLowerCase().startsWith("data:")) {
+            throw new InvalidBookDataException(
+                    "Base64 cover images are no longer supported. Please upload an image file or provide a valid Cloud URL."
+            );
         }
     }
 
