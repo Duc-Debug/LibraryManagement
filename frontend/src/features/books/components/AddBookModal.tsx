@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Upload } from 'lucide-react';
+import { X, Upload, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchCategoriesApi, type CategoryResponse } from '@/api/categoryApi';
 import { createBookApi } from '@/api/bookApi';
@@ -71,6 +71,11 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
       setCoverImageFile(file);
       setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleRemoveImage = () => {
+    setCoverImageFile(null);
+    setImagePreview(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -290,11 +295,24 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
                 />
               </label>
               {imagePreview && (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-10 h-10 object-cover rounded border border-border"
-                />
+                <div className="flex items-center gap-3 bg-muted/30 p-1.5 rounded-lg border border-border">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-10 h-12 object-cover rounded border border-border shadow-xs"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveImage}
+                    className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive flex items-center gap-1.5 h-8 px-2.5 rounded-md cursor-pointer"
+                    title="Xóa tệp ảnh đã chọn"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Xóa ảnh</span>
+                  </Button>
+                </div>
               )}
             </div>
           </div>
