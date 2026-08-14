@@ -40,6 +40,12 @@ public class TransactionalManageUserUseCase implements ManageUserUseCase {
     }
 
     @Override
+    @Transactional
+    public void deleteUser(Long userId) {
+        delegate.deleteUser(userId);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public UserResult getUserById(Long userId) {
         return delegate.getUserById(userId);

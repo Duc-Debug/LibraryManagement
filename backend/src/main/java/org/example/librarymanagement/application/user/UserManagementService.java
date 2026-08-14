@@ -126,17 +126,27 @@ public class UserManagementService implements ManageUserUseCase {
     public void deactivateUser(Long userId) {
         verifyAdminAccess();
 
+        User targetUser = findUserPort.findById(userId)
+                .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.user.UserNotFoundException(userId));
+
+        targetUser.deactivate();
+        saveUserPort.save(targetUser);
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+        verifyAdminAccess();
+
         User currentUser = getAuthenticatedUserPort.getCurrentUser();
         if (currentUser != null && currentUser.getId() != null && currentUser.getId().equals(userId)) {
             throw new DomainException("Bạn không thể tự xóa tài khoản của chính mình.");
         }
 
-        User targetUser = findUserPort.findById(userId)
-                .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.user.UserNotFoundException(userId));
-
         if (userRepositoryPort != null) {
             userRepositoryPort.deleteById(userId);
         } else {
+            User targetUser = findUserPort.findById(userId)
+                    .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.user.UserNotFoundException(userId));
             targetUser.deactivate();
             saveUserPort.save(targetUser);
         }
