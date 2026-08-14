@@ -159,6 +159,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("USER_NOT_FOUND", exception.getMessage()));
     }
 
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.user.AccountDisabledException.class)
+    public ResponseEntity<ErrorResponse> handleAccountDisabled(org.example.librarymanagement.domain.exceptions.user.AccountDisabledException exception) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of("ACCOUNT_DISABLED", exception.getMessage()));
+    }
+
     @ExceptionHandler(org.example.librarymanagement.domain.exceptions.user.RoleNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleRoleNotFound(org.example.librarymanagement.domain.exceptions.user.RoleNotFoundException exception) {
         return ResponseEntity

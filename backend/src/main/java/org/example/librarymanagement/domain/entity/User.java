@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.example.librarymanagement.domain.exceptions.DomainException;
+import org.example.librarymanagement.domain.exceptions.user.AccountDisabledException;
 
 public class User {
 
@@ -77,7 +78,7 @@ public class User {
 
     public void ensureCanLogin() {
         if (!enabled) {
-            throw new DomainException("User account is disabled");
+            throw new AccountDisabledException();
         }
     }
 

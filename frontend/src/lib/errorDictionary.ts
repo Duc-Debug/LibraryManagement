@@ -24,6 +24,8 @@ export const VIETNAMESE_ERROR_MAP: Record<string, string> = {
   UNAUTHENTICATED: "Bạn chưa đăng nhập hoặc không có quyền truy cập.",
   ACCESS_DENIED: "Thao tác bị từ chối. Bạn không có quyền thực hiện chức năng này.",
   READER_ACCESS_DENIED: "Bạn không có quyền truy cập vào thông tin độc giả này.",
+  ACCOUNT_DISABLED: "Tài khoản của bạn đã bị tạm khóa. Vui lòng liên hệ Quản trị viên để được hỗ trợ.",
+  USER_LOCKED: "Tài khoản của bạn đã bị tạm khóa. Vui lòng liên hệ Quản trị viên để được hỗ trợ.",
 
   // --- Quản lý Độc giả ---
   READER_NOT_FOUND: "Không tìm thấy thông tin độc giả trong hệ thống.",
@@ -59,6 +61,50 @@ export const VIETNAMESE_ERROR_MAP: Record<string, string> = {
 };
 
 /**
+ * Phân tích và chuyển đổi các câu thông báo tiếng Anh đặc thù từ Backend thành tiếng Việt thân thiện
+ */
+function parseSpecificEnglishMessage(msg?: string): string | null {
+  if (!msg) return null;
+  const lower = msg.toLowerCase();
+
+  // Lỗi tài khoản bị khóa / vô hiệu hóa
+  if (lower.includes("user account is disabled") || lower.includes("account is disabled") || lower.includes("account is locked")) {
+    return "Tài khoản của bạn đã bị tạm khóa. Vui lòng liên hệ Quản trị viên để được hỗ trợ.";
+  }
+
+  // Lỗi xóa độc giả khi còn sách mượn
+  if (lower.includes("cannot delete reader") && lower.includes("active borrow")) {
+    return "Không thể xóa độc giả này vì họ đang có sách mượn chưa trả.";
+  }
+
+  // Lỗi định dạng & trùng lặp ISBN
+  if (lower.includes("isbn") && (lower.includes("10-digit") || lower.includes("13-digit") || lower.includes("format"))) {
+    return "Mã ISBN không hợp lệ (phải gồm 10 hoặc 13 chữ số, VD: 9780134494166).";
+  }
+  if (lower.includes("isbn") && (lower.includes("already have") || lower.includes("already in use") || lower.includes("already exist"))) {
+    return "Mã ISBN này đã được sử dụng bởi cuốn sách khác trong hệ thống.";
+  }
+
+  // Lỗi Số điện thoại
+  if ((lower.includes("phone number") || lower.includes("phone")) && (lower.includes("format is invalid") || lower.includes("invalid format") || lower.includes("định dạng"))) {
+    return "Số điện thoại không đúng định dạng (VD: 0912345678).";
+  }
+  if ((lower.includes("phone number") || lower.includes("phone")) && lower.includes("already registered")) {
+    return "Số điện thoại này đã được đăng ký bởi người dùng/độc giả khác.";
+  }
+
+  // Lỗi Email
+  if (lower.includes("email") && (lower.includes("format is invalid") || lower.includes("valid domain"))) {
+    return "Email không đúng định dạng hoặc thiếu tên miền hợp lệ (VD: user@example.com).";
+  }
+  if (lower.includes("email") && lower.includes("already registered")) {
+    return "Địa chỉ Email này đã được đăng ký trong hệ thống.";
+  }
+
+  return null;
+}
+
+/**
  * Hàm hỗ trợ chuyển đổi bất kỳ lỗi nào ở Frontend thành thông báo Tiếng Việt thân thiện
  * @param error Lỗi được catch
  * @param fallbackMessage Thông báo mặc định nếu không khớp mã lỗi
@@ -66,35 +112,69 @@ export const VIETNAMESE_ERROR_MAP: Record<string, string> = {
 export function parseErrorMessage(error: unknown, fallbackMessage: string = "Đã xảy ra lỗi. Vui lòng thử lại."): string {
   if (!error) return fallbackMessage;
 
-  // 1. Kiểm tra nếu là ApiError có chứa code từ Backend
-  if (error instanceof ApiError && error.code) {
-    if (VIETNAMESE_ERROR_MAP[error.code]) {
-      return VIETNAMESE_ERROR_MAP[error.code];
+  let originalMsg: string | undefined;
+
+  // 1. Kiểm tra nếu là ApiError
+  if (error instanceof ApiError) {
+    originalMsg = error.originalMessage || error.message;
+
+    // 1.1 Thử dịch cụ thể từ câu thông báo tiếng Anh trả về
+    const specificTranslated = parseSpecificEnglishMessage(originalMsg);
+    if (specificTranslated) return specificTranslated;
+
+    // 1.2 Nếu mã lỗi có trong bản đồ tiếng Việt (và không phải lỗi chung chung như VALIDATION_ERROR khi có câu cụ thể)
+    if (error.code && VIETNAMESE_ERROR_MAP[error.code]) {
+      if (error.code !== "VALIDATION_ERROR" && error.code !== "DOMAIN_ERROR" && error.code !== "BAD_REQUEST") {
+        return VIETNAMESE_ERROR_MAP[error.code];
+      }
     }
-    // Nếu có originalMessage là tiếng Việt sẵn (chứa ký tự tiếng Việt)
-    if (error.originalMessage && /[àáảãạănắằẳẵặânấầnẩẫậnèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(error.originalMessage)) {
-      return error.originalMessage;
+
+    // 1.3 Nếu message đã chứa tiếng Việt
+    if (originalMsg && /[àáảãạănắằẳẵặânấầnẩẫậnèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(originalMsg)) {
+      return originalMsg;
+    }
+
+    // 1.4 Nếu có code trong bản đồ ánh xạ
+    if (error.code && VIETNAMESE_ERROR_MAP[error.code]) {
+      return VIETNAMESE_ERROR_MAP[error.code];
     }
   }
 
   // 2. Kiểm tra đối tượng bất kỳ có thuộc tính `code`
-  if (typeof error === "object" && error !== null && "code" in error) {
-    const codeStr = String((error as any).code);
-    if (VIETNAMESE_ERROR_MAP[codeStr]) {
-      return VIETNAMESE_ERROR_MAP[codeStr];
+  if (typeof error === "object" && error !== null) {
+    const errObj = error as any;
+    originalMsg = errObj.message || errObj.originalMessage;
+
+    const specificTranslated = parseSpecificEnglishMessage(originalMsg);
+    if (specificTranslated) return specificTranslated;
+
+    if ("code" in errObj) {
+      const codeStr = String(errObj.code);
+      if (VIETNAMESE_ERROR_MAP[codeStr]) {
+        return VIETNAMESE_ERROR_MAP[codeStr];
+      }
     }
   }
 
-  // 3. Nếu error.message có chứa tiếng Việt
-  if (error instanceof Error && error.message) {
-    if (/[àáảãạănắằẳẵặânấầnẩẫậnèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(error.message)) {
-      return error.message;
+  // 3. Nếu error là Error standard
+  if (error instanceof Error) {
+    originalMsg = error.message;
+    const specificTranslated = parseSpecificEnglishMessage(originalMsg);
+    if (specificTranslated) return specificTranslated;
+
+    if (originalMsg && /[àáảãạănắằẳẵặânấầnẩẫậnèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(originalMsg)) {
+      return originalMsg;
     }
   }
 
   // 4. Nếu message dạng string đơn thuần
-  if (typeof error === "string" && /[àáảãạănắằẳẵặânấầnẩẫậnèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(error)) {
-    return error;
+  if (typeof error === "string") {
+    const specificTranslated = parseSpecificEnglishMessage(error);
+    if (specificTranslated) return specificTranslated;
+
+    if (/[àáảãạănắằẳẵặânấầnẩẫậnèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(error)) {
+      return error;
+    }
   }
 
   return fallbackMessage;

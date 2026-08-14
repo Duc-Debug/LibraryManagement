@@ -5,6 +5,7 @@ import { X, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchCategoriesApi, type CategoryResponse } from '@/api/categoryApi';
 import { createBookApi } from '@/api/bookApi';
+import { parseErrorMessage } from '@/lib/errorDictionary';
 
 interface AddBookModalProps {
   onClose: () => void;
@@ -120,7 +121,7 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
       await createBookApi(payload);
       onSave();
     } catch (err: any) {
-      setError(err.message || "Tạo sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
+      setError(parseErrorMessage(err, "Tạo sách thất bại. Vui lòng kiểm tra lại dữ liệu."));
     } finally {
       setIsSubmitting(false);
     }

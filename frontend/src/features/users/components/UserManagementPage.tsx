@@ -39,6 +39,7 @@ import {
 } from '@/api/librarianApi';
 import { AddUserModal } from './AddUserModal';
 import { EditUserModal } from './EditUserModal';
+import { parseErrorMessage } from '@/lib/errorDictionary';
 
 export type UserTypeFilter = 'all' | 'readers' | 'librarians';
 
@@ -116,7 +117,7 @@ export function UserManagementPage({
         setLibrarians(librariansRes.value || []);
       }
     } catch (err: any) {
-      setError(err?.message || 'Không thể tải danh sách người dùng từ máy chủ.');
+      setError(parseErrorMessage(err, 'Không thể tải danh sách người dùng từ máy chủ.'));
     } finally {
       setLoading(false);
     }
@@ -274,7 +275,7 @@ export function UserManagementPage({
       }
       await loadAllUsers();
     } catch (err: any) {
-      setError(err?.message || 'Không thể thay đổi trạng thái tài khoản.');
+      setError(parseErrorMessage(err, 'Không thể thay đổi trạng thái tài khoản.'));
     } finally {
       setTogglingId(null);
     }
@@ -299,7 +300,7 @@ export function UserManagementPage({
       setSelectedUserToDelete(null);
       await loadAllUsers();
     } catch (err: any) {
-      setError(err?.message || 'Xóa người dùng thất bại.');
+      setError(parseErrorMessage(err, 'Xóa người dùng thất bại.'));
       setSelectedUserToDelete(null);
     }
   };
