@@ -19,6 +19,7 @@ import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
 import org.example.librarymanagement.port.outbound.borrow.SaveBorrowSlipPort;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalCheckBorrowEligibilityUseCase;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalCreateBorrowSlipUseCase;
+import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalUpdateOverdueBorrowSlipsUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CheckBorrowEligibilityUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CreateBorrowSlipUseCase;
 import org.example.librarymanagement.port.outbound.borrow.LoadReaderBorrowStatusPort;
@@ -101,6 +102,7 @@ public class BorrowUseCaseConfig {
         public UpdateOverdueBorrowSlipsUseCase updateOverdueBorrowSlipsUseCase(
                         LoadBorrowSlipPort loadBorrowSlipPort,
                         SaveBorrowSlipPort saveBorrowSlipPort) {
-                return new UpdateOverdueBorrowSlipsService(loadBorrowSlipPort, saveBorrowSlipPort);
+                UpdateOverdueBorrowSlipsUseCase service = new UpdateOverdueBorrowSlipsService(loadBorrowSlipPort, saveBorrowSlipPort);
+                return new TransactionalUpdateOverdueBorrowSlipsUseCase(service);
         }
 }

@@ -1,6 +1,7 @@
 package org.example.librarymanagement.application.borrow;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,7 +34,7 @@ public class UpdateOverdueBorrowSlipsService implements UpdateOverdueBorrowSlips
 
     @Override
     public int execute() {
-        return executeOn(LocalDate.now());
+        return executeOn(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     }
 
     /**
