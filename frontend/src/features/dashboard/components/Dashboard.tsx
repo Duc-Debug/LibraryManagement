@@ -29,6 +29,7 @@ import {
 import { fetchBooksApi, BookResponseDto } from '@/api/bookApi';
 import { fetchAllReaders, ReaderResponse } from '@/api/readerApi';
 import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
+import { fetchDashboardStatisticsApi, DashboardStatisticsDto } from '@/api/dashboardApi';
 
 const CATEGORY_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#3B82F6', '#14B8A6'];
 
@@ -37,6 +38,7 @@ export function Dashboard() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   
   // Real Data States from API
+  const [stats, setStats] = useState<DashboardStatisticsDto | null>(null);
   const [books, setBooks] = useState<BookResponseDto[]>([]);
   const [readers, setReaders] = useState<ReaderResponse[]>([]);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
@@ -44,11 +46,16 @@ export function Dashboard() {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const [booksData, readersData, categoriesData] = await Promise.allSettled([
-        fetchBooksApi(0, 100),
+      const [statsData, booksData, readersData, categoriesData] = await Promise.allSettled([
+        fetchDashboardStatisticsApi(),
+        fetchBooksApi(0, 10),
         fetchAllReaders(),
         fetchCategoriesApi(),
       ]);
+
+      if (statsData.status === 'fulfilled' && statsData.value) {
+        setStats(statsData.value);
+      }
 
       if (booksData.status === 'fulfilled' && booksData.value) {
         const bookList = booksData.value.content || booksData.value.items || [];
@@ -73,28 +80,28 @@ export function Dashboard() {
     loadDashboardData();
   }, []);
 
-  // 🧮 DYNAMIC METRICS COMPUTATION FROM REAL DATA
-  const totalTitles = books.length;
-  const totalCopies = books.reduce((sum, b) => sum + (b.totalQuantity || 0), 0);
-  const availableCopies = books.reduce((sum, b) => sum + (b.availableQuantity || 0), 0);
-  const borrowingCopies = Math.max(0, totalCopies - availableCopies);
+  // 🧮 DYNAMIC METRICS COMPUTATION FROM STATS API
+  const totalTitles = stats?.totalTitles ?? books.length;
+  const totalCopies = stats?.totalCopies ?? books.reduce((sum, b) => sum + (b.totalQuantity || 0), 0);
+  const availableCopies = stats?.availableCopies ?? books.reduce((sum, b) => sum + (b.availableQuantity || 0), 0);
+  const borrowingCopies = stats?.borrowingCopies ?? Math.max(0, totalCopies - availableCopies);
   
-  const totalReadersCount = readers.length;
-  const activeReadersCount = readers.filter(r => r.cardStatus === 'ACTIVE' || (r as any).active !== false).length;
+  const totalReadersCount = stats?.totalReaders ?? readers.length;
+  const activeReadersCount = stats?.activeReaders ?? readers.filter(r => r.cardStatus === 'ACTIVE' || (r as any).active !== false).length;
+  const totalCategoriesCount = stats?.totalCategories ?? (categories.length || 0);
+  const overdueCount = stats?.overdueBorrowSlips ?? 0;
 
-  // Compute Category Distribution Chart Data dynamically from real books
-  const categoryCountMap: Record<string, number> = {};
-  books.forEach(b => {
-    const catName = b.categoryName || 'Chưa phân loại';
-    categoryCountMap[catName] = (categoryCountMap[catName] || 0) + 1;
+  // Compute Category Distribution Chart Data from stats API
+  const categoryChartData = (stats?.categoryDistribution || []).map((item, index) => {
+    const name = item.categoryName || 'Chưa phân loại';
+    const count = item.bookCount || 0;
+    return {
+      name,
+      value: count,
+      percentage: totalTitles > 0 ? Math.round((count / totalTitles) * 100) : 0,
+      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+    };
   });
-
-  const categoryChartData = Object.entries(categoryCountMap).map(([name, count], index) => ({
-    name,
-    value: count,
-    percentage: totalTitles > 0 ? Math.round((count / totalTitles) * 100) : 0,
-    color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
-  }));
 
   // Dynamic 30-day borrowing trend simulation based on real data
   const trendData = [
@@ -212,27 +219,31 @@ export function Dashboard() {
           </div>
           <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
             <span>Danh mục thể loại:</span>
-            <span className="font-bold text-foreground">{categories.length || Object.keys(categoryCountMap).length} thể loại</span>
+            <span className="font-bold text-foreground">{loading ? '...' : `${totalCategoriesCount} thể loại`}</span>
           </div>
         </div>
 
         {/* Card 4: Cảnh báo quá hạn */}
-        <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-2xl border border-rose-500/30 p-5 shadow-sm hover:shadow-md hover:border-rose-500/60 transition-all duration-300">
+        <div className={`group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-2xl border ${overdueCount > 0 ? 'border-rose-500/50 bg-rose-500/5' : 'border-border/80'} p-5 shadow-sm hover:shadow-md transition-all duration-300`}>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">Cảnh Báo Quá Hạn</span>
-            <div className="p-2.5 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
+            <span className={`text-xs font-semibold uppercase tracking-wider ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-muted-foreground'}`}>Cảnh Báo Quá Hạn</span>
+            <div className={`p-2.5 rounded-xl ${overdueCount > 0 ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'} group-hover:scale-110 transition-transform`}>
               <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold tracking-tight text-rose-600 dark:text-rose-400">0</span>
-            <span className="inline-flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              An toàn 100%
+            <span className={`text-3xl font-extrabold tracking-tight ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}`}>
+              {loading ? '...' : overdueCount}
+            </span>
+            <span className={`inline-flex items-center text-xs font-semibold ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+              {overdueCount > 0 ? `Cần xử lý ${overdueCount} phiếu` : 'An toàn 100%'}
             </span>
           </div>
-          <div className="mt-3 pt-3 border-t border-rose-500/20 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
             <span>Trạng thái hệ thống:</span>
-            <span className="font-bold text-emerald-600 dark:text-emerald-400">Ổn định</span>
+            <span className={`font-bold ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+              {overdueCount > 0 ? 'Có phiếu quá hạn' : 'Ổn định'}
+            </span>
           </div>
         </div>
       </div>

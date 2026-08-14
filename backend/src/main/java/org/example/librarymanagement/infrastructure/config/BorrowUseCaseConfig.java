@@ -5,18 +5,21 @@ import org.example.librarymanagement.application.borrow.CheckBorrowEligibilitySe
 import org.example.librarymanagement.application.borrow.CreateBorrowSlipService;
 import org.example.librarymanagement.application.borrow.GetBorrowSlipsService;
 import org.example.librarymanagement.application.borrow.ReturnBorrowSlipService;
+import org.example.librarymanagement.application.borrow.UpdateOverdueBorrowSlipsService;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalBorrowSlipsUseCase;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalCalculateFineUseCase;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalReturnBorrowSlipUseCase;
 import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
 import org.example.librarymanagement.port.inbound.borrow.ReturnBorrowSlipUseCase;
+import org.example.librarymanagement.port.inbound.borrow.UpdateOverdueBorrowSlipsUseCase;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
 import org.example.librarymanagement.port.outbound.borrow.BorrowDetailsRepositoryPort;
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
 import org.example.librarymanagement.port.outbound.borrow.SaveBorrowSlipPort;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalCheckBorrowEligibilityUseCase;
 import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalCreateBorrowSlipUseCase;
+import org.example.librarymanagement.infrastructure.transaction.borrow.TransactionalUpdateOverdueBorrowSlipsUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CheckBorrowEligibilityUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CreateBorrowSlipUseCase;
 import org.example.librarymanagement.port.outbound.borrow.LoadReaderBorrowStatusPort;
@@ -93,5 +96,13 @@ public class BorrowUseCaseConfig {
                                 borrowDetailsRepositoryPort,
                                 getAuthenticatedUserPort);
                 return new TransactionalCreateBorrowSlipUseCase(service);
+        }
+
+        @Bean
+        public UpdateOverdueBorrowSlipsUseCase updateOverdueBorrowSlipsUseCase(
+                        LoadBorrowSlipPort loadBorrowSlipPort,
+                        SaveBorrowSlipPort saveBorrowSlipPort) {
+                UpdateOverdueBorrowSlipsUseCase service = new UpdateOverdueBorrowSlipsService(loadBorrowSlipPort, saveBorrowSlipPort);
+                return new TransactionalUpdateOverdueBorrowSlipsUseCase(service);
         }
 }

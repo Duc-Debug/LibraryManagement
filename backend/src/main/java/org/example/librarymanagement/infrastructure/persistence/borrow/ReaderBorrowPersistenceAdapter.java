@@ -30,7 +30,7 @@ public class ReaderBorrowPersistenceAdapter implements LoadReaderBorrowStatusPor
                 JOIN borrow_details bd ON bd.borrow_slip_id = bs.id
                 WHERE bs.reader_id = ?
                   AND bd.returned_at IS NULL
-                  AND (bs.status = 'OVERDUE' OR bs.due_at < ?)
+                  AND (bs.status = 'OVERDUE' OR DATE(bs.due_at) < DATE(?))
             )
             """;
 
@@ -44,7 +44,7 @@ public class ReaderBorrowPersistenceAdapter implements LoadReaderBorrowStatusPor
             JOIN borrow_details bd ON bd.borrow_slip_id = bs.id
             WHERE bs.reader_id = ?
               AND bd.returned_at IS NULL
-              AND (bs.status = 'OVERDUE' OR bs.due_at < ?)
+              AND (bs.status = 'OVERDUE' OR DATE(bs.due_at) < DATE(?))
             GROUP BY bs.id, bs.borrow_code, bs.due_at
             HAVING COUNT(bd.id) > 0
             """;

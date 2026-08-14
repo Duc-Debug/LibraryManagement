@@ -1,4 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.borrow;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -93,4 +95,15 @@ Optional<BorrowSlipJpaEntity> findByIdForUpdate(
 );
 
     boolean existsByBorrowCode(String borrowCode);
+
+    /**
+     * Tìm tất cả phiếu BORROWING có dueAt trước ngày tham chiếu (quá hạn chưa cập nhật).
+     * DATE(:referenceDate) đảm bảo so sánh ở mức ngày, bỏ qua phần giờ/phút/giây.
+     */
+    @Query("""
+        SELECT bs FROM BorrowSlipJpaEntity bs
+        WHERE bs.status = 'BORROWING'
+        AND CAST(bs.dueAt AS date) < :referenceDate
+        """)
+    List<BorrowSlipJpaEntity> findAllActivePastDue(@Param("referenceDate") LocalDate referenceDate);
 }

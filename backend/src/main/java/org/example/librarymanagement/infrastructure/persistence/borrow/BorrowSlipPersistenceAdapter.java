@@ -1,5 +1,6 @@
 package org.example.librarymanagement.infrastructure.persistence.borrow;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -102,6 +103,17 @@ public class BorrowSlipPersistenceAdapter
         }
 
         @Override
+        public List<BorrowSlip> findAllActivePastDue(LocalDate referenceDate) {
+                if (referenceDate == null) {
+                        referenceDate = LocalDate.now();
+                }
+                return borrowSlipJpaRepository.findAllActivePastDue(referenceDate)
+                                .stream()
+                                .map(borrowSlipPersistenceMapper::toDomain)
+                                .toList();
+        }
+
+        @Override
         public BorrowSlip save(BorrowSlip borrowSlip) {
 
                 Objects.requireNonNull(
@@ -117,6 +129,27 @@ public class BorrowSlipPersistenceAdapter
                 BorrowSlipJpaEntity savedEntity = borrowSlipJpaRepository.save(entity);
                 return borrowSlipPersistenceMapper.toDomain(savedEntity);
 
+        }
+
+        @Override
+        public List<BorrowSlip> saveAll(List<BorrowSlip> borrowSlips) {
+                Objects.requireNonNull(borrowSlips, "BorrowSlip list must not be null");
+                List<BorrowSlipJpaEntity> entities = borrowSlips.stream()
+                                .map(slip -> {
+                                        if (slip.getId() == null) {
+                                                return borrowSlipPersistenceMapper.toJpaEntity(slip);
+                                        }
+                                        BorrowSlipJpaEntity entity = borrowSlipJpaRepository
+                                                        .findById(slip.getId())
+                                                        .orElseThrow(() -> new BorrowSlipNotFoundException(slip.getId()));
+                                        borrowSlipPersistenceMapper.updateJpaEntity(slip, entity);
+                                        return entity;
+                                })
+                                .toList();
+                return borrowSlipJpaRepository.saveAll(entities)
+                                .stream()
+                                .map(borrowSlipPersistenceMapper::toDomain)
+                                .toList();
         }
 
         private BorrowSlipJpaEntity create(BorrowSlip borrowSlip) {
