@@ -13,6 +13,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+ * Lấy Base URL của API động dựa trên môi trường chạy
+ */
+function getApiBaseUrl() {
+    if (typeof window !== 'undefined') {
+        const savedCustomUrl = localStorage.getItem('customApiBaseUrl');
+        if (savedCustomUrl) {
+            return savedCustomUrl;
+        }
+        const { hostname } = window.location;
+        if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+            return ''; // Trả về chuỗi rỗng để dùng relative path ở production
+        }
+    }
+    return 'http://localhost:8080';
+}
+
+/**
  * Xử lý Đăng nhập
  */
 async function handleLogin(event) {
@@ -39,7 +56,8 @@ async function handleLogin(event) {
     if (!isValid) return;
 
     try {
-        const response = await fetch('http://localhost:8080/api/auth/login', {
+        const baseUrl = getApiBaseUrl();
+        const response = await fetch(`${baseUrl}/api/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -92,8 +110,9 @@ async function handleLogout(event) {
     }
 
     try {
+        const baseUrl = getApiBaseUrl();
         // Gửi request báo Server đưa Token vào Blacklist
-        await fetch('http://localhost:8080/api/auth/logout', {
+        await fetch(`${baseUrl}/api/auth/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
