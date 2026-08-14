@@ -26,9 +26,14 @@ const getApiBaseUrl = (): string => {
       return `${protocol}//${backendHostname}`;
     }
 
-    // 2.3. Nếu truy cập qua IP mạng LAN (vd: 192.168.1.x) hoặc Domain Public ngoài localhost
+    // 2.3. Nếu truy cập qua IP mạng LAN hoặc Domain Public ngoài localhost
     if (hostname !== "localhost" && hostname !== "127.0.0.1") {
-      return `${protocol}//${hostname}:8080`;
+      // Nếu là địa chỉ IP (mạng LAN), trỏ đến cổng 8080 của máy đó
+      if (/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname)) {
+        return `${protocol}//${hostname}:8080`;
+      }
+      // Ngược lại (production domain), dùng relative path để hỗ trợ Nginx reverse proxy
+      return "";
     }
   }
 
