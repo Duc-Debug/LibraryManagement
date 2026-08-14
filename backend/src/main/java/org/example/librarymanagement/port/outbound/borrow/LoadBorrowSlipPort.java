@@ -1,5 +1,7 @@
 package org.example.librarymanagement.port.outbound.borrow;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.BorrowSlip;
@@ -27,6 +29,12 @@ public interface LoadBorrowSlipPort {
      * Lấy thông tin chi tiết phiếu mượn (kèm mã thẻ, tên độc giả, tổng số sách) theo ID
      */
     Optional<BorrowSlipResponseDto> findSlipDetailById(Long id);
-       Optional<BorrowSlip> findByIdForUpdate(Long id);
+        Optional<BorrowSlip> findByIdForUpdate(Long id);
+
+    /**
+     * Tìm tất cả phiếu mượn có trạng thái BORROWING và dueAt trước ngày tham chiếu.
+     * Dùng cho scheduler tự động cập nhật trạng thái OVERDUE.
+     */
+    List<BorrowSlip> findAllActivePastDue(LocalDate referenceDate);
 
 }
