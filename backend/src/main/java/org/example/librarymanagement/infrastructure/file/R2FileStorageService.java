@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.example.librarymanagement.infrastructure.config.R2Properties;
 import org.example.librarymanagement.port.outbound.file.FileStoragePort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -21,14 +23,16 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class R2FileStorageService implements FileStoragePort {
 
     private static final Logger log = LoggerFactory.getLogger(R2FileStorageService.class);
 
     private final S3Client s3Client;
-    private final String bucketName;
-    private final String publicUrl;
-    private final long maxFileSize;
+    private final R2Properties properties;
+
+    @Value("${app.storage.max-file-size:5242880}")
+    private long maxFileSize;
 
     private static final List<String> ALLOWED_CONTENT_TYPES = Arrays.asList(
             "image/jpeg",
@@ -36,60 +40,56 @@ public class R2FileStorageService implements FileStoragePort {
             "image/webp"
     );
 
-    public R2FileStorageService(
-            S3Client s3Client,
-            @Value("${cloud.r2.bucket-name:library-books}") String bucketName,
-            @Value("${cloud.r2.public-url:}") String publicUrl,
-            @Value("${app.storage.max-file-size:5242880}") long maxFileSize
-    ) {
-        this.s3Client = s3Client;
-        this.bucketName = bucketName;
-        this.publicUrl = (publicUrl != null && publicUrl.endsWith("/"))
+    private String getCleanPublicUrl() {
+        String publicUrl = properties.getPublicUrl();
+        if (publicUrl == null) {
+            return null;
+        }
+        return publicUrl.endsWith("/")
                 ? publicUrl.substring(0, publicUrl.length() - 1)
                 : publicUrl;
-        this.maxFileSize = maxFileSize;
     }
 
     @Override
     public String storeBookImage(InputStream inputStream, String originalFilename, long size) {
         if (inputStream == null || size <= 0) {
-            throw new RuntimeException("File ảnh không được để trống");
+            throw new InvalidFileException("File ảnh không được để trống");
         }
 
         if (size > maxFileSize) {
-            throw new RuntimeException("Kích thước file vượt quá giới hạn cho phép.");
+            throw new FileTooLargeException("Kích thước file vượt quá giới hạn cho phép.");
         }
 
         byte[] bytes;
         try {
             bytes = readWithLimit(inputStream);
         } catch (IOException e) {
-            throw new RuntimeException("Không thể đọc nội dung file để tải lên", e);
+            throw new FileStorageException("Không thể đọc nội dung file để tải lên", e);
         }
 
         if (bytes.length < 12) {
-            throw new RuntimeException("File không đủ dung lượng tối thiểu để xác thực định dạng ảnh.");
+            throw new InvalidFileException("File không đủ dung lượng tối thiểu để xác thực định dạng ảnh.");
         }
 
         // 1. Kiểm tra Magic Bytes / File Signature
         byte[] header = Arrays.copyOfRange(bytes, 0, 12);
         String detectedMimeType = detectRealMimeType(header);
         if (detectedMimeType == null || !ALLOWED_CONTENT_TYPES.contains(detectedMimeType)) {
-            throw new RuntimeException("Định dạng file không thực sự là ảnh hợp lệ (chỉ chấp nhận JPEG, PNG, WEBP).");
+            throw new UnsupportedFileTypeException("Định dạng file không thực sự là ảnh hợp lệ (chỉ chấp nhận JPEG, PNG, WEBP).");
         }
 
         String extension = switch (detectedMimeType) {
             case "image/jpeg" -> ".jpg";
             case "image/png" -> ".png";
             case "image/webp" -> ".webp";
-            default -> throw new RuntimeException("Định dạng không được hỗ trợ");
+            default -> throw new UnsupportedFileTypeException("Định dạng không được hỗ trợ");
         };
 
         String filename = "books/" + UUID.randomUUID() + extension;
 
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(properties.getBucketName())
                     .key(filename)
                     .contentType(detectedMimeType)
                     .build();
@@ -97,14 +97,15 @@ public class R2FileStorageService implements FileStoragePort {
             s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
 
             // Trả về Public URL nếu có cấu hình, nếu không trả về key path
-            if (publicUrl != null && !publicUrl.isBlank()) {
-                return publicUrl + "/" + filename;
+            String cleanPublicUrl = getCleanPublicUrl();
+            if (cleanPublicUrl != null && !cleanPublicUrl.isBlank()) {
+                return cleanPublicUrl + "/" + filename;
             }
             return "/" + filename;
 
         } catch (Exception e) {
             log.error("Tải file lên Cloudflare R2 thất bại", e);
-            throw new RuntimeException("Upload ảnh lên R2 thất bại: " + e.getMessage(), e);
+            throw new FileStorageException("Upload ảnh lên R2 thất bại: " + e.getMessage(), e);
         }
     }
 
@@ -117,19 +118,21 @@ public class R2FileStorageService implements FileStoragePort {
         try {
             String key = extractObjectKey(fileUrl);
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(properties.getBucketName())
                     .key(key)
                     .build();
 
             s3Client.deleteObject(deleteObjectRequest);
         } catch (Exception e) {
-            log.error("Xóa file trên Cloudflare R2 thất bại: {}", fileUrl, e);
+            log.error("Xóa tệp tin trên Cloudflare R2 thất bại: {}", fileUrl, e);
+            throw new FileStorageException("Failed to delete stored file from Cloudflare R2: " + fileUrl, e);
         }
     }
 
     private String extractObjectKey(String fileUrl) {
-        if (publicUrl != null && !publicUrl.isBlank() && fileUrl.startsWith(publicUrl)) {
-            String relative = fileUrl.substring(publicUrl.length());
+        String cleanPublicUrl = getCleanPublicUrl();
+        if (cleanPublicUrl != null && !cleanPublicUrl.isBlank() && fileUrl.startsWith(cleanPublicUrl)) {
+            String relative = fileUrl.substring(cleanPublicUrl.length());
             return relative.startsWith("/") ? relative.substring(1) : relative;
         }
         if (fileUrl.startsWith("/")) {
@@ -165,7 +168,7 @@ public class R2FileStorageService implements FileStoragePort {
         byte[] bytes = inputStream.readNBytes((int) Math.min(limit, Integer.MAX_VALUE));
 
         if (bytes.length > maxFileSize) {
-            throw new RuntimeException("Kích thước file thực tế vượt quá giới hạn cho phép.");
+            throw new FileTooLargeException("Kích thước file thực tế vượt quá giới hạn cho phép.");
         }
 
         return bytes;
