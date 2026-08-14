@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.example.librarymanagement.domain.entity.Role;
 import org.example.librarymanagement.domain.entity.User;
+import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
@@ -20,6 +21,7 @@ import org.example.librarymanagement.port.outbound.user.FindUserPort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.user.LoadRolePort;
 import org.example.librarymanagement.port.outbound.user.SaveUserPort;
+import org.example.librarymanagement.port.outbound.user.UserRepositoryPort;
 
 /**
  * Application Service: UserManagementService
@@ -32,6 +34,7 @@ public class UserManagementService implements ManageUserUseCase {
     private final SaveUserPort saveUserPort;
     private final EncodePasswordPort encodePasswordPort;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
+    private final UserRepositoryPort userRepositoryPort;
 
     public UserManagementService(
             FindUserPort findUserPort,
@@ -40,11 +43,23 @@ public class UserManagementService implements ManageUserUseCase {
             EncodePasswordPort encodePasswordPort,
             GetAuthenticatedUserPort getAuthenticatedUserPort
     ) {
+        this(findUserPort, loadRolePort, saveUserPort, encodePasswordPort, getAuthenticatedUserPort, null);
+    }
+
+    public UserManagementService(
+            FindUserPort findUserPort,
+            LoadRolePort loadRolePort,
+            SaveUserPort saveUserPort,
+            EncodePasswordPort encodePasswordPort,
+            GetAuthenticatedUserPort getAuthenticatedUserPort,
+            UserRepositoryPort userRepositoryPort
+    ) {
         this.findUserPort = Objects.requireNonNull(findUserPort, "Find user port must not be null");
         this.loadRolePort = Objects.requireNonNull(loadRolePort, "Load role port must not be null");
         this.saveUserPort = Objects.requireNonNull(saveUserPort, "Save user port must not be null");
         this.encodePasswordPort = Objects.requireNonNull(encodePasswordPort, "Encode password port must not be null");
         this.getAuthenticatedUserPort = Objects.requireNonNull(getAuthenticatedUserPort, "Get authenticated user port must not be null");
+        this.userRepositoryPort = userRepositoryPort;
     }
 
     @Override
@@ -111,11 +126,20 @@ public class UserManagementService implements ManageUserUseCase {
     public void deactivateUser(Long userId) {
         verifyAdminAccess();
 
+        User currentUser = getAuthenticatedUserPort.getCurrentUser();
+        if (currentUser != null && currentUser.getId() != null && currentUser.getId().equals(userId)) {
+            throw new DomainException("Bạn không thể tự xóa tài khoản của chính mình.");
+        }
+
         User targetUser = findUserPort.findById(userId)
                 .orElseThrow(() -> new org.example.librarymanagement.domain.exceptions.user.UserNotFoundException(userId));
 
-        targetUser.deactivate();
-        saveUserPort.save(targetUser);
+        if (userRepositoryPort != null) {
+            userRepositoryPort.deleteById(userId);
+        } else {
+            targetUser.deactivate();
+            saveUserPort.save(targetUser);
+        }
     }
 
     @Override

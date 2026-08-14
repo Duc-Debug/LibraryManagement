@@ -18,4 +18,6 @@ public interface UserRepositoryPort {
     boolean existsByUsername(String username);
 
     List<User> findByRoleName(String roleName);
+
+    void deleteById(Long id);
 }

@@ -15,6 +15,7 @@ import org.example.librarymanagement.port.outbound.user.FindUserPort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 import org.example.librarymanagement.port.outbound.user.LoadRolePort;
 import org.example.librarymanagement.port.outbound.user.SaveUserPort;
+import org.example.librarymanagement.port.outbound.user.UserRepositoryPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -30,14 +31,16 @@ public class UseCaseConfig {
             LoadRolePort loadRolePort,
             SaveUserPort saveUserPort,
             EncodePasswordPort encodePasswordPort,
-            GetAuthenticatedUserPort getAuthenticatedUserPort) {
+            GetAuthenticatedUserPort getAuthenticatedUserPort,
+            UserRepositoryPort userRepositoryPort) {
 
        UserManagementService service = new UserManagementService(
                 findUserPort,
                 loadRolePort,
                 saveUserPort,
                 encodePasswordPort,
-                getAuthenticatedUserPort
+                getAuthenticatedUserPort,
+                userRepositoryPort
         );
         return new TransactionalManageUserUseCase(service);
     }
