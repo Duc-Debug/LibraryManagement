@@ -24,10 +24,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.example.librarymanagement.port.outbound.file.FileStoragePort;
+
 public class UpdateBookServiceTest {
  
     private BookRepositoryPort bookRepository;
     private GetAuthenticatedUserPort getAuthenticatedUserPort;
+    private FileStoragePort fileStoragePort;
 
     // đối tượng cần test
     private UpdateBookService updateBookService;
@@ -37,9 +40,10 @@ public class UpdateBookServiceTest {
     void setUp() {
         bookRepository = mock(BookRepositoryPort.class);
         getAuthenticatedUserPort = mock(GetAuthenticatedUserPort.class);
+        fileStoragePort = mock(FileStoragePort.class);
 
         // khởi tạo Service cần test
-        updateBookService = new UpdateBookService(bookRepository, getAuthenticatedUserPort);
+        updateBookService = new UpdateBookService(bookRepository, getAuthenticatedUserPort, fileStoragePort);
     }
 
     @Test

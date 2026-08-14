@@ -27,10 +27,6 @@ public class UpdateBookService implements UpdateBookUseCase {
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
     private final FileStoragePort fileStoragePort;
 
-    public UpdateBookService(BookRepositoryPort bookRepository, GetAuthenticatedUserPort getAuthenticatedUserPort) {
-        this(bookRepository, getAuthenticatedUserPort, null);
-    }
-
     public UpdateBookService(
             BookRepositoryPort bookRepository,
             GetAuthenticatedUserPort getAuthenticatedUserPort,
@@ -38,7 +34,7 @@ public class UpdateBookService implements UpdateBookUseCase {
     ) {
         this.bookRepository = Objects.requireNonNull(bookRepository, "BookRepositoryPort must not be null");
         this.getAuthenticatedUserPort = Objects.requireNonNull(getAuthenticatedUserPort, "GetAuthenticatedUserPort must not be null");
-        this.fileStoragePort = fileStoragePort;
+        this.fileStoragePort = Objects.requireNonNull(fileStoragePort, "FileStoragePort must not be null");
     }
 
     @Override
@@ -57,7 +53,7 @@ public class UpdateBookService implements UpdateBookUseCase {
 
         String finalCoverImageUrl = command.coverImageUrl();
 
-        if (fileStoragePort != null && command.imageStream() != null && command.originalFilename() != null && command.size() > 0) {
+        if (command.imageStream() != null && command.originalFilename() != null && command.size() > 0) {
             String uploadedUrl = fileStoragePort.storeBookImage(
                     command.imageStream(),
                     command.originalFilename(),

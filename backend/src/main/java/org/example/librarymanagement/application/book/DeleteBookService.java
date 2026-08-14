@@ -23,20 +23,13 @@ public class DeleteBookService implements DeleteBookUseCase {
     public DeleteBookService(
             LoadBookPort loadBookPort,
             SaveBookPort saveBookPort,
-            CheckActiveBorrowPort checkActiveBorrowPort) {
-        this(loadBookPort, saveBookPort, checkActiveBorrowPort, null);
-    }
-
-    public DeleteBookService(
-            LoadBookPort loadBookPort,
-            SaveBookPort saveBookPort,
             CheckActiveBorrowPort checkActiveBorrowPort,
             FileStoragePort fileStoragePort) {
         this.loadBookPort = Objects.requireNonNull(loadBookPort, "LoadBookPort must not be null");
         this.saveBookPort = Objects.requireNonNull(saveBookPort, "SaveBookPort must not be null");
         this.checkActiveBorrowPort = Objects.requireNonNull(checkActiveBorrowPort,
                 "CheckActiveBorrowPort must not be null");
-        this.fileStoragePort = fileStoragePort;
+        this.fileStoragePort = Objects.requireNonNull(fileStoragePort, "FileStoragePort must not be null");
     }
 
     @Override
@@ -45,7 +38,7 @@ public class DeleteBookService implements DeleteBookUseCase {
 
         validateBookForDeletion(book);
 
-        if (fileStoragePort != null && book.getCoverImageUrl() != null && !book.getCoverImageUrl().isBlank()) {
+        if (book.getCoverImageUrl() != null && !book.getCoverImageUrl().isBlank()) {
             try {
                 fileStoragePort.deleteFile(book.getCoverImageUrl());
             } catch (Exception ignored) {}

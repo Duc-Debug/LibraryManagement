@@ -21,6 +21,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.example.librarymanagement.port.outbound.file.FileStoragePort;
+
 @ExtendWith(MockitoExtension.class)
 class DeleteBookServiceTest {
 
@@ -33,11 +35,14 @@ class DeleteBookServiceTest {
     @Mock
     private CheckActiveBorrowPort checkActiveBorrowPort;
 
+    @Mock
+    private FileStoragePort fileStoragePort;
+
     private DeleteBookService deleteBookService;
 
     @BeforeEach
     void setUp() {
-        deleteBookService = new DeleteBookService(loadBookPort, saveBookPort, checkActiveBorrowPort);
+        deleteBookService = new DeleteBookService(loadBookPort, saveBookPort, checkActiveBorrowPort, fileStoragePort);
     }
 
     private Book createSampleBook(Long id, String title) {
