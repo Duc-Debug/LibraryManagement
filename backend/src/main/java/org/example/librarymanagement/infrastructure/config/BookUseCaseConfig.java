@@ -73,7 +73,7 @@ public class BookUseCaseConfig {
             FileStoragePort fileStoragePort,
             FileCleanupPort fileCleanupPort) {
         UpdateBookService service = new UpdateBookService(bookRepository, getAuthenticatedUserPort, fileStoragePort, fileCleanupPort);
-        return new TransactionalUpdateBookUseCase(service);
+        return new TransactionalUpdateBookUseCase(service, fileStoragePort);
     }
 
     @Bean
