@@ -7,6 +7,8 @@ import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.domain.exceptions.shared.UnauthenticatedException;
 import org.example.librarymanagement.domain.policies.AccountLockPolicy;
 import org.example.librarymanagement.domain.policies.AuthorizationAccessPolicy;
+import org.example.librarymanagement.domain.exceptions.borrow.BorrowSlipNotFoundException;
+import org.example.librarymanagement.port.dtos.borrow.BorrowSlipDetailResponseDto;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipFilterQuery;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
@@ -65,6 +67,18 @@ public class GetBorrowSlipsService implements BorrowSlipsUseCase {
                 query.status(),
                 keyword
         );
+    }
+
+    @Override
+    public BorrowSlipDetailResponseDto getBorrowSlipDetail(Long id) {
+        verifyStaffAccess();
+
+        if (id == null || id <= 0) {
+            throw new ValidationException("Borrow slip ID must be greater than 0");
+        }
+
+        return loadBorrowSlipPort.findSlipDetailWithItemsById(id)
+                .orElseThrow(() -> new BorrowSlipNotFoundException(id));
     }
 
     private void verifyStaffAccess() {

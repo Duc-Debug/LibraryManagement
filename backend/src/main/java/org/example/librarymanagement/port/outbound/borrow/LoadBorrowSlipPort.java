@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.example.librarymanagement.domain.entity.BorrowSlip;
 import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
+import org.example.librarymanagement.port.dtos.borrow.BorrowSlipDetailResponseDto;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 
@@ -29,7 +30,8 @@ public interface LoadBorrowSlipPort {
      * Lấy thông tin chi tiết phiếu mượn (kèm mã thẻ, tên độc giả, tổng số sách) theo ID
      */
     Optional<BorrowSlipResponseDto> findSlipDetailById(Long id);
-        Optional<BorrowSlip> findByIdForUpdate(Long id);
+    Optional<BorrowSlipDetailResponseDto> findSlipDetailWithItemsById(Long id);
+    Optional<BorrowSlip> findByIdForUpdate(Long id);
 
     /**
      * Tìm tất cả phiếu mượn có trạng thái BORROWING và dueAt trước ngày tham chiếu.
