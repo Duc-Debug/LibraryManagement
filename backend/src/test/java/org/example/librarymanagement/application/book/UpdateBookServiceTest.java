@@ -123,6 +123,9 @@ public class UpdateBookServiceTest {
                 savedBook.getTitle().equals("Lập Trình Java Nâng Cao") &&
                 savedBook.getAuthor().equals("Nguyễn Văn B") &&
                 savedBook.getTotalQuantity() == 15));
+
+        // Kiểm tra old.jpg đã được xếp hàng xóa
+        verify(fileCleanupPort).queueFileForDeletion("http://image.com/old.jpg");
     }
 
     // hàm giúp tạo mock user với role

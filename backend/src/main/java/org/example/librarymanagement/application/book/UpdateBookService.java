@@ -55,6 +55,7 @@ public class UpdateBookService implements UpdateBookUseCase {
         boolean isIsbnExisted = bookRepository.existsByIsbnAndIdNot(command.isbn(), command.bookId());
         UniqueIsbnPolicy.validateIsbnForUpdate(isIsbnExisted, command.isbn());
 
+        String oldCoverUrl = book.getCoverImageUrl();
         String finalCoverImageUrl = command.coverImageUrl();
         String uploadedUrl = null;
 
@@ -65,11 +66,11 @@ public class UpdateBookService implements UpdateBookUseCase {
                     command.size()
             );
 
-            if (book.getCoverImageUrl() != null && !book.getCoverImageUrl().isBlank()) {
-                fileCleanupPort.queueFileForDeletion(book.getCoverImageUrl());
-            }
-
             finalCoverImageUrl = uploadedUrl;
+        }
+
+        if (oldCoverUrl != null && !oldCoverUrl.isBlank() && !oldCoverUrl.equals(finalCoverImageUrl)) {
+            fileCleanupPort.queueFileForDeletion(oldCoverUrl);
         }
 
         try {
