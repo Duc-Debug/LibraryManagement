@@ -2,6 +2,7 @@ package org.example.librarymanagement.infrastructure.transaction.borrow;
 
 import java.util.Objects;
 
+import org.example.librarymanagement.port.dtos.borrow.BorrowSlipDetailResponseDto;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipFilterQuery;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
@@ -24,5 +25,11 @@ public class TransactionalBorrowSlipsUseCase implements BorrowSlipsUseCase {
     @Transactional(readOnly = true)
     public PageResult<BorrowSlipResponseDto> getBorrowSlips(BorrowSlipFilterQuery query) {
         return delegate.getBorrowSlips(query);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BorrowSlipDetailResponseDto getBorrowSlipDetail(Long id) {
+        return delegate.getBorrowSlipDetail(id);
     }
 }

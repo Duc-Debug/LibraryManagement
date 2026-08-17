@@ -26,6 +26,23 @@ export interface BorrowSlipResponseDto {
   createdAt: string;
 }
 
+export interface BorrowSlipItemResponseDto {
+  id: number;
+  bookId: number;
+  bookTitle: string;
+  isbn: string;
+  author: string;
+  categoryName: string;
+  coverUrl: string | null;
+  returnedAt: string | null;
+  fineAmount: number;
+  fineReason: string | null;
+}
+
+export interface BorrowSlipDetailResponseDto extends BorrowSlipResponseDto {
+  items: BorrowSlipItemResponseDto[];
+}
+
 export interface FineCalculationResponseDto {
   borrowSlipId: number;
   borrowCode: string;
@@ -155,4 +172,10 @@ export async function createBorrowSlipApi(
     method: "POST",
     body: JSON.stringify(command),
   });
+}
+
+export async function fetchBorrowSlipDetailApi(
+  id: number
+): Promise<BorrowSlipDetailResponseDto> {
+  return apiFetch<BorrowSlipDetailResponseDto>(`/api/librarians/borrow-slips/${id}`);
 }

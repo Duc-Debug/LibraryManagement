@@ -3,21 +3,19 @@ package org.example.librarymanagement.infrastructure.web.borrow;
 import java.time.LocalDateTime;
 
 import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
+import org.example.librarymanagement.port.dtos.borrow.BorrowSlipDetailResponseDto;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipFilterQuery;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.borrow.CreateBorrowSlipCommand;
 import org.example.librarymanagement.port.dtos.borrow.FineCalculationResponseDto;
-import org.example.librarymanagement.port.dtos.borrow.ReturnBorrowSlipResponseDto;
-import org.example.librarymanagement.port.dtos.common.PageResult;
-import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
-import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
-import org.example.librarymanagement.port.inbound.borrow.ReturnBorrowSlipUseCase;
 import org.example.librarymanagement.port.dtos.borrow.ReaderBorrowEligibilityDto;
+import org.example.librarymanagement.port.dtos.borrow.ReturnBorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.inbound.borrow.BorrowSlipsUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CalculateFineUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CheckBorrowEligibilityUseCase;
 import org.example.librarymanagement.port.inbound.borrow.CreateBorrowSlipUseCase;
+import org.example.librarymanagement.port.inbound.borrow.ReturnBorrowSlipUseCase;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +63,19 @@ public class BorrowSlipManagementController {
             @RequestParam(required = false) String keyword) {
         BorrowSlipFilterQuery query = new BorrowSlipFilterQuery(page, size, status, keyword);
         PageResult<BorrowSlipResponseDto> result = borrowSlipsUseCase.getBorrowSlips(query);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * API: Lấy thông tin chi tiết phiếu mượn kèm danh sách cuốn sách mượn
+     *
+     * @param id ID của phiếu mượn
+     * @return DTO chi tiết phiếu mượn và danh sách sách
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<BorrowSlipDetailResponseDto> getBorrowSlipDetail(
+            @PathVariable @Min(value = 1, message = "Borrow slip ID must be greater than 0") Long id) {
+        BorrowSlipDetailResponseDto result = borrowSlipsUseCase.getBorrowSlipDetail(id);
         return ResponseEntity.ok(result);
     }
 

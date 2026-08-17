@@ -8,6 +8,8 @@ import java.util.Optional;
 import org.example.librarymanagement.domain.entity.BorrowSlip;
 import org.example.librarymanagement.domain.enums.BorrowSlipStatus;
 import org.example.librarymanagement.domain.exceptions.borrow.BorrowSlipNotFoundException;
+import org.example.librarymanagement.port.dtos.borrow.BorrowSlipDetailResponseDto;
+import org.example.librarymanagement.port.dtos.borrow.BorrowSlipItemResponseDto;
 import org.example.librarymanagement.port.dtos.borrow.BorrowSlipResponseDto;
 import org.example.librarymanagement.port.dtos.common.PageResult;
 import org.example.librarymanagement.port.outbound.borrow.LoadBorrowSlipPort;
@@ -25,16 +27,21 @@ public class BorrowSlipPersistenceAdapter
 
         private final BorrowSlipJpaRepository borrowSlipJpaRepository;
         private final BorrowSlipPersistenceMapper borrowSlipPersistenceMapper;
+        private final BorrowDetailsJpaRepository borrowDetailsJpaRepository;
 
         public BorrowSlipPersistenceAdapter(
                         BorrowSlipJpaRepository borrowSlipJpaRepository,
-                        BorrowSlipPersistenceMapper borrowSlipPersistenceMapper) {
+                        BorrowSlipPersistenceMapper borrowSlipPersistenceMapper,
+                        BorrowDetailsJpaRepository borrowDetailsJpaRepository) {
                 this.borrowSlipJpaRepository = Objects.requireNonNull(
                                 borrowSlipJpaRepository,
                                 "BorrowSlipJpaRepository must not be null");
                 this.borrowSlipPersistenceMapper = Objects.requireNonNull(
                                 borrowSlipPersistenceMapper,
                                 "BorrowSlipPersistenceMapper must not be null");
+                this.borrowDetailsJpaRepository = Objects.requireNonNull(
+                                borrowDetailsJpaRepository,
+                                "BorrowDetailsJpaRepository must not be null");
         }
 
         @Override
@@ -100,6 +107,50 @@ public class BorrowSlipPersistenceAdapter
                 }
                 return borrowSlipJpaRepository.findBorrowSlipDetailById(id)
                                 .map(borrowSlipPersistenceMapper::toDto);
+        }
+
+        @Override
+        public Optional<BorrowSlipDetailResponseDto> findSlipDetailWithItemsById(Long id) {
+                if (id == null) {
+                        return Optional.empty();
+                }
+                Optional<BorrowSlipSummaryProjection> slipOpt = borrowSlipJpaRepository.findBorrowSlipDetailById(id);
+                if (slipOpt.isEmpty()) {
+                        return Optional.empty();
+                }
+                BorrowSlipSummaryProjection slip = slipOpt.get();
+                List<BorrowDetailItemProjection> itemProjections = borrowDetailsJpaRepository.findItemsByBorrowSlipId(id);
+                List<BorrowSlipItemResponseDto> items = itemProjections.stream()
+                                .map(p -> new BorrowSlipItemResponseDto(
+                                                p.getId(),
+                                                p.getBookId(),
+                                                p.getBookTitle(),
+                                                p.getIsbn(),
+                                                p.getAuthor(),
+                                                p.getCategoryName(),
+                                                p.getCoverUrl(),
+                                                p.getReturnedAt(),
+                                                p.getFineAmount(),
+                                                p.getFineReason()
+                                )).toList();
+
+                BorrowSlipDetailResponseDto dto = new BorrowSlipDetailResponseDto(
+                                slip.getId(),
+                                slip.getBorrowCode(),
+                                slip.getReaderId(),
+                                slip.getReaderCardNumber(),
+                                slip.getReaderName(),
+                                slip.getCreatedByUserId(),
+                                slip.getCreatedByUserName(),
+                                slip.getBorrowedAt(),
+                                slip.getDueAt(),
+                                BorrowSlipStatus.valueOf(slip.getStatus()),
+                                slip.getNote(),
+                                slip.getTotalBooks(),
+                                slip.getCreatedAt(),
+                                items
+                );
+                return Optional.of(dto);
         }
 
         @Override
