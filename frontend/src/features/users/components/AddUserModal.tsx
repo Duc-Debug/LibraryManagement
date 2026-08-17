@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { X, RefreshCw, UserCheck, ShieldCheck, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { createReader } from '@/api/readerApi';
 import { createLibrarian } from '@/api/librarianApi';
+import { parseErrorMessage } from '@/lib/errorDictionary';
 
 interface AddUserModalProps {
   isAdmin?: boolean;
@@ -76,7 +77,7 @@ export function AddUserModal({ isAdmin = true, onClose, onSuccess }: AddUserModa
 
       onSuccess();
     } catch (err: any) {
-      setFormError(err?.message || 'Không thể tạo người dùng mới. Vui lòng kiểm tra lại.');
+      setFormError(parseErrorMessage(err, 'Không thể tạo người dùng mới. Vui lòng kiểm tra lại.'));
     } finally {
       setSaving(false);
     }

@@ -22,7 +22,6 @@ public class Book {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // 1. Static Factory Method dùng khi Tạo Mới Sách
     public static Book create(
             String title,
             String author,
@@ -34,6 +33,7 @@ public class Book {
             String shelfLocation,
             int totalQuantity,
             Long categoryId) {
+        validateCoverImageUrl(coverImageUrl);
         LocalDateTime now = LocalDateTime.now();
         return new Book(
                 null,
@@ -63,7 +63,8 @@ public class Book {
         validateIsbn(isbn);
         validatePublishedYear(publishedYear);
         validateQuantities(totalQuantity, availableQuantity);
-
+        validateCoverImageUrl(coverImageUrl);
+        
         this.id = id;
         this.title = title.trim();
         this.author = author != null ? author.trim() : null;
@@ -96,6 +97,9 @@ public class Book {
         validateBasicInfo(title, author, categoryId);
         validateIsbn(isbn);
         validatePublishedYear(publishedYear);
+        if (coverImageUrl != null && !coverImageUrl.equals(this.coverImageUrl)) {
+            validateCoverImageUrl(coverImageUrl);
+        }
 
         int borrowedQuantity = this.totalQuantity - this.availableQuantity;
         if (newTotalQuantity < borrowedQuantity) {
@@ -215,6 +219,14 @@ public class Book {
         }
         if (available > total) {
             throw new InvalidBookDataException("Available quantity cannot exceed total quantity");
+        }
+    }
+
+    private static void validateCoverImageUrl(String coverImageUrl) {
+        if (coverImageUrl != null && coverImageUrl.trim().toLowerCase().startsWith("data:")) {
+            throw new InvalidBookDataException(
+                    "Base64 cover images are no longer supported. Please upload an image file or provide a valid Cloud URL."
+            );
         }
     }
 

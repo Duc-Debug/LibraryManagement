@@ -14,6 +14,8 @@ import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.dtos.book.UpdateBookCommand;
 import org.example.librarymanagement.port.inbound.book.UpdateBookUseCase;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
+import org.example.librarymanagement.port.outbound.file.FileCleanupPort;
+import org.example.librarymanagement.port.outbound.file.FileStoragePort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 
 /**
@@ -24,10 +26,19 @@ public class UpdateBookService implements UpdateBookUseCase {
 
     private final BookRepositoryPort bookRepository;
     private final GetAuthenticatedUserPort getAuthenticatedUserPort;
+    private final FileStoragePort fileStoragePort;
+    private final FileCleanupPort fileCleanupPort;
 
-    public UpdateBookService(BookRepositoryPort bookRepository, GetAuthenticatedUserPort getAuthenticatedUserPort) {
+    public UpdateBookService(
+            BookRepositoryPort bookRepository,
+            GetAuthenticatedUserPort getAuthenticatedUserPort,
+            FileStoragePort fileStoragePort,
+            FileCleanupPort fileCleanupPort
+    ) {
         this.bookRepository = Objects.requireNonNull(bookRepository, "BookRepositoryPort must not be null");
         this.getAuthenticatedUserPort = Objects.requireNonNull(getAuthenticatedUserPort, "GetAuthenticatedUserPort must not be null");
+        this.fileStoragePort = Objects.requireNonNull(fileStoragePort, "FileStoragePort must not be null");
+        this.fileCleanupPort = Objects.requireNonNull(fileCleanupPort, "FileCleanupPort must not be null");
     }
 
     @Override
@@ -44,22 +55,49 @@ public class UpdateBookService implements UpdateBookUseCase {
         boolean isIsbnExisted = bookRepository.existsByIsbnAndIdNot(command.isbn(), command.bookId());
         UniqueIsbnPolicy.validateIsbnForUpdate(isIsbnExisted, command.isbn());
 
-        book.updateDetails(
-                command.title(),
-                command.author(),
-                command.isbn(),
-                command.description(),
-                command.coverImageUrl(),
-                command.publisher(),
-                command.publishedYear(),
-                command.shelfLocation(),
-                command.totalQuantity(),
-                command.categoryId()
-        );
+        String oldCoverUrl = book.getCoverImageUrl();
+        String finalCoverImageUrl = command.coverImageUrl();
+        String uploadedUrl = null;
 
-        Book updatedBook = bookRepository.save(book);
+        try {
+            if (command.imageStream() != null && command.originalFilename() != null && command.size() > 0) {
+                uploadedUrl = fileStoragePort.storeBookImage(
+                        command.imageStream(),
+                        command.originalFilename(),
+                        command.size()
+                );
 
-        return mapToResult(updatedBook);
+                finalCoverImageUrl = uploadedUrl;
+            }
+
+            if (oldCoverUrl != null && !oldCoverUrl.isBlank() && !oldCoverUrl.equals(finalCoverImageUrl)) {
+                fileCleanupPort.queueFileForDeletion(oldCoverUrl);
+            }
+
+            book.updateDetails(
+                    command.title(),
+                    command.author(),
+                    command.isbn(),
+                    command.description(),
+                    finalCoverImageUrl,
+                    command.publisher(),
+                    command.publishedYear(),
+                    command.shelfLocation(),
+                    command.totalQuantity(),
+                    command.categoryId()
+            );
+
+            Book updatedBook = bookRepository.save(book);
+
+            return mapToResult(updatedBook);
+        } catch (Exception e) {
+            if (uploadedUrl != null) {
+                try {
+                    fileStoragePort.deleteFile(uploadedUrl);
+                } catch (Exception ignored) {}
+            }
+            throw e;
+        }
     }
 
     private void verifyStaffAccess() {

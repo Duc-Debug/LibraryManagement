@@ -2,24 +2,25 @@ package org.example.librarymanagement.application.book;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+
 import org.example.librarymanagement.domain.entity.Book;
 import org.example.librarymanagement.domain.exceptions.DomainException;
 import org.example.librarymanagement.port.outbound.book.LoadBookPort;
 import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
+import org.example.librarymanagement.port.outbound.file.FileCleanupPort;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import org.mockito.Mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class DeleteBookServiceTest {
@@ -33,11 +34,14 @@ class DeleteBookServiceTest {
     @Mock
     private CheckActiveBorrowPort checkActiveBorrowPort;
 
+    @Mock
+    private FileCleanupPort fileCleanupPort;
+
     private DeleteBookService deleteBookService;
 
     @BeforeEach
     void setUp() {
-        deleteBookService = new DeleteBookService(loadBookPort, saveBookPort, checkActiveBorrowPort);
+        deleteBookService = new DeleteBookService(loadBookPort, saveBookPort, checkActiveBorrowPort, fileCleanupPort);
     }
 
     private Book createSampleBook(Long id, String title) {
@@ -74,6 +78,7 @@ class DeleteBookServiceTest {
         deleteBookService.deleteBook(bookId);
 
         // Assert
+        verify(fileCleanupPort).queueFileForDeletion("https://example.com/cover.jpg");
         verify(saveBookPort).deleteById(bookId);
     }
 

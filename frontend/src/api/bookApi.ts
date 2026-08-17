@@ -100,11 +100,17 @@ export interface UpdateBookRequestDto {
 
 export async function updateBookApi(
   id: number,
-  requestDto: UpdateBookRequestDto
+  data: FormData | UpdateBookRequestDto
 ): Promise<BookResponseDto> {
+  if (data instanceof FormData) {
+    return apiFetch<BookResponseDto>(`/api/librarians/books/${id}`, {
+      method: "PUT",
+      body: data,
+    });
+  }
   return apiFetch<BookResponseDto>(`/api/librarians/books/${id}`, {
     method: "PUT",
-    body: JSON.stringify(requestDto),
+    body: JSON.stringify(data),
   });
 }
 

@@ -10,8 +10,9 @@ import org.example.librarymanagement.domain.entity.User;
 import org.example.librarymanagement.port.dtos.book.BookResult;
 import org.example.librarymanagement.port.dtos.book.UpdateBookCommand;
 import org.example.librarymanagement.port.outbound.book.BookRepositoryPort;
+import org.example.librarymanagement.port.outbound.file.FileCleanupPort;
+import org.example.librarymanagement.port.outbound.file.FileStoragePort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,8 @@ public class UpdateBookServiceTest {
  
     private BookRepositoryPort bookRepository;
     private GetAuthenticatedUserPort getAuthenticatedUserPort;
+    private FileStoragePort fileStoragePort;
+    private FileCleanupPort fileCleanupPort;
 
     // đối tượng cần test
     private UpdateBookService updateBookService;
@@ -37,9 +40,11 @@ public class UpdateBookServiceTest {
     void setUp() {
         bookRepository = mock(BookRepositoryPort.class);
         getAuthenticatedUserPort = mock(GetAuthenticatedUserPort.class);
+        fileStoragePort = mock(FileStoragePort.class);
+        fileCleanupPort = mock(FileCleanupPort.class);
 
         // khởi tạo Service cần test
-        updateBookService = new UpdateBookService(bookRepository, getAuthenticatedUserPort);
+        updateBookService = new UpdateBookService(bookRepository, getAuthenticatedUserPort, fileStoragePort, fileCleanupPort);
     }
 
     @Test
@@ -118,6 +123,9 @@ public class UpdateBookServiceTest {
                 savedBook.getTitle().equals("Lập Trình Java Nâng Cao") &&
                 savedBook.getAuthor().equals("Nguyễn Văn B") &&
                 savedBook.getTotalQuantity() == 15));
+
+        // Kiểm tra old.jpg đã được xếp hàng xóa
+        verify(fileCleanupPort).queueFileForDeletion("http://image.com/old.jpg");
     }
 
     // hàm giúp tạo mock user với role

@@ -159,6 +159,16 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("USER_NOT_FOUND", exception.getMessage()));
     }
 
+    @ExceptionHandler(org.example.librarymanagement.domain.exceptions.user.AccountDisabledException.class)
+    public ResponseEntity<ErrorResponse> handleAccountDisabled(org.example.librarymanagement.domain.exceptions.user.AccountDisabledException exception) {
+        String message = "ACCOUNT_DISABLED".equals(exception.getMessage())
+                ? "Tài khoản của bạn đã bị tạm khóa. Vui lòng liên hệ Quản trị viên."
+                : exception.getMessage();
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of("ACCOUNT_DISABLED", message));
+    }
+
     @ExceptionHandler(org.example.librarymanagement.domain.exceptions.user.RoleNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleRoleNotFound(org.example.librarymanagement.domain.exceptions.user.RoleNotFoundException exception) {
         return ResponseEntity

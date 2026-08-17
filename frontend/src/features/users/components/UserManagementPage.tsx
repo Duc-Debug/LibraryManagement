@@ -39,6 +39,7 @@ import {
 } from '@/api/librarianApi';
 import { AddUserModal } from './AddUserModal';
 import { EditUserModal } from './EditUserModal';
+import { parseErrorMessage } from '@/lib/errorDictionary';
 
 export type UserTypeFilter = 'all' | 'readers' | 'librarians';
 
@@ -88,6 +89,7 @@ export function UserManagementPage({
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedUserToEdit, setSelectedUserToEdit] = useState<UnifiedUser | null>(null);
   const [selectedUserToDelete, setSelectedUserToDelete] = useState<UnifiedUser | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [previewCardReader, setPreviewCardReader] = useState<ReaderResponse | null>(null);
   const [togglingId, setTogglingId] = useState<string | number | null>(null);
 
@@ -116,7 +118,7 @@ export function UserManagementPage({
         setLibrarians(librariansRes.value || []);
       }
     } catch (err: any) {
-      setError(err?.message || 'Không thể tải danh sách người dùng từ máy chủ.');
+      setError(parseErrorMessage(err, 'Không thể tải danh sách người dùng từ máy chủ.'));
     } finally {
       setLoading(false);
     }
@@ -260,21 +262,17 @@ export function UserManagementPage({
           setError('Bạn không thể tự khóa tài khoản của chính mình.');
           return;
         }
-        if (item.enabled) {
-          await deleteLibrarian(item.id);
-        } else {
-          await updateLibrarian(item.id, {
-            fullName: item.fullName,
-            email: item.email,
-            phone: item.phone,
-            enabled: true,
-          });
-        }
-        setSuccessMessage(`Đã ${item.enabled ? 'khóa' : 'mở khóa'} tài khoản thủ thư "${user.name}".`);
+        await updateLibrarian(item.id, {
+          fullName: item.fullName,
+          email: item.email,
+          phone: item.phone,
+          enabled: !item.enabled,
+        });
+        setSuccessMessage(`Đã ${item.enabled ? 'tạm khóa' : 'mở khóa'} tài khoản thủ thư "${user.name}".`);
       }
       await loadAllUsers();
     } catch (err: any) {
-      setError(err?.message || 'Không thể thay đổi trạng thái tài khoản.');
+      setError(parseErrorMessage(err, 'Không thể thay đổi trạng thái tài khoản.'));
     } finally {
       setTogglingId(null);
     }
@@ -288,6 +286,16 @@ export function UserManagementPage({
     const user = selectedUserToDelete;
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') || '' : '';
 
+    const savedUserJson = typeof window !== 'undefined' ? localStorage.getItem('currentUser') : null;
+    const currentUserObj = savedUserJson ? JSON.parse(savedUserJson) : null;
+
+    if (user.username && currentUserObj && user.username === currentUserObj.username) {
+      setError('Bạn không thể tự xóa tài khoản của chính mình.');
+      setSelectedUserToDelete(null);
+      setDeleteConfirmText('');
+      return;
+    }
+
     try {
       if (user.userType === 'reader' && user.originalReaderData) {
         await deleteReaderApi(user.originalReaderData.id, token);
@@ -297,10 +305,12 @@ export function UserManagementPage({
         setSuccessMessage(`Đã xóa tài khoản thủ thư "${user.name}" thành công.`);
       }
       setSelectedUserToDelete(null);
+      setDeleteConfirmText('');
       await loadAllUsers();
     } catch (err: any) {
-      setError(err?.message || 'Xóa người dùng thất bại.');
+      setError(parseErrorMessage(err, 'Xóa người dùng thất bại.'));
       setSelectedUserToDelete(null);
+      setDeleteConfirmText('');
     }
   };
 
@@ -755,19 +765,52 @@ export function UserManagementPage({
       {/* Delete User Modal */}
       {selectedUserToDelete && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-150">
-          <div className="bg-card rounded-2xl border border-border w-full max-w-md shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-150">
+          <div className="bg-card rounded-2xl border border-destructive/20 w-full max-w-md shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-150 text-foreground">
             <div className="flex items-center gap-2 text-destructive pb-2 border-b border-border">
               <Trash2 className="w-5 h-5" />
-              <h2 className="text-lg font-bold">Xác Nhận Xóa Người Dùng</h2>
+              <h2 className="text-lg font-bold">Xác Nhận Xóa {selectedUserToDelete.roleTitle}</h2>
             </div>
-            <p className="text-sm text-foreground">
+            
+            <p className="text-sm text-foreground leading-relaxed">
               Bạn có chắc chắn muốn xóa tài khoản <strong>{selectedUserToDelete.name}</strong> ({selectedUserToDelete.roleTitle}) khỏi hệ thống?
             </p>
+
+            {selectedUserToDelete.userType === 'librarian' && (
+              <div className="space-y-2 p-3.5 bg-destructive/10 rounded-xl border border-destructive/20 text-xs">
+                <p className="text-destructive font-medium">
+                  ⚠️ Thao tác này sẽ XÓA VĨNH VIỄN tài khoản thủ thư khỏi hệ thống!
+                </p>
+                <label className="text-muted-foreground block font-medium">
+                  Vui lòng nhập chữ <strong className="text-destructive font-mono uppercase tracking-wide">delete</strong> bên dưới để xác nhận xóa:
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Nhập 'delete'..."
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-destructive font-mono"
+                  autoFocus
+                />
+              </div>
+            )}
+
             <div className="flex gap-3 pt-2">
-              <Button variant="outline" onClick={() => setSelectedUserToDelete(null)} className="flex-1 rounded-xl text-xs">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedUserToDelete(null);
+                  setDeleteConfirmText('');
+                }}
+                className="flex-1 rounded-xl text-xs font-medium"
+              >
                 Hủy
               </Button>
-              <Button onClick={handleDeleteUser} variant="destructive" className="flex-1 rounded-xl text-xs font-bold cursor-pointer">
+              <Button
+                onClick={handleDeleteUser}
+                disabled={selectedUserToDelete.userType === 'librarian' && deleteConfirmText.trim() !== 'delete'}
+                variant="destructive"
+                className="flex-1 rounded-xl text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Xác Nhận Xóa
               </Button>
             </div>

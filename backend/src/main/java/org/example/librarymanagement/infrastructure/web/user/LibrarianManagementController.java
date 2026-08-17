@@ -71,7 +71,7 @@ public class LibrarianManagementController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLibrarian(@PathVariable Long id) {
-        manageUserUseCase.deactivateUser(id);
+        manageUserUseCase.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 }

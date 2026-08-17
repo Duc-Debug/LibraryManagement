@@ -151,11 +151,6 @@ export function Dashboard() {
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Làm mới</span>
           </button>
-
-          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-all cursor-pointer">
-            <Plus className="w-4 h-4" />
-            <span>Tạo Phiếu Mượn</span>
-          </button>
         </div>
       </div>
 

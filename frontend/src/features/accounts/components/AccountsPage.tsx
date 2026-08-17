@@ -140,16 +140,12 @@ export default function AccountsPage({ currentUserId }: AccountsPageProps) {
     if (String(item.id) === String(currentUserId)) return;
     setTogglingId(item.id);
     try {
-      if (item.enabled) {
-        await deleteLibrarian(item.id);
-      } else {
-        await updateLibrarian(item.id, {
-          fullName: item.fullName,
-          email: item.email,
-          phone: item.phone,
-          enabled: true,
-        });
-      }
+      await updateLibrarian(item.id, {
+        fullName: item.fullName,
+        email: item.email,
+        phone: item.phone,
+        enabled: !item.enabled,
+      });
       await loadData();
     } catch (err: any) {
       alert(parseErrorMessage(err, 'Không thể thay đổi trạng thái tài khoản.'));

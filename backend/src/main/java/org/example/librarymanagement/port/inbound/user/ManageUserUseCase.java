@@ -12,7 +12,9 @@ public interface ManageUserUseCase {
 
     UserResult updateUser(UpdateUserCommand command);
 
-    void deactivateUser(Long userId); // Soft Delete
+    void deactivateUser(Long userId); // Lock account (enabled = false)
+
+    void deleteUser(Long userId); // Permanent delete from DB
 
     UserResult getUserById(Long userId);
 

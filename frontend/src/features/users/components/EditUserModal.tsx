@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { X, RefreshCw, AlertCircle } from 'lucide-react';
 import { updateReaderApi } from '@/api/readerApi';
 import { updateLibrarian } from '@/api/librarianApi';
+import { parseErrorMessage } from '@/lib/errorDictionary';
 import type { UnifiedUser } from './UserManagementPage';
 
 interface EditUserModalProps {
@@ -59,7 +60,7 @@ export function EditUserModal({ user, onClose, onSuccess }: EditUserModalProps) 
 
       onSuccess();
     } catch (err: any) {
-      setFormError(err?.message || 'Cập nhật thông tin người dùng thất bại.');
+      setFormError(parseErrorMessage(err, 'Cập nhật thông tin người dùng thất bại.'));
     } finally {
       setSaving(false);
     }

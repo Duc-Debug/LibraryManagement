@@ -14,7 +14,7 @@ import {
 } from '@/api/bookApi';
 import { fetchCategoriesApi, CategoryResponse } from '@/api/categoryApi';
 import { parseErrorMessage } from '@/lib/errorDictionary';
-import { compressImage } from '@/lib/imageCompressor';
+import { compressImage, compressImageToFile } from '@/lib/imageCompressor';
 import { Search, Plus, Eye, EyeOff, Trash2, X, Edit3, PackagePlus, AlertTriangle, BookOpen, Upload, Image, Layers, Package, RotateCcw, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddBookModal } from './AddBookModal';
@@ -62,6 +62,7 @@ export function BooksPage() {
     totalQuantity: 0,
     categoryId: 0,
   });
+  const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
 
   // States cho modal nhập kho
   const [showReplenishModal, setShowReplenishModal] = useState(false);
@@ -162,6 +163,7 @@ export function BooksPage() {
 
       // 2. Điền thông tin cũ của sách vào form
       setEditingBookId(book.bookId);
+      setEditCoverFile(null);
       setEditForm({
         title: book.title,
         author: book.author,
@@ -206,21 +208,39 @@ export function BooksPage() {
     setSuccessMessage(null);
 
     try {
-      const payload: UpdateBookRequestDto = {
-        title: editForm.title,
-        author: editForm.author,
-        isbn: editForm.isbn,
-        description: editForm.description,
-        coverImageUrl: editForm.coverImageUrl,
-        publisher: editForm.publisher,
-        publishedYear: Number(editForm.publishedYear) || 0,
-        shelfLocation: editForm.shelfLocation,
-        totalQuantity: Number(editForm.totalQuantity) || 0,
-        categoryId: Number(editForm.categoryId) || 0,
-      };
-      await updateBookApi(editingBookId, payload);
+      if (editCoverFile) {
+        const formData = new FormData();
+        formData.append("title", editForm.title.trim());
+        formData.append("author", editForm.author.trim());
+        formData.append("isbn", editForm.isbn.trim());
+        formData.append("categoryId", String(editForm.categoryId || 0));
+        formData.append("totalQuantity", String(editForm.totalQuantity || 0));
+        if (editForm.description) formData.append("description", editForm.description.trim());
+        if (editForm.publisher) formData.append("publisher", editForm.publisher.trim());
+        if (editForm.publishedYear) formData.append("publishedYear", String(editForm.publishedYear));
+        if (editForm.shelfLocation) formData.append("shelfLocation", editForm.shelfLocation.trim());
+        if (editForm.coverImageUrl) formData.append("coverImageUrl", editForm.coverImageUrl.trim());
+        formData.append("coverImage", editCoverFile);
+
+        await updateBookApi(editingBookId, formData);
+      } else {
+        const payload: UpdateBookRequestDto = {
+          title: editForm.title,
+          author: editForm.author,
+          isbn: editForm.isbn,
+          description: editForm.description,
+          coverImageUrl: editForm.coverImageUrl,
+          publisher: editForm.publisher,
+          publishedYear: Number(editForm.publishedYear) || 0,
+          shelfLocation: editForm.shelfLocation,
+          totalQuantity: Number(editForm.totalQuantity) || 0,
+          categoryId: Number(editForm.categoryId) || 0,
+        };
+        await updateBookApi(editingBookId, payload);
+      }
       setSuccessMessage(`Đã cập nhật sách "${editForm.title}" thành công.`);
       setIsEditing(false); // Đóng modal
+      setEditCoverFile(null);
       loadBooks();        // Tải lại danh sách sách
     } catch (err: any) {
       setError(parseErrorMessage(err, "Cập nhật sách thất bại. Vui lòng kiểm tra lại dữ liệu."));
@@ -819,12 +839,9 @@ export function BooksPage() {
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            try {
-                              const compressedDataUrl = await compressImage(file, 600, 600, 0.75);
-                              setEditForm((prev) => ({ ...prev, coverImageUrl: compressedDataUrl }));
-                            } catch (err) {
-                              console.error('Lỗi năm nén ảnh:', err);
-                            }
+                            const compressedFile = await compressImageToFile(file);
+                            setEditCoverFile(compressedFile);
+                            setEditForm((prev) => ({ ...prev, coverImageUrl: URL.createObjectURL(compressedFile) }));
                           }
                         }}
                       />

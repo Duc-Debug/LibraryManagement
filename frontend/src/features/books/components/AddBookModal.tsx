@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Upload } from 'lucide-react';
+import { X, Upload, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchCategoriesApi, type CategoryResponse } from '@/api/categoryApi';
 import { createBookApi } from '@/api/bookApi';
+import { parseErrorMessage } from '@/lib/errorDictionary';
+import { compressImageToFile } from '@/lib/imageCompressor';
 
 interface AddBookModalProps {
   onClose: () => void;
@@ -64,12 +66,18 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setCoverImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      const compressedFile = await compressImageToFile(file);
+      setCoverImageFile(compressedFile);
+      setImagePreview(URL.createObjectURL(compressedFile));
     }
+  };
+
+  const handleRemoveImage = () => {
+    setCoverImageFile(null);
+    setImagePreview(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,7 +128,7 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
       await createBookApi(payload);
       onSave();
     } catch (err: any) {
-      setError(err.message || "Tạo sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
+      setError(parseErrorMessage(err, "Tạo sách thất bại. Vui lòng kiểm tra lại dữ liệu."));
     } finally {
       setIsSubmitting(false);
     }
@@ -289,11 +297,24 @@ export function AddBookModal({ onClose, onSave }: AddBookModalProps) {
                 />
               </label>
               {imagePreview && (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-10 h-10 object-cover rounded border border-border"
-                />
+                <div className="flex items-center gap-3 bg-muted/30 p-1.5 rounded-lg border border-border">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-10 h-12 object-cover rounded border border-border shadow-xs"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveImage}
+                    className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive flex items-center gap-1.5 h-8 px-2.5 rounded-md cursor-pointer"
+                    title="Xóa tệp ảnh đã chọn"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Xóa ảnh</span>
+                  </Button>
+                </div>
               )}
             </div>
           </div>

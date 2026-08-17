@@ -20,6 +20,7 @@ import org.example.librarymanagement.port.outbound.book.SaveBookPort;
 import org.example.librarymanagement.port.outbound.borrow.CheckActiveBorrowPort;
 import org.example.librarymanagement.port.outbound.category.CategoryRepositoryPort;
 import org.example.librarymanagement.port.outbound.category.LoadCategoryPort;
+import org.example.librarymanagement.port.outbound.file.FileCleanupPort;
 import org.example.librarymanagement.port.outbound.file.FileStoragePort;
 import org.example.librarymanagement.port.outbound.user.GetAuthenticatedUserPort;
 import org.springframework.context.annotation.Bean;
@@ -29,33 +30,34 @@ import org.springframework.context.annotation.Configuration;
 public class BookUseCaseConfig {
 
     @Bean
-public CreateBookUseCase createBookUseCase(
-        SaveBookPort saveBookPort,
-        BookRepositoryPort bookRepositoryPort,
-        CategoryRepositoryPort categoryRepositoryPort,
-        FileStoragePort fileStoragePort
-) {
+    public CreateBookUseCase createBookUseCase(
+            SaveBookPort saveBookPort,
+            BookRepositoryPort bookRepositoryPort,
+            CategoryRepositoryPort categoryRepositoryPort,
+            FileStoragePort fileStoragePort
+    ) {
 
-    CreateBookUseCase createBookService =
-            new CreateBookService(
-                    saveBookPort,
-                    bookRepositoryPort,
-                    categoryRepositoryPort,
-                    fileStoragePort
-            );
+        CreateBookUseCase createBookService =
+                new CreateBookService(
+                        saveBookPort,
+                        bookRepositoryPort,
+                        categoryRepositoryPort,
+                        fileStoragePort
+                );
 
-    return new TransactionalCreateBookUseCase(
-            createBookService,
-            fileStoragePort
-    );
-}
+        return new TransactionalCreateBookUseCase(
+                createBookService,
+                fileStoragePort
+        );
+    }
 
     @Bean
     public DeleteBookUseCase deleteBookUseCase(
             LoadBookPort loadBookPort,
             SaveBookPort saveBookPort,
-            CheckActiveBorrowPort checkActiveBorrowPort) {
-        DeleteBookUseCase deleteBookService = new DeleteBookService(loadBookPort, saveBookPort, checkActiveBorrowPort);
+            CheckActiveBorrowPort checkActiveBorrowPort,
+            FileCleanupPort fileCleanupPort) {
+        DeleteBookUseCase deleteBookService = new DeleteBookService(loadBookPort, saveBookPort, checkActiveBorrowPort, fileCleanupPort);
         return new TransactionalDeleteBookUseCase(deleteBookService);
     }
 
@@ -67,9 +69,11 @@ public CreateBookUseCase createBookUseCase(
     @Bean
     public UpdateBookUseCase updateBookUseCase(
             BookRepositoryPort bookRepository,
-            GetAuthenticatedUserPort getAuthenticatedUserPort) {
-        UpdateBookService service = new UpdateBookService(bookRepository, getAuthenticatedUserPort);
-        return new TransactionalUpdateBookUseCase(service);
+            GetAuthenticatedUserPort getAuthenticatedUserPort,
+            FileStoragePort fileStoragePort,
+            FileCleanupPort fileCleanupPort) {
+        UpdateBookService service = new UpdateBookService(bookRepository, getAuthenticatedUserPort, fileStoragePort, fileCleanupPort);
+        return new TransactionalUpdateBookUseCase(service, fileStoragePort);
     }
 
     @Bean

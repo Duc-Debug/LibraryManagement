@@ -61,6 +61,13 @@ public class UserPersistenceAdapter implements UserRepositoryPort, LoadUserPort,
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void deleteById(Long id) {
+        if (id != null && userJpaRepository.existsById(id)) {
+            userJpaRepository.deleteById(id);
+        }
+    }
+
     // ==========================================
     // Implement SaveUserPort
     // ==========================================
