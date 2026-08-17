@@ -59,21 +59,21 @@ public class UpdateBookService implements UpdateBookUseCase {
         String finalCoverImageUrl = command.coverImageUrl();
         String uploadedUrl = null;
 
-        if (command.imageStream() != null && command.originalFilename() != null && command.size() > 0) {
-            uploadedUrl = fileStoragePort.storeBookImage(
-                    command.imageStream(),
-                    command.originalFilename(),
-                    command.size()
-            );
-
-            finalCoverImageUrl = uploadedUrl;
-        }
-
-        if (oldCoverUrl != null && !oldCoverUrl.isBlank() && !oldCoverUrl.equals(finalCoverImageUrl)) {
-            fileCleanupPort.queueFileForDeletion(oldCoverUrl);
-        }
-
         try {
+            if (command.imageStream() != null && command.originalFilename() != null && command.size() > 0) {
+                uploadedUrl = fileStoragePort.storeBookImage(
+                        command.imageStream(),
+                        command.originalFilename(),
+                        command.size()
+                );
+
+                finalCoverImageUrl = uploadedUrl;
+            }
+
+            if (oldCoverUrl != null && !oldCoverUrl.isBlank() && !oldCoverUrl.equals(finalCoverImageUrl)) {
+                fileCleanupPort.queueFileForDeletion(oldCoverUrl);
+            }
+
             book.updateDetails(
                     command.title(),
                     command.author(),
