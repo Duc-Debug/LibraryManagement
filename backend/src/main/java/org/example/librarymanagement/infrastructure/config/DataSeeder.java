@@ -41,7 +41,7 @@ public class DataSeeder implements CommandLineRunner {
         RoleJpaEntity librarianRole = findOrCreateRole("LIBRARIAN", "Thủ thư");
 
         // 2. Seed Admin User mặc định nếu chưa tồn tại
-        seedDefaultUser("test1", "123456", "Giap Duc", "duc@gmail.com", "12345678", Set.of(adminRole, librarianRole));
+        seedDefaultUser("admin", "123456", "Giap Duc", "admin@librabrian.com", "12345678", Set.of(adminRole, librarianRole));
 
         // 3. Seed dữ liệu Sách mẫu nếu chưa có
         seedDefaultBooks();

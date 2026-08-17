@@ -22,7 +22,6 @@ public class Book {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // 1. Static Factory Method dùng khi Tạo Mới Sách
     public static Book create(
             String title,
             String author,
@@ -34,6 +33,7 @@ public class Book {
             String shelfLocation,
             int totalQuantity,
             Long categoryId) {
+        validateCoverImageUrl(coverImageUrl);
         LocalDateTime now = LocalDateTime.now();
         return new Book(
                 null,
@@ -64,7 +64,7 @@ public class Book {
         validatePublishedYear(publishedYear);
         validateQuantities(totalQuantity, availableQuantity);
         validateCoverImageUrl(coverImageUrl);
-
+        
         this.id = id;
         this.title = title.trim();
         this.author = author != null ? author.trim() : null;
@@ -97,7 +97,9 @@ public class Book {
         validateBasicInfo(title, author, categoryId);
         validateIsbn(isbn);
         validatePublishedYear(publishedYear);
-        validateCoverImageUrl(coverImageUrl);
+        if (coverImageUrl != null && !coverImageUrl.equals(this.coverImageUrl)) {
+            validateCoverImageUrl(coverImageUrl);
+        }
 
         int borrowedQuantity = this.totalQuantity - this.availableQuantity;
         if (newTotalQuantity < borrowedQuantity) {
